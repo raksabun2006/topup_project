@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/**
+ * ពណ៌ខ្មៅស្វិតតែមួយសម្រាប់ទំព័រទាំងអស់ - ត្រូវផ្គូផ្គងនឹង
+ * ផ្ទៃខាងក្រោយរបស់ Home.jsx (#0d0e15) ដើម្បីកុំឱ្យមានការផ្លាស់ប្តូរ
+ * ពណ៌ភ្លាមៗពេលប្តូរទំព័រ។
+ */
+@theme {
+  --color-ink-950: #0d0e15;
+  --color-ink-900: #141326;
+  --color-ink-800: #1e1a3a;
+}
+
+/* Fade-in-up សម្រាប់ section entrance - Tailwind v4 មិនមាន utility នេះជាមូលដ្ឋានទេ */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out both;
+}

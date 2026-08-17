@@ -1,0 +1,27 @@
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+export function ProtectedRoute({ children, requireAdmin = false }) {
+  const { isAuthenticated, isAdmin, loading } = useAuth();
+  const location = useLocation();
+
+  // កុំសម្រេចចិត្តមុនពេលដឹងថាអ្នកប្រើជានរណា។
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-700 border-t-indigo-500" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    // state.from អនុញ្ញាតឱ្យ Login បញ្ជូនត្រឡប់ទៅកន្លែងដើមវិញ។
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (requireAdmin && !isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
