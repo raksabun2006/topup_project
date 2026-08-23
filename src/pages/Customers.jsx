@@ -1,0 +1,175 @@
+import { useMemo, useState } from 'react';
+import { Plus, Edit2, Trash2, Loader2, AlertCircle, RefreshCw, Users, Search, Star } from 'lucide-react';
+import { customerApi } from '../api/customerApi';
+import { getErrorMessage } from '../api/client';
+import { useCustomers } from '../hooks/useCustomers';
+import { formatDate } from '../utils/format';
+import CustomerFormModal from '../components/admin/CustomerFormModal';
+
+/** ទាញយកអតិថិជនទាំងអស់ម្តងតែម្តង (backend គ្មាន pagination/search) - filter/paginate នៅ client */
+export default function Customers() {
+  const { customers, loading, error, reload } = useCustomers();
+  const [search, setSearch] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return customers;
+    return customers.filter(
+      (c) =>
+        c.name?.toLowerCase().includes(q) ||
+        c.phone?.toLowerCase().includes(q) ||
+        c.email?.toLowerCase().includes(q)
+    );
+  }, [customers, search]);
+
+  const openCreate = () => {
+    setEditingCustomer(null);
+    setModalOpen(true);
+  };
+
+  const openEdit = (customer) => {
+    setEditingCustomer(customer);
+    setModalOpen(true);
+  };
+
+  const handleSaved = () => {
+    setModalOpen(false);
+    reload();
+  };
+
+  const handleDelete = async (customer) => {
+    if (!window.confirm(`តើអ្នកពិតជាចង់លុបអតិថិជន "${customer.name}" មែនទេ?`)) return;
+    setDeletingId(customer.id);
+    try {
+      await customerApi.delete(customer.id);
+      reload();
+    } catch (err) {
+      alert(getErrorMessage(err));
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-10">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-black uppercase tracking-wide text-slate-900">អតិថិជនទាំងអស់</h1>
+        <button
+          onClick={openCreate}
+          className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500"
+        >
+          <Plus size={16} />
+          អតិថិជនថ្មី
+        </button>
+      </div>
+
+      <div className="relative mb-5 max-w-sm">
+        <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="ស្វែងរកឈ្មោះ/លេខទូរស័ព្ទ/អ៊ីមែល..."
+          className="w-full rounded-xl border border-slate-300 bg-ink-950 py-2.5 pl-10 pr-4 text-sm text-slate-900 shadow-sm placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+        />
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
+        {loading && (
+          <div className="space-y-3 p-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-14 animate-pulse rounded-xl bg-ink-800" />
+            ))}
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="p-10 text-center">
+            <AlertCircle size={32} className="mx-auto mb-3 text-rose-700" />
+            <p className="mb-5 text-sm text-rose-700">{error}</p>
+            <button
+              onClick={reload}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-ink-950 px-4 py-2 text-sm text-slate-600 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900"
+            >
+              <RefreshCw size={14} />
+              ព្យាយាមម្តងទៀត
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && filtered.length === 0 && (
+          <div className="p-14 text-center">
+            <Users size={40} className="mx-auto mb-4 text-slate-600" />
+            <p className="mb-6 text-slate-500">
+              {search ? 'រកមិនឃើញអតិថិជនត្រូវនឹងលក្ខខណ្ឌនេះទេ' : 'មិនទាន់មានអតិថិជននៅឡើយទេ'}
+            </p>
+            {!search && (
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500"
+              >
+                <Plus size={16} />
+                បន្ថែមអតិថិជនដំបូង
+              </button>
+            )}
+          </div>
+        )}
+
+        {!loading && !error && filtered.length > 0 && (
+          <div className="divide-y divide-slate-200">
+            {filtered.map((customer) => (
+              <div key={customer.id} className="flex items-center justify-between gap-4 px-6 py-4">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-sm font-bold text-emerald-700">
+                    {customer.name?.charAt(0).toUpperCase() ?? '?'}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-slate-700">{customer.name}</p>
+                    <p className="mt-1 truncate text-xs text-slate-500">
+                      {[customer.phone, customer.email].filter(Boolean).join(' · ') || '—'}
+                      {' · ចូលរួម '}{formatDate(customer.createdAt)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-4">
+                  <span className="flex items-center gap-1 text-sm font-semibold text-amber-700">
+                    <Star size={14} className="fill-amber-500 text-amber-500" />
+                    {customer.loyaltyPoint ?? 0}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => openEdit(customer)}
+                      className="rounded-lg p-1.5 text-slate-500 transition hover:bg-emerald-50 hover:text-slate-900"
+                      title="កែប្រែ"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(customer)}
+                      disabled={deletingId === customer.id}
+                      className="rounded-lg p-1.5 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-700 disabled:opacity-50"
+                      title="លុប"
+                    >
+                      {deletingId === customer.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {modalOpen && (
+        <CustomerFormModal
+          customer={editingCustomer}
+          onClose={() => setModalOpen(false)}
+          onSaved={handleSaved}
+        />
+      )}
+    </div>
+  );
+}

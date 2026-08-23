@@ -21,13 +21,17 @@ function required(key, value) {
 export const env = {
   apiBaseUrl: required('VITE_API_BASE_URL', import.meta.env.VITE_API_BASE_URL),
 
-  appName: import.meta.env.VITE_APP_NAME ?? 'GameTopUp',
+  appName: import.meta.env.VITE_APP_NAME ?? 'POS',
 
-  // Number(undefined) ផ្តល់ NaN ដូច្នេះត្រូវមានតម្លៃបម្រុង។
-  //
-  // 15s - Bakong អនុញ្ញាតតែ 100 សំណើ/ថ្ងៃលើ token developer (សូមមើល
-  // client.js)។ 5s x 10min = 120 សំណើក្នុងការទូទាត់តែមួយ - លើសកូតា
-  // ទាំងអស់ក្នុងការសាកល្បងតែម្តង។ 15s x 10min = 40 សំណើ។
+  keycloak: {
+    url: required('VITE_KEYCLOAK_URL', import.meta.env.VITE_KEYCLOAK_URL),
+    realm: required('VITE_KEYCLOAK_REALM', import.meta.env.VITE_KEYCLOAK_REALM),
+    clientId: required('VITE_KEYCLOAK_CLIENT_ID', import.meta.env.VITE_KEYCLOAK_CLIENT_ID),
+  },
+
+  // ប្រើសម្រាប់ Bakong QR polling ក្នុង POS checkout ប៉ុណ្ណោះ (មើល
+  // src/api/salePaymentApi.js) - 15s x 10min = 40 សំណើ/ការទូទាត់
+  // ព្រោះ Bakong អនុញ្ញាតតែ 100 សំណើ/ថ្ងៃលើ token developer។
   paymentPollIntervalMs: Number(
     import.meta.env.VITE_PAYMENT_POLL_INTERVAL_MS ?? 15000
   ),
@@ -36,10 +40,6 @@ export const env = {
     import.meta.env.VITE_PAYMENT_TIMEOUT_MS ?? 600000
   ),
 
-  // Bakong KHQR ជាទូទៅផុតកំណត់ក្នុងចន្លោះ ៥-១៥ នាទី។ តម្លៃនេះផ្ញើទៅ
-  // backend ជា expirationMinutes ពេលបង្កើត QR ថ្មី ហើយក៏ត្រូវប្រើ
-  // ជា fallback គណនា countdown នៅ client-side បើ backend មិនបានផ្ញើ
-  // payment.expiresAt មកវិញ។
   qrExpirationMinutes: Number(
     import.meta.env.VITE_QR_EXPIRATION_MINUTES ?? 10
   ),

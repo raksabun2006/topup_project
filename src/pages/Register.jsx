@@ -1,121 +1,150 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Gamepad2, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Loader2, AlertCircle, CheckCircle, Store } from 'lucide-react';
 import { authApi } from '../api/authApi';
 import { getErrorMessage } from '../api/client';
 
-export default function Register() {
-  const navigate = useNavigate();
+const EMPTY_FORM = {
+  username: '', email: '', password: '', confirmPassword: '', displayName: '', phoneNumber: '',
+};
 
-  const [form, setForm] = useState({ username: '', email: '', password: '' });
-  const [showPassword, setShowPassword] = useState(false);
+function validate(form) {
+  if (!form.username.trim()) return 'សូមបញ្ចូលឈ្មោះអ្នកប្រើ';
+  if (form.username.trim().length < 3) return 'ឈ្មោះអ្នកប្រើត្រូវមានយ៉ាងតិច ៣ តួអក្សរ';
+  if (!form.email.trim()) return 'សូមបញ្ចូលអ៊ីមែល';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return 'អ៊ីមែលមិនត្រឹមត្រូវទេ';
+  if (!form.password || form.password.length < 8) return 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៨ តួអក្សរ';
+  if (form.password !== form.confirmPassword) return 'ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ';
+  return '';
+}
+
+export default function Register() {
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
+    const validationError = validate(form);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
+    setSubmitting(true);
+    setError('');
     try {
-      await authApi.register(form);
-      // Login មិនស្វ័យប្រវត្តិទេ - ចុះឈ្មោះជោគជ័យមិនមែនន័យថាមាន token ទេ។
-      navigate('/login', { state: { registered: true } });
+      await authApi.register({
+        username: form.username.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        displayName: form.displayName.trim() || undefined,
+        phoneNumber: form.phoneNumber.trim() || undefined,
+      });
+      setDone(true);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-ink-950 px-4 py-12">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-purple-600/20 blur-[120px]" />
-        <div className="absolute top-1/3 -right-40 h-96 w-96 rounded-full bg-fuchsia-600/15 blur-[120px]" />
-      </div>
+  const inputClass =
+    'w-full rounded-xl border border-slate-300 bg-ink-950 px-3.5 py-2.5 text-slate-900 shadow-sm ' +
+    'transition placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
 
-      <div className="relative z-10 w-full max-w-md">
-        <div className="mb-8 text-center">
-          <Link to="/" className="mb-4 inline-flex items-center gap-2">
-            <Gamepad2 size={28} className="text-purple-400" />
-          </Link>
-          <h1 className="text-3xl font-bold text-white">ចុះឈ្មោះគណនី</h1>
-          <p className="mt-2 text-slate-400">បង្កើតគណនីថ្មីដើម្បីចាប់ផ្តើម</p>
+  if (done) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-ink-950 px-4 text-center text-slate-600">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
+          <CheckCircle size={32} className="text-emerald-700" />
+        </div>
+        <h1 className="text-xl font-bold text-slate-900">ចុះឈ្មោះជោគជ័យ</h1>
+        <p className="max-w-sm text-sm text-slate-500">
+          គណនីរបស់អ្នកបានបង្កើតរួចរាល់។ សូមចូលគណនីដើម្បីបន្ត។
+        </p>
+        <Link
+          to="/login"
+          className="mt-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:from-emerald-500 hover:to-emerald-500"
+        >
+          ចូលគណនី
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-ink-950 px-4 py-10">
+      <div className="w-full max-w-md">
+        <div className="mb-6 flex flex-col items-center gap-2 text-center">
+          <Store size={30} className="text-emerald-600" />
+          <h1 className="text-xl font-bold text-slate-900">ចុះឈ្មោះគណនីថ្មី</h1>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-3xl border border-purple-900/40 bg-ink-900 p-8 shadow-2xl shadow-purple-950/50"
+          className="rounded-2xl border border-slate-200 bg-ink-900 p-6 shadow-sm sm:p-8"
         >
           {error && (
-            <div className="mb-6 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-400">
+            <div className="mb-5 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-700">
+              <AlertCircle size={16} className="mt-0.5 shrink-0" />
               {error}
             </div>
           )}
 
-          <label className="mb-2 block text-sm font-medium text-slate-300">
-            ឈ្មោះអ្នកប្រើ
-          </label>
-          <input
-            type="text"
-            required
-            autoComplete="username"
-            value={form.username}
-            onChange={(e) => setForm({ ...form, username: e.target.value })}
-            className="mb-5 w-full rounded-lg border border-purple-900/40 bg-ink-950 px-4 py-3 text-white placeholder-slate-500 transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-            placeholder="gamer03"
-          />
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-600">ឈ្មោះអ្នកប្រើ *</label>
+              <input required value={form.username} onChange={set('username')} className={inputClass} />
+            </div>
 
-          <label className="mb-2 block text-sm font-medium text-slate-300">
-            អ៊ីមែល
-          </label>
-          <input
-            type="email"
-            required
-            autoComplete="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="mb-5 w-full rounded-lg border border-purple-900/40 bg-ink-950 px-4 py-3 text-white placeholder-slate-500 transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-            placeholder="gamer03@example.com"
-          />
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-600">ឈ្មោះបង្ហាញ</label>
+              <input value={form.displayName} onChange={set('displayName')} className={inputClass} />
+            </div>
 
-          <label className="mb-2 block text-sm font-medium text-slate-300">
-            ពាក្យសម្ងាត់
-          </label>
-          <div className="relative mb-6">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              required
-              minLength={8}
-              autoComplete="new-password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full rounded-lg border border-purple-900/40 bg-ink-950 px-4 py-3 pr-12 text-white placeholder-slate-500 transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-              placeholder="••••••••"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-300"
-              aria-label={showPassword ? 'លាក់ពាក្យសម្ងាត់' : 'បង្ហាញពាក្យសម្ងាត់'}
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-600">អ៊ីមែល *</label>
+              <input required type="email" value={form.email} onChange={set('email')} className={inputClass} />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-600">លេខទូរស័ព្ទ</label>
+              <input type="tel" value={form.phoneNumber} onChange={set('phoneNumber')} className={inputClass} />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-600">ពាក្យសម្ងាត់ *</label>
+              <input
+                type="password" required value={form.password} onChange={set('password')} className={inputClass}
+              />
+              <p className="mt-1.5 text-xs text-slate-500">យ៉ាងតិច ៨ តួអក្សរ</p>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-600">បញ្ជាក់ពាក្យសម្ងាត់ *</label>
+              <input
+                type="password" required value={form.confirmPassword} onChange={set('confirmPassword')}
+                className={inputClass}
+              />
+            </div>
           </div>
 
           <button
             type="submit"
-            disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-600 px-4 py-3 font-semibold text-white shadow-lg shadow-purple-600/30 transition hover:from-purple-500 hover:to-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={submitting}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-600 py-3 font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:from-emerald-500 hover:to-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading && <Loader2 size={18} className="animate-spin" />}
-            {loading ? 'កំពុងចុះឈ្មោះ...' : 'ចុះឈ្មោះ'}
+            {submitting && <Loader2 size={16} className="animate-spin" />}
+            ចុះឈ្មោះ
           </button>
 
-          <p className="mt-6 text-center text-sm text-slate-400">
+          <p className="mt-5 text-center text-sm text-slate-500">
             មានគណនីរួចហើយ?{' '}
-            <Link to="/login" className="font-semibold text-purple-400 hover:text-purple-300">
+            <Link to="/login" className="font-medium text-emerald-600 hover:text-emerald-700">
               ចូលគណនី
             </Link>
           </p>

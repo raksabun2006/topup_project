@@ -1,0 +1,126 @@
+import { useState, useEffect } from 'react';
+import { X, Loader2, AlertCircle } from 'lucide-react';
+import { customerApi } from '../../api/customerApi';
+import { getErrorMessage } from '../../api/client';
+
+const EMPTY = { name: '', phone: '', email: '', address: '', loyaltyPoint: '0' };
+
+function toFormState(customer) {
+  if (!customer) return EMPTY;
+  return {
+    name: customer.name ?? '',
+    phone: customer.phone ?? '',
+    email: customer.email ?? '',
+    address: customer.address ?? '',
+    loyaltyPoint: String(customer.loyaltyPoint ?? 0),
+  };
+}
+
+export default function CustomerFormModal({ customer, onClose, onSaved }) {
+  const isEdit = !!customer;
+  const [form, setForm] = useState(() => toFormState(customer));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    setForm(toFormState(customer));
+    setError('');
+  }, [customer]);
+
+  const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+
+    const payload = {
+      name: form.name.trim(),
+      phone: form.phone.trim() || undefined,
+      email: form.email.trim() || undefined,
+      address: form.address.trim() || undefined,
+      loyaltyPoint: Number(form.loyaltyPoint) || 0,
+    };
+
+    try {
+      const saved = isEdit
+        ? await customerApi.update(customer.id, payload)
+        : await customerApi.create(payload);
+      onSaved(saved);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const inputClass =
+    'w-full rounded-xl border border-slate-300 bg-ink-950 px-3.5 py-2 text-sm text-slate-900 shadow-sm ' +
+    'transition placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
+  const labelClass = 'mb-1 block text-xs font-medium text-slate-600';
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in"
+      onClick={() => !saving && onClose()}
+    >
+      <div
+        className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-300 bg-ink-900 shadow-2xl animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+          <h3 className="text-lg font-bold text-slate-900">{isEdit ? 'កែប្រែអតិថិជន' : 'អតិថិជនថ្មី'}</h3>
+          <button onClick={onClose} disabled={saving} className="rounded-lg p-1.5 text-slate-500 hover:bg-emerald-50 hover:text-slate-900">
+            <X size={18} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="max-h-[70vh] overflow-y-auto px-6 py-5">
+          {error && (
+            <div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-700">
+              <AlertCircle size={16} className="mt-0.5 shrink-0" />
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className={labelClass}>ឈ្មោះ *</label>
+              <input required value={form.name} onChange={set('name')} className={inputClass} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>លេខទូរស័ព្ទ</label>
+                <input value={form.phone} onChange={set('phone')} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>អ៊ីមែល</label>
+                <input type="email" value={form.email} onChange={set('email')} className={inputClass} />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>អាសយដ្ឋាន</label>
+              <input value={form.address} onChange={set('address')} className={inputClass} />
+            </div>
+
+            <div>
+              <label className={labelClass}>ពិន្ទុភក្ដីភាព</label>
+              <input type="number" min="0" step="1" value={form.loyaltyPoint} onChange={set('loyaltyPoint')} className={inputClass} />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 disabled:opacity-60"
+          >
+            {saving && <Loader2 size={16} className="animate-spin" />}
+            រក្សាទុក
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}

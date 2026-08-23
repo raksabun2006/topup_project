@@ -1,84 +1,60 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Package, CheckCircle, Clock, Zap, ArrowRight, AlertCircle, RefreshCw,
-} from 'lucide-react';
+import { Receipt, CheckCircle, DollarSign, ShoppingCart, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { ordersApi } from '../../api/ordersApi';
-import { getErrorMessage } from '../../api/client';
+import { useSales } from '../../hooks/useSales';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { StatCard } from '../ui/StatCard';
-import { OrderStatusBadge } from '../ui/OrderStatusBadge';
+import { SaleStatusBadge } from '../ui/SaleStatusBadge';
 
 export default function UserDashboard() {
   const { user } = useAuth();
+  const { sales, loading, error, reload } = useSales();
 
-  const [page, setPage] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const load = () => {
-    setLoading(true);
-    setError('');
-
-    ordersApi.list({ page: 0, size: 10 })
-      .then(setPage)
-      .catch((err) => setError(getErrorMessage(err)))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(load, []);
-
-  const orders = page?.content ?? [];
-
-  // "សរុប" ត្រឹមត្រូវ (មកពី totalElements) តែ "ជោគជ័យ" រាប់តែ
-  // ក្នុងទំព័រនេះ។ Backend គ្មាន endpoint ស្ថិតិទេ។
-  const stats = {
-    total: page?.totalElements ?? 0,
-    success: orders.filter((o) => o.status === 'SUCCESS').length,
-    pending: orders.filter((o) =>
-      ['PENDING_PAYMENT', 'PAID', 'PROCESSING'].includes(o.status)
-    ).length,
-  };
+  // Backend គ្មាន endpoint ស្ថិតិផ្ទាល់ខ្លួនទេ - គណនានៅ client ពី
+  // /api/sales ដែលត្រូវបានទាញយកទាំងអស់រួចហើយ។
+  const mySales = useMemo(
+    () => sales.filter((s) => s.cashier === user?.username),
+    [sales, user?.username]
+  );
+  const stats = useMemo(() => {
+    const completed = mySales.filter((s) => s.status === 'COMPLETED');
+    return {
+      total: mySales.length,
+      completed: completed.length,
+      revenue: completed.reduce((sum, s) => sum + (s.total || 0), 0),
+    };
+  }, [mySales]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-
-      {/* ---------- ស្វាគមន៍ ---------- */}
-      <div className="relative mb-10 overflow-hidden rounded-3xl border border-purple-900/40 bg-gradient-to-r from-[#16122b] via-[#1a1438] to-[#120e24] p-8 shadow-2xl shadow-purple-950/50">
-        <h1 className="text-2xl font-bold text-white">
-          សួស្តី {user?.username}
-        </h1>
-        <p className="mt-2 text-slate-300">
-          បញ្ចូលទឹកប្រាក់ហ្គេមរបស់អ្នកបានយ៉ាងលឿននិងសុវត្ថិភាព
-        </p>
+      <div className="relative mb-10 overflow-hidden rounded-3xl border border-slate-300 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 p-8 shadow-2xl shadow-emerald-200/60">
+        <h1 className="text-2xl font-bold text-slate-900">សួស្តី {user?.username}</h1>
+        <p className="mt-2 text-slate-600">ចាប់ផ្តើមការលក់ថ្មីនៅចំណុចលក់</p>
 
         <Link
-          to="/games"
-          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 px-5 py-3 font-semibold text-white shadow-lg shadow-purple-600/30 transition hover:scale-105 hover:from-purple-500 hover:to-fuchsia-500"
+          to="/pos"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-600 px-5 py-3 font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:scale-105 hover:from-emerald-500 hover:to-emerald-500"
         >
-          <Zap size={18} />
-          បញ្ចូលទឹកប្រាក់ឥឡូវ
+          <ShoppingCart size={18} />
+          បើកចំណុចលក់
         </Link>
       </div>
 
-      {/* ---------- ស្ថិតិ ---------- */}
       <div className="mb-10 grid gap-5 sm:grid-cols-3">
-        <StatCard icon={Package} label="ការបញ្ជាទិញសរុប" value={loading ? '—' : stats.total} />
-        <StatCard icon={CheckCircle} label="ជោគជ័យ" value={loading ? '—' : stats.success} hint="ក្នុង ១០ ថ្មីៗ" accent="emerald" />
-        <StatCard icon={Clock} label="កំពុងដំណើរការ" value={loading ? '—' : stats.pending} hint="ក្នុង ១០ ថ្មីៗ" accent="amber" />
+        <StatCard icon={Receipt} label="ការលក់សរុប (ខ្ញុំ)" value={loading ? '—' : stats.total} />
+        <StatCard icon={CheckCircle} label="បញ្ចប់រួច" value={loading ? '—' : stats.completed} accent="emerald" />
+        <StatCard icon={DollarSign} label="ចំណូល (ខ្ញុំ)" value={loading ? '—' : formatCurrency(stats.revenue)} accent="amber" />
       </div>
 
-      {/* ---------- ការបញ្ជាទិញថ្មីៗ ---------- */}
-      <div className="rounded-2xl border border-purple-900/30 bg-ink-900 shadow-sm">
-        <div className="flex items-center justify-between border-b border-purple-900/30 px-6 py-5">
-          <h2 className="font-semibold text-white">ការបញ្ជាទិញថ្មីៗ</h2>
+      <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+          <h2 className="font-semibold text-slate-900">ការលក់ថ្មីៗរបស់ខ្ញុំ</h2>
           <Link
-            to="/orders"
-            className="inline-flex items-center gap-1 text-sm font-bold text-purple-400 transition hover:text-purple-300"
+            to="/sales"
+            className="inline-flex items-center gap-1 text-sm font-bold text-emerald-600 transition hover:text-emerald-700"
           >
             មើលទាំងអស់
-            <ArrowRight size={14} />
           </Link>
         </div>
 
@@ -92,11 +68,11 @@ export default function UserDashboard() {
 
         {!loading && error && (
           <div className="p-10 text-center">
-            <AlertCircle size={32} className="mx-auto mb-3 text-rose-400" />
-            <p className="mb-5 text-sm text-rose-300">{error}</p>
+            <AlertCircle size={32} className="mx-auto mb-3 text-rose-700" />
+            <p className="mb-5 text-sm text-rose-700">{error}</p>
             <button
-              onClick={load}
-              className="inline-flex items-center gap-2 rounded-xl border border-purple-900/40 bg-ink-950 px-4 py-2 text-sm text-slate-300 shadow-sm transition hover:border-purple-500/40 hover:text-white"
+              onClick={reload}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-ink-950 px-4 py-2 text-sm text-slate-600 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900"
             >
               <RefreshCw size={14} />
               ព្យាយាមម្តងទៀត
@@ -104,41 +80,35 @@ export default function UserDashboard() {
           </div>
         )}
 
-        {!loading && !error && orders.length === 0 && (
+        {!loading && !error && mySales.length === 0 && (
           <div className="p-14 text-center">
-            <Package size={40} className="mx-auto mb-4 text-slate-600" />
-            <p className="mb-6 text-slate-400">អ្នកមិនទាន់មានការបញ្ជាទិញនៅឡើយ</p>
+            <Receipt size={40} className="mx-auto mb-4 text-slate-600" />
+            <p className="mb-6 text-slate-500">អ្នកមិនទាន់មានការលក់នៅឡើយទេ</p>
             <Link
-              to="/games"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-600/30 transition hover:from-purple-500 hover:to-fuchsia-500"
+              to="/pos"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:from-emerald-500 hover:to-emerald-500"
             >
-              ចាប់ផ្តើមបញ្ចូលទឹកប្រាក់
+              ចាប់ផ្តើមការលក់
             </Link>
           </div>
         )}
 
-        {!loading && !error && orders.length > 0 && (
-          <div className="divide-y divide-purple-900/20">
-            {orders.slice(0, 5).map((order) => (
+        {!loading && !error && mySales.length > 0 && (
+          <div className="divide-y divide-slate-200">
+            {mySales.slice(0, 5).map((sale) => (
               <Link
-                key={order.id}
-                to={`/orders/${order.orderNumber}`}
-                className="flex items-center justify-between gap-4 px-6 py-4 transition hover:bg-purple-950/20"
+                key={sale.id}
+                to={`/sales/${sale.id}`}
+                className="flex items-center justify-between gap-4 px-6 py-4 transition hover:bg-emerald-50"
               >
                 <div className="min-w-0">
-                  <p className="truncate font-medium text-slate-200">
-                    {order.gameName} · {order.productName}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {order.orderNumber} · {formatDate(order.createdAt)}
-                  </p>
+                  <p className="truncate font-medium text-slate-700">{sale.invoiceNumber}</p>
+                  <p className="mt-1 text-xs text-slate-500">{formatDate(sale.createdAt)}</p>
                 </div>
 
                 <div className="flex shrink-0 items-center gap-4">
-                  <span className="font-semibold text-white">
-                    {formatCurrency(order.amount, order.currency)}
-                  </span>
-                  <OrderStatusBadge status={order.status} />
+                  <span className="font-semibold text-slate-900">{formatCurrency(sale.total)}</span>
+                  <SaleStatusBadge status={sale.status} />
                 </div>
               </Link>
             ))}

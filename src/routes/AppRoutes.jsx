@@ -1,24 +1,16 @@
-import { Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import MainLayout from '../components/layout/MainLayout';
-import Payment from '../pages/Payment';
-import Home from '../pages/Home';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
-import Games from '../pages/Games';
-import GameDetails from '../pages/GameDetails';
-import TopUp from '../pages/TopUp';
+import Pos from '../pages/Pos';
+import Sales from '../pages/Sales';
+import SaleDetail from '../pages/SaleDetail';
+import Products from '../pages/Products';
+import Customers from '../pages/Customers';
 import Dashboard from '../pages/Dashboard';
-import Orders from '../pages/Orders';
-import OrderDetails from '../pages/OrderDetails';
 import Profile from '../pages/Profile';
 import NotFound from '../pages/NotFound';
-
-/** Navigate to="/games/:gameCode" ជា literal string, មិនចាប់យក param ទេ។ */
-function LegacyGameRedirect() {
-  const { gameCode } = useParams();
-  return <Navigate to={`/games/${gameCode}`} replace />;
-}
 
 /**
  * Route ចែកជាបីក្រុម:
@@ -39,43 +31,39 @@ export default function AppRoutes() {
       {/* ---------- ២ + ៣. ទំព័រដែលមាន layout ---------- */}
       <Route element={<MainLayout />}>
 
-        {/* Public */}
-        <Route path="/" element={<Home />} />
-        <Route path="/games" element={<Games />} />
-
-        {/* gameCode មិនមែន gameId ទេ - backend ស្វែងរកតាម code
-            ដូចជា MLBB ព្រោះវាស្អាតជាងក្នុង URL ជាង UUID។ */}
-        <Route path="/games/:gameCode" element={<GameDetails />} />
+        {/* Root - នាំផ្លូវទៅចំណុចលក់ដោយផ្ទាល់ */}
+        <Route path="/" element={<Navigate to="/pos" replace />} />
 
         {/* Protected */}
         <Route
-          path="/top-up/:gameCode"
-          element={<ProtectedRoute><TopUp /></ProtectedRoute>}
+          path="/pos"
+          element={<ProtectedRoute><Pos /></ProtectedRoute>}
+        />
+        <Route
+          path="/sales"
+          element={<ProtectedRoute><Sales /></ProtectedRoute>}
+        />
+        <Route
+          path="/sales/:id"
+          element={<ProtectedRoute><SaleDetail /></ProtectedRoute>}
+        />
+        <Route
+          path="/products"
+          element={<ProtectedRoute requireAdmin><Products /></ProtectedRoute>}
+        />
+        <Route
+          path="/customers"
+          element={<ProtectedRoute requireAdmin><Customers /></ProtectedRoute>}
         />
         <Route
           path="/dashboard"
           element={<ProtectedRoute><Dashboard /></ProtectedRoute>}
         />
         <Route
-          path="/orders"
-          element={<ProtectedRoute><Orders /></ProtectedRoute>}
-        />
-        {/* orderNumber ដូចជា ORD-20260811-000001 មិនមែន UUID ទេ */}
-        <Route
-          path="/orders/:orderNumber"
-          element={<ProtectedRoute><OrderDetails /></ProtectedRoute>}
-        />
-        <Route
           path="/profile"
           element={<ProtectedRoute><Profile /></ProtectedRoute>}
         />
 
-        {/* ផ្លូវចាស់ - បញ្ជូនបន្តជំនួសឱ្យការបំបែក bookmark */}
-        <Route path="/game/:gameCode" element={<LegacyGameRedirect />} />
-<Route
-  path="/payment/:orderId"
-  element={<ProtectedRoute><Payment /></ProtectedRoute>}
-/>
         {/* ត្រូវនៅចុងក្រោយ - "*" ចាប់អ្វីៗទាំងអស់ដែលមិនផ្គូផ្គង */}
         <Route path="*" element={<NotFound />} />
       </Route>

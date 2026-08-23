@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { env } from '../config/env';
+import { authClient } from '../config/authClient';
 
 /**
  * Axios instance តែមួយសម្រាប់កម្មវិធីទាំងមូល។
@@ -14,38 +15,14 @@ export const apiClient = axios.create({
 });
 
 // ============================================================
-// ការរក្សាទុក TOKEN
-//
-// localStorage ងាយស្រួល តែវាអាចអានបានដោយ JavaScript ណាមួយ
-// លើទំព័រ ដូច្នេះការវាយប្រហារ XSS អាចលួច token បាន។
-//
-// ជម្រើសសុវត្ថិភាពជាងគឺ httpOnly cookie តែវាទាមទារឱ្យ backend
-// កំណត់ cookie ជំនួសឱ្យការត្រឡប់ token ក្នុង JSON។
-// សម្រាប់ការរៀន localStorage ល្អគ្រប់គ្រាន់។
-// ============================================================
-const ACCESS_KEY = 'gt_access_token';
-const REFRESH_KEY = 'gt_refresh_token';
-
-export const tokenStorage = {
-  getAccess: () => localStorage.getItem(ACCESS_KEY),
-  getRefresh: () => localStorage.getItem(REFRESH_KEY),
-
-  set: (accessToken, refreshToken) => {
-    localStorage.setItem(ACCESS_KEY, accessToken);
-    if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
-  },
-
-  clear: () => {
-    localStorage.removeItem(ACCESS_KEY);
-    localStorage.removeItem(REFRESH_KEY);
-  },
-};
-
-// ============================================================
 // INTERCEPTOR ចេញ - ភ្ជាប់ token
+//
+// authClient គ្រប់គ្រង token storage/refresh ដោយខ្លួនឯង។
+// ensureFreshToken() ធ្វើ token ថ្មីស្វ័យប្រវត្តិបើជិតផុតកំណត់ បើមិន
+// ដូច្នេះទេ វា resolve ភ្លាមៗដោយប្រើ token ដដែល។
 // ============================================================
-apiClient.interceptors.request.use((config) => {
-  const token = tokenStorage.getAccess();
+apiClient.interceptors.request.use(async (config) => {
+  const token = await authClient.ensureFreshToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -53,23 +30,8 @@ apiClient.interceptors.request.use((config) => {
 });
 
 // ============================================================
-// INTERCEPTOR ចូល - ធ្វើឱ្យ token ថ្មីពេល 401
-//
-// access token មានអាយុតែ ៥ នាទី ដូច្នេះវាកើតឡើងញឹកញាប់។
-// ដោយគ្មានវា អ្នកប្រើត្រូវ login ឡើងវិញរៀងរាល់ ៥ នាទី។
+// INTERCEPTOR ចូល - ព្យាយាមធ្វើ token ថ្មីម្តងទៀតពេល 401
 // ============================================================
-
-// បើសំណើ ៥ បរាជ័យក្នុងពេលតែមួយ យើងមិនចង់ហៅ /refresh ៥ ដងទេ។
-// អថេរនេះធានាថាមានតែការហៅមួយប៉ុណ្ណោះ ហើយសំណើដទៃរង់ចាំវា។
-let refreshPromise = null;
-
-let onAuthFailure = () => {};
-
-/** AuthContext ចុះឈ្មោះ callback របស់វានៅទីនេះដើម្បី logout។ */
-export function setAuthFailureHandler(handler) {
-  onAuthFailure = handler;
-}
-
 apiClient.interceptors.response.use(
   (response) => response,
 
@@ -81,71 +43,53 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // សំណើទៅ /auth/* មិនត្រូវព្យាយាមធ្វើឱ្យថ្មីទេ។ បើ /auth/login
-    // ត្រឡប់ 401 នោះមានន័យថាពាក្យសម្ងាត់ខុស មិនមែន token ផុតទេ។
-    if (original.url?.includes('/auth/')) {
+    // មិនធ្លាប់មាន session ទេ (ឧ. ការហៅពីទំព័រសាធារណៈដូច ចុះឈ្មោះ) -
+    // នេះមិនមែនករណី session ផុតកំណត់ទេ ដូច្នេះទុកឲ្យ caller បង្ហាញ
+    // error message ខ្លួនឯង។
+    if (!authClient.isAuthenticated()) {
       return Promise.reject(error);
     }
-
     original._retried = true;
 
-    const refreshToken = tokenStorage.getRefresh();
-    if (!refreshToken) {
-      onAuthFailure();
-      return Promise.reject(error);
-    }
-
-    try {
-      // សំណើដំបូងបង្កើត promise; សំណើដទៃប្រើវាឡើងវិញ។
-      if (!refreshPromise) {
-        refreshPromise = refreshAccessToken(refreshToken);
-      }
-      const newAccessToken = await refreshPromise;
-
-      original.headers.Authorization = `Bearer ${newAccessToken}`;
+    const token = await authClient.ensureFreshToken();
+    if (token) {
+      original.headers.Authorization = `Bearer ${token}`;
       return apiClient(original);
-
-    } catch (refreshError) {
-      // Refresh token ក៏ផុតកំណត់ដែរ - ត្រូវ login ថ្មី។
-      tokenStorage.clear();
-      onAuthFailure();
-      return Promise.reject(refreshError);
-
-    } finally {
-      refreshPromise = null;
     }
+    // ensureFreshToken() ខ្លួនឯងហើយហៅ onSessionExpired ស្រាប់ (AuthContext
+    // នឹង set isAuthenticated=false ហើយ ProtectedRoute បញ្ជូនទៅ /login)។
+    return Promise.reject(error);
   }
 );
 
-/**
- * ប្រើ axios ធម្មតា មិនមែន apiClient ទេ។
- *
- * ការប្រើ apiClient នៅទីនេះនឹងបង្កើតរង្វិលជុំមិនចេះចប់: refresh
- * បរាជ័យ -> 401 -> interceptor -> refresh -> បរាជ័យ -> ...
- *
- * ចំណាំ: backend យក refreshToken ជា QUERY PARAM មិនមែន body ទេ។
- */
-async function refreshAccessToken(refreshToken) {
-  const response = await axios.post(
-    `${env.apiBaseUrl}/api/v1/auth/refresh`,
-    null,
-    { params: { refreshToken } }
-  );
-
-  const data = response.data.data;
-  tokenStorage.set(data.access_token, data.refresh_token);
-  return data.access_token;
+// Stack-trace-looking message (ឧ. "jakarta.ws.rs.NotAuthorizedException: HTTP 401
+// Unauthorized" ដែល backend leak ចេញផ្ទាល់ពី exception ដោយមិនចាប់) - កុំបង្ហាញ
+// ដល់អ្នកប្រើ ព្រោះលាតត្រដាង implementation detail ខាងក្នុង។
+function looksLikeRawException(message) {
+  return /(^|[.\s])[a-z]+(\.[a-z]+)+\.[A-Z]\w*Exception\b/.test(message);
 }
 
 /**
  * បម្លែង error ពី Axios ទៅជាសារដែលអាចបង្ហាញដល់អ្នកប្រើ។
  *
- * Backend ត្រឡប់ { success, message, data }។ យើងចង់បាន message
- * នោះ មិនមែន "Request failed with status code 409" ទេ។
+ * Backend មានទម្រង់ error ចម្រុះ៖
+ *  - ចាស់ (users/me, orders): { success, message, data }
+ *  - ថ្មី (auth/register validation): { status, code, message, errors: [{field, message}] }
+ *  - Spring Boot default (unhandled exception): { error, message, status, timestamp }
+ * ព្យាយាមទាញយក message ជាក់លាក់បំផុតដែលមាន។
  */
 export function getErrorMessage(error) {
-  const backendMessage = error?.response?.data?.message;
-  if (backendMessage) return backendMessage;
+  const data = error?.response?.data;
+
+  if (Array.isArray(data?.errors) && data.errors.length > 0) {
+    return data.errors
+      .map((e) => (e.field ? `${e.field}: ${e.message}` : e.message))
+      .join(' · ');
+  }
+
+  if (data?.message && !looksLikeRawException(data.message)) {
+    return data.message;
+  }
 
   if (error?.code === 'ECONNABORTED') {
     return 'សំណើលើសពេលកំណត់។ សូមព្យាយាមម្តងទៀត។';

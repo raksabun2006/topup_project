@@ -1,122 +1,100 @@
 import { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Eye, EyeOff, Gamepad2, Loader2 } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Loader2, AlertCircle, Store } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getErrorMessage } from '../api/client';
 
+/**
+ * Form ក្នុង app ដោយផ្ទាល់ (Direct Access Grant) ជំនួសការ redirect ទៅ
+ * Keycloak hosted page ចាស់ - មើល authClient.js សម្រាប់តម្រូវការលើ
+ * Keycloak client configuration។
+ */
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [form, setForm] = useState({ username: '', password: '' });
-  const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  // ProtectedRoute រក្សាទុកកន្លែងដើមក្នុង state.from - ត្រូវរួម search
-  // ជាមួយ pathname ព្រោះ TopUp ប្រើ ?productId= ដើម្បីចាំកញ្ចប់ដែលបានជ្រើសរើស
+  // ProtectedRoute រក្សាទុកកន្លែងដើមក្នុង state.from
   const from = location.state?.from;
   const redirectTo = from ? `${from.pathname}${from.search ?? ''}` : '/dashboard';
-  const justRegistered = location.state?.registered;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     setError('');
-    setLoading(true);
-
     try {
-      await login(form);
+      await login(username.trim(), password);
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      // Backend ត្រឡប់សារមិនច្បាស់ដោយចេតនា - ការប្រាប់ថា
-      // "គ្មាន username នេះ" អនុញ្ញាតឱ្យគេស្កេនរកឈ្មោះពិត។
-      setError(getErrorMessage(err));
+      setError(
+        err.code === 'invalid_grant'
+          ? 'ឈ្មោះអ្នកប្រើ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ'
+          : err.message || 'ចូលគណនីមិនបានទេ។ សូមព្យាយាមម្តងទៀត។'
+      );
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-ink-950 px-4 py-12">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-purple-600/20 blur-[120px]" />
-        <div className="absolute top-1/3 -right-40 h-96 w-96 rounded-full bg-fuchsia-600/15 blur-[120px]" />
-      </div>
+  const inputClass =
+    'w-full rounded-xl border border-slate-300 bg-ink-950 px-3.5 py-2.5 text-slate-900 shadow-sm ' +
+    'transition placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
 
-      <div className="relative z-10 w-full max-w-md">
-        <div className="mb-8 text-center">
-          <Link to="/" className="mb-4 inline-flex items-center gap-2">
-            <Gamepad2 size={28} className="text-purple-400" />
-          </Link>
-          <h1 className="text-3xl font-bold text-white">ចូលគណនី</h1>
-          <p className="mt-2 text-slate-400">បញ្ចូលព័ត៌មានដើម្បីបន្ត</p>
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-ink-950 px-4 py-10">
+      <div className="w-full max-w-md">
+        <div className="mb-6 flex flex-col items-center gap-2 text-center">
+          <Store size={30} className="text-emerald-600" />
+          <h1 className="text-xl font-bold text-slate-900">ចូលគណនី</h1>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-3xl border border-purple-900/40 bg-ink-900 p-8 shadow-2xl shadow-purple-950/50"
+          className="rounded-2xl border border-slate-200 bg-ink-900 p-6 shadow-sm sm:p-8"
         >
-          {justRegistered && !error && (
-            <div className="mb-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
-              ចុះឈ្មោះជោគជ័យ! សូមចូលគណនី។
-            </div>
-          )}
-
           {error && (
-            <div className="mb-6 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-400">
+            <div className="mb-5 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-700">
+              <AlertCircle size={16} className="mt-0.5 shrink-0" />
               {error}
             </div>
           )}
 
-          <label className="mb-2 block text-sm font-medium text-slate-300">
-            ឈ្មោះអ្នកប្រើ
-          </label>
-          <input
-            type="text"
-            required
-            autoComplete="username"
-            value={form.username}
-            onChange={(e) => setForm({ ...form, username: e.target.value })}
-            className="mb-5 w-full rounded-lg border border-purple-900/40 bg-ink-950 px-4 py-3 text-white placeholder-slate-500 transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-            placeholder="gamer03"
-          />
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-600">ឈ្មោះអ្នកប្រើ</label>
+              <input
+                required autoFocus value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className={inputClass}
+              />
+            </div>
 
-          <label className="mb-2 block text-sm font-medium text-slate-300">
-            ពាក្យសម្ងាត់
-          </label>
-          <div className="relative mb-6">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              required
-              autoComplete="current-password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full rounded-lg border border-purple-900/40 bg-ink-950 px-4 py-3 pr-12 text-white placeholder-slate-500 transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-              placeholder="••••••••"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-300"
-              aria-label={showPassword ? 'លាក់ពាក្យសម្ងាត់' : 'បង្ហាញពាក្យសម្ងាត់'}
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-600">ពាក្យសម្ងាត់</label>
+              <input
+                required type="password" value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputClass}
+              />
+            </div>
           </div>
 
           <button
             type="submit"
-            disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-600 px-4 py-3 font-semibold text-white shadow-lg shadow-purple-600/30 transition hover:from-purple-500 hover:to-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={submitting}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-600 py-3 font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:from-emerald-500 hover:to-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading && <Loader2 size={18} className="animate-spin" />}
-            {loading ? 'កំពុងចូល...' : 'ចូល'}
+            {submitting && <Loader2 size={16} className="animate-spin" />}
+            ចូល
           </button>
 
-          <p className="mt-6 text-center text-sm text-slate-400">
+          <p className="mt-5 text-center text-sm text-slate-500">
             មិនទាន់មានគណនី?{' '}
-            <Link to="/register" className="font-semibold text-purple-400 hover:text-purple-300">
+            <Link to="/register" className="font-medium text-emerald-600 hover:text-emerald-700">
               ចុះឈ្មោះ
             </Link>
           </p>

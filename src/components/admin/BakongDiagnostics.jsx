@@ -1,48 +1,25 @@
-import { useState } from 'react';
-import { Stethoscope, RefreshCw, Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react';
+import { RefreshCw, Loader2, CheckCircle, XCircle, AlertCircle, Wifi } from 'lucide-react';
 import { adminApi } from '../../api/adminApi';
 import { getErrorMessage } from '../../api/client';
 
-/** "khqrConfigured" / "khqr_configured" -> "Khqr Configured" */
-function prettifyKey(key) {
-  const spaced = key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/_/g, ' ');
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+/**
+ * ត្រូវការតែពេលធ្វើតេស្ត Bakong QR payment មិនដំណើរការ (ឧ. quota
+ * developer token អស់ ១០០ សំណើ/ថ្ងៃ, credential ខុស, ឬ network block)។
+ * ត្រូវការ ADMIN token - នឹងបង្ហាញ error បើអ្នកប្រើមិនមែន admin។
+ */
+function truthy(value) {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return ['true', 'ok', 'success', 'connected', 'up'].includes(value.toLowerCase());
+  return null;
 }
 
-function DiagnosticValue({ value }) {
-  if (value === null || value === undefined || value === '') {
-    return <span className="text-slate-500">—</span>;
-  }
-
-  if (typeof value === 'boolean') {
-    return value ? (
-      <span className="inline-flex items-center gap-1.5 text-emerald-400">
-        <CheckCircle2 size={15} /> បាទ/ចាស
-      </span>
-    ) : (
-      <span className="inline-flex items-center gap-1.5 text-rose-400">
-        <XCircle size={15} /> ទេ
-      </span>
-    );
-  }
-
-  if (typeof value === 'object') {
-    return (
-      <pre className="max-w-full overflow-x-auto rounded-lg bg-ink-950 px-3 py-2 text-xs text-slate-300">
-        {JSON.stringify(value, null, 2)}
-      </pre>
-    );
-  }
-
-  return <span className="font-medium text-white">{String(value)}</span>;
-}
-
-export function BakongDiagnostics() {
+export default function BakongDiagnostics() {
   const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const runCheck = async () => {
+  const check = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -53,60 +30,80 @@ export function BakongDiagnostics() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const entries = result ? Object.entries(result) : [];
+  useEffect(() => {
+    check();
+  }, [check]);
+
+  const entries = result && typeof result === 'object' ? Object.entries(result) : [];
+  const statusEntry = entries.find(([k]) => /status|connected|ok|success|healthy/i.test(k));
+  const isHealthy = statusEntry ? truthy(statusEntry[1]) : null;
 
   return (
-    <div className="mt-6 rounded-2xl border border-purple-900/30 bg-ink-900 shadow-sm">
-      <div className="flex items-center justify-between border-b border-purple-900/30 px-6 py-5">
-        <div className="flex items-center gap-2">
-          <Stethoscope size={18} className="text-purple-400" />
-          <h2 className="font-semibold text-white">ការធ្វើរោគវិនិច្ឆ័យ Bakong</h2>
-        </div>
+    <div className="mt-6 rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
+      <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+        <h2 className="flex items-center gap-2 font-semibold text-slate-900">
+          <Wifi size={18} className="text-emerald-600" />
+          Bakong Connectivity Check
+        </h2>
         <button
-          onClick={runCheck}
+          onClick={check}
           disabled={loading}
-          className="inline-flex items-center gap-2 rounded-xl border border-purple-900/40 bg-ink-950 px-3.5 py-1.5 text-sm text-slate-300 shadow-sm transition hover:border-purple-500/40 hover:text-white disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-ink-950 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900 disabled:opacity-50"
         >
-          {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-          ពិនិត្យ
+          {loading ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
+          ពិនិត្យម្តងទៀត
         </button>
       </div>
 
       <div className="p-6">
-        {!result && !loading && !error && (
-          <p className="text-sm text-slate-400">
-            ចុច "ពិនិត្យ" ដើម្បីផ្ទៀងផ្ទាត់ការកំណត់រចនាសម្ព័ន្ធ Bakong (merchant ID, API key, ល។)។
-          </p>
-        )}
-
         {loading && (
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <Loader2 size={16} className="animate-spin text-purple-400" />
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <Loader2 size={16} className="animate-spin" />
             កំពុងពិនិត្យ...
           </div>
         )}
 
         {!loading && error && (
-          <div className="flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-950/30 p-3 text-sm text-rose-300">
+          <div className="flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-700">
             <AlertCircle size={16} className="mt-0.5 shrink-0" />
-            {error}
+            <div>
+              <p className="font-medium">មិនអាចពិនិត្យបានទេ</p>
+              <p className="mt-0.5 text-xs">{error}</p>
+            </div>
           </div>
         )}
 
-        {!loading && !error && result && entries.length === 0 && (
-          <p className="text-sm text-slate-400">Backend មិនបានត្រឡប់ព័ត៌មានអ្វីទេ។</p>
-        )}
-
-        {!loading && !error && entries.length > 0 && (
-          <div className="divide-y divide-purple-900/20">
-            {entries.map(([key, value]) => (
-              <div key={key} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
-                <span className="text-sm text-slate-400">{prettifyKey(key)}</span>
-                <DiagnosticValue value={value} />
+        {!loading && !error && result && (
+          <div>
+            {isHealthy !== null && (
+              <div
+                className={`mb-4 flex items-center gap-2 rounded-xl border p-3 text-sm font-medium ${
+                  isHealthy
+                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'
+                    : 'border-rose-500/30 bg-rose-500/10 text-rose-700'
+                }`}
+              >
+                {isHealthy ? <CheckCircle size={16} /> : <XCircle size={16} />}
+                {isHealthy ? 'Bakong អាចភ្ជាប់បាន' : 'Bakong មិនអាចភ្ជាប់បានទេ'}
               </div>
-            ))}
+            )}
+
+            {entries.length > 0 ? (
+              <div className="space-y-1.5 rounded-xl bg-ink-950 p-4 text-sm">
+                {entries.map(([key, value]) => (
+                  <div key={key} className="flex justify-between gap-4">
+                    <span className="text-slate-500">{key}</span>
+                    <span className="text-right font-mono text-xs text-slate-700">
+                      {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">Server ត្រឡប់មកវិញដោយគ្មានទិន្នន័យលម្អិត។</p>
+            )}
           </div>
         )}
       </div>

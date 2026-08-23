@@ -1,14 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Siemreap&display=swap');
 @import "tailwindcss";
 
 /**
- * ពណ៌ខ្មៅស្វិតតែមួយសម្រាប់ទំព័រទាំងអស់ - ត្រូវផ្គូផ្គងនឹង
- * ផ្ទៃខាងក្រោយរបស់ Home.jsx (#0d0e15) ដើម្បីកុំឱ្យមានការផ្លាស់ប្តូរ
- * ពណ៌ភ្លាមៗពេលប្តូរទំព័រ។
+ * ពណ៌ស្រាលតែមួយសម្រាប់ទំព័រទាំងអស់ - ink-950 ជាផ្ទៃខាងក្រោយទំព័រ
+ * (មានពណ៌ស្រាលបន្តិចដើម្បីឲ្យកាតលេចធ្លោ), ink-900 ជាផ្ទៃកាត/surface
+ * (សុទ្ធ), ink-800 ជាផ្ទៃរងសម្រាប់ hover/skeleton។ ឈ្មោះថ្នាក់ (ink-*)
+ * ចាស់នៅតែប្រើដដែលទូទាំង app - គ្រាន់តែផ្លាស់ប្តូរតម្លៃត្រង់នេះ។
  */
 @theme {
-  --color-ink-950: #0d0e15;
-  --color-ink-900: #141326;
-  --color-ink-800: #1e1a3a;
+  --color-ink-950: #f8f7fb;
+  --color-ink-900: #ffffff;
+  --color-ink-800: #f1f0f6;
+  --font-sans: 'Siemreap', ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  font-family: 'Siemreap', ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Fade-in-up សម្រាប់ section entrance - Tailwind v4 មិនមាន utility នេះជាមូលដ្ឋានទេ */
@@ -25,4 +32,47 @@
 
 .animate-fade-in-up {
   animation: fade-in-up 0.5s ease-out both;
+}
+
+/* Modal entrance ស្រាល - ប្រើសម្រាប់ confirm dialog ដើម្បីជំនួស
+   window.confirm() ដែលលោតឡើងភ្លាមៗគ្មាន transition */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out both;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out both;
+}
+
+/* បោះពុម្ពវិក្កយបត្រ POS - លាក់អ្វីៗទាំងអស់ក្រៅពី #receipt-print-area */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #receipt-print-area,
+  #receipt-print-area * {
+    visibility: visible;
+  }
+  #receipt-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
 }
