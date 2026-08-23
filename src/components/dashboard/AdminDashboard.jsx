@@ -1,254 +1,494 @@
-import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
-  Receipt, DollarSign, CheckCircle, XCircle, AlertTriangle,
-  AlertCircle, RefreshCw, ShieldCheck, ShoppingCart, Boxes, Package, Users, UserCheck,
+  LayoutDashboard, ShoppingCart, Receipt as ReceiptIcon, Package, Users, User, LogOut,
+  Search, Bell, Menu, X, DollarSign, XCircle, Clock, AlertTriangle,
+  AlertCircle, RefreshCw, Boxes, UserCheck, Filter, Store, CheckCircle,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSales } from '../../hooks/useSales';
 import { useLowStockInventory } from '../../hooks/useInventory';
 import { useCustomers } from '../../hooks/useCustomers';
 import { formatCurrency, formatDate } from '../../utils/format';
-import { StatCard } from '../ui/StatCard';
-import { SaleStatusBadge, PaymentStatusBadge } from '../ui/SaleStatusBadge';
-import BakongDiagnostics from '../admin/BakongDiagnostics';
+import { SaleStatusBadge } from '../ui/SaleStatusBadge';
 import CategoryRevenuePie from './CategoryRevenuePie';
+import WeeklyRevenueChart from './WeeklyRevenueChart';
+import TopProductsPanel from './TopProductsPanel';
+import BakongDiagnostics from '../admin/BakongDiagnostics';
+import { env } from '../../config/env';
+
+const NAV_ITEMS = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'ផ្ទាំងគ្រប់គ្រង' },
+  { to: '/pos', icon: ShoppingCart, label: 'ចំណុចលក់' },
+  { to: '/sales', icon: ReceiptIcon, label: 'ការលក់' },
+  { to: '/products', icon: Package, label: 'ផលិតផល' },
+  { to: '/customers', icon: Users, label: 'អតិថិជន' },
+];
+
+const STATUS_OPTIONS = [
+  { value: 'ALL', label: 'ស្ថានភាពទាំងអស់' },
+  { value: 'PENDING', label: 'កំពុងរង់ចាំ' },
+  { value: 'COMPLETED', label: 'បញ្ចប់' },
+  { value: 'CANCELLED', label: 'បោះបង់' },
+  { value: 'REFUNDED', label: 'សងប្រាក់វិញ' },
+];
+
+function startOfWeek(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - d.getDay());
+  return d;
+}
 
 export default function AdminDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const { sales, loading, error, reload } = useSales();
-  const { items: lowStock, loading: lowStockLoading } = useLowStockInventory();
-  const { customers, loading: customersLoading } = useCustomers();
+  const { items: lowStock, loading: lowStockLoading, error: lowStockError, reload: reloadLowStock } = useLowStockInventory();
+  const { customers } = useCustomers();
 
-  // Backend គ្មាន endpoint ស្ថិតិទេ - គណនាពី /api/sales ដែលទាញយករួច
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+
+  const customerNameById = useMemo(
+    () => new Map(customers.map((c) => [c.id, c.name])),
+    [customers]
+  );
+
+  // Backend គ្មាន endpoint ស្ថិតិទេ - គណនាពី /api/sales ដែលទាញយករួច។ ចំណូល
+  // រាប់តែ sale ដែលទាំង COMPLETED និង paymentStatus PAID ព្រោះ sale អាច
+  // COMPLETED ខណៈមិនទាន់បង់ (ឧ. "បង់ក្រោយ")។
   const stats = useMemo(() => {
-    const completed = sales.filter((s) => s.status === 'COMPLETED');
+    const paid = sales.filter((s) => s.status === 'COMPLETED' && s.paymentStatus === 'PAID');
     const cancelled = sales.filter((s) => s.status === 'CANCELLED');
+    const pending = sales.filter((s) => s.status === 'PENDING');
     return {
       total: sales.length,
-      revenue: completed.reduce((sum, s) => sum + (s.total || 0), 0),
-      completed: completed.length,
+      revenue: paid.reduce((sum, s) => sum + (s.total || 0), 0),
+      completed: paid.length,
       cancelled: cancelled.length,
+      pending: pending.length,
     };
   }, [sales]);
 
-  // Backend គ្មាន entity Cashier/User list ដាច់ដោយឡែកទេ - cashier ជាឈ្មោះ
-  // string ដែលកត់ត្រានៅលើ Sale ម្តងៗ ដូច្នេះទាញយក "អ្នកគិតលុយទាំងអស់" ដោយ
-  // ដកស្រង់ចេញពី sales ដែលទាញយករួច (មិនមែនហៅ API ដាច់ដោយឡែកទេ)។
+  // ប្រៀបធៀបសប្តាហ៍នេះនឹងសប្តាហ៍មុន សម្រាប់ % ព្រួញនៅលើកាតស្ថិតិ
+  const weekly = useMemo(() => {
+    const now = new Date();
+    const thisStart = startOfWeek(now);
+    const lastStart = new Date(thisStart.getTime() - 7 * 86400000);
+    const pctChange = (curr, prev) => (prev > 0 ? ((curr - prev) / prev) * 100 : null);
+    const isPaid = (s) => s.status === 'COMPLETED' && s.paymentStatus === 'PAID';
+
+    let thisRevenue = 0;
+    let lastRevenue = 0;
+    let thisOrders = 0;
+    let lastOrders = 0;
+    sales.forEach((s) => {
+      const created = new Date(s.createdAt);
+      if (created >= thisStart && created <= now) {
+        thisOrders += 1;
+        if (isPaid(s)) thisRevenue += s.total || 0;
+      } else if (created >= lastStart && created < thisStart) {
+        lastOrders += 1;
+        if (isPaid(s)) lastRevenue += s.total || 0;
+      }
+    });
+
+    return {
+      revenueChange: pctChange(thisRevenue, lastRevenue),
+      ordersChange: pctChange(thisOrders, lastOrders),
+    };
+  }, [sales]);
+
+  // Backend គ្មាន entity Cashier list ដាច់ដោយឡែកទេ - ដកស្រង់ចេញពី sales។
+  // cashier ជា Keycloak user id - ប្រើ cashierName សម្រាប់ key/display
+  // ព្រោះនោះជាអ្វីដែលអាចអានយល់បាន, fallback ទៅ cashier បើគ្មាន។
   const cashierStats = useMemo(() => {
     const map = new Map();
     sales.forEach((s) => {
-      if (!s.cashier) return;
-      const entry = map.get(s.cashier) ?? { cashier: s.cashier, count: 0, revenue: 0 };
+      const name = s.cashierName ?? s.cashier;
+      if (!name) return;
+      const entry = map.get(name) ?? { cashier: name, count: 0, revenue: 0 };
       entry.count += 1;
-      if (s.status === 'COMPLETED') entry.revenue += s.total || 0;
-      map.set(s.cashier, entry);
+      if (s.status === 'COMPLETED' && s.paymentStatus === 'PAID') entry.revenue += s.total || 0;
+      map.set(name, entry);
     });
     return Array.from(map.values()).sort((a, b) => b.revenue - a.revenue);
   }, [sales]);
+  const topCashierRevenue = Math.max(1, ...cashierStats.map((c) => c.revenue));
+
+  const filteredSales = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return sales.filter((s) => {
+      if (statusFilter !== 'ALL' && s.status !== statusFilter) return false;
+      if (!term) return true;
+      const customerName = (customerNameById.get(s.customer) ?? '').toLowerCase();
+      return s.invoiceNumber?.toLowerCase().includes(term) || customerName.includes(term);
+    });
+  }, [sales, search, statusFilter, customerNameById]);
+
+  const initial = (user?.username || '?').charAt(0).toUpperCase();
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <div className="mb-10 rounded-2xl border border-slate-300 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 p-8 shadow-2xl shadow-emerald-200/60">
-        <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
-          <ShieldCheck size={16} />
-          អ្នកគ្រប់គ្រង
-        </div>
-        <h1 className="mt-3 text-2xl font-bold text-slate-900">ផ្ទាំងគ្រប់គ្រង</h1>
-        <p className="mt-2 text-slate-600">សួស្តី {user?.username} — ទិដ្ឋភាពរួមនៃប្រព័ន្ធលក់</p>
-        <div className="mt-5 flex flex-wrap gap-3">
-        <Link
-          to="/pos"
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:from-emerald-500 hover:to-emerald-500"
-        >
-          <ShoppingCart size={16} />
-          បើកចំណុចលក់
-        </Link>
-        <Link
-          to="/products"
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-ink-950 px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900"
-        >
-          <Package size={16} />
-          គ្រប់គ្រងផលិតផល
-        </Link>
-        <Link
-          to="/customers"
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-ink-950 px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900"
-        >
-          <Users size={16} />
-          គ្រប់គ្រងអតិថិជន
-        </Link>
-        </div>
-      </div>
+    <div className="flex h-full bg-ink-950">
+      {mobileNavOpen && (
+        <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setMobileNavOpen(false)} />
+      )}
 
-      <div className="mb-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard icon={Receipt} label="ការលក់សរុប" value={loading ? '—' : stats.total} />
-        <StatCard icon={DollarSign} label="ចំណូល" value={loading ? '—' : formatCurrency(stats.revenue)} accent="emerald" />
-        <StatCard icon={CheckCircle} label="បញ្ចប់រួច" value={loading ? '—' : stats.completed} accent="emerald" />
-        <StatCard icon={XCircle} label="បោះបង់" value={loading ? '—' : stats.cancelled} accent="rose" />
-        <Link to="/customers">
-          <StatCard icon={Users} label="អតិថិជនសរុប" value={customersLoading ? '—' : customers.length} />
-        </Link>
-      </div>
+      {/* ------- Sidebar ------- */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-slate-200 bg-ink-900 transition-transform lg:static lg:translate-x-0 ${
+          mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex items-center gap-2 border-b border-slate-200 px-6 py-5">
+          <Store size={22} className="text-emerald-600" />
+          <span className="text-lg font-bold text-slate-900">{env.appName}</span>
+          <button
+            onClick={() => setMobileNavOpen(false)}
+            className="ml-auto rounded-lg p-1 text-slate-500 hover:bg-emerald-50 lg:hidden"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* ការលក់ថ្មីៗ */}
-        <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-            <h2 className="font-semibold text-slate-900">ការលក់ថ្មីៗ</h2>
-            <Link to="/sales" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition">
-              មើលទាំងអស់
-            </Link>
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+          <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">ម៉ឺនុយ</p>
+          {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              onClick={() => setMobileNavOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                  isActive ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-emerald-50 hover:text-slate-900'
+                }`
+              }
+            >
+              <Icon size={17} />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="border-t border-slate-200 p-3">
+          <Link
+            to="/profile"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-emerald-50 hover:text-slate-900"
+          >
+            <User size={17} />
+            ព័ត៌មានផ្ទាល់ខ្លួន
+          </Link>
+          <button
+            onClick={logout}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-700 transition hover:bg-rose-500/10"
+          >
+            <LogOut size={17} />
+            ចាកចេញ
+          </button>
+        </div>
+      </aside>
+
+      {/* ------- Content ------- */}
+      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-slate-200 bg-ink-900 px-4 py-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileNavOpen(true)}
+              className="rounded-lg p-1.5 text-slate-600 hover:bg-emerald-50 lg:hidden"
+            >
+              <Menu size={20} />
+            </button>
+            <h1 className="text-lg font-bold text-slate-900 sm:text-xl">Dashboard</h1>
           </div>
 
-          {loading && (
-            <div className="space-y-3 p-6">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-14 animate-pulse rounded-xl bg-ink-800" />
-              ))}
+          <div className="flex items-center gap-3">
+            <div className="relative hidden sm:block">
+              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="ស្វែងរកលេខវិក្កយបត្រ ឬអតិថិជន..."
+                className="w-56 rounded-xl border border-slate-300 bg-ink-950 py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-emerald-500/40 focus:outline-none"
+              />
             </div>
-          )}
 
-          {!loading && error && (
-            <div className="p-10 text-center">
-              <AlertCircle size={32} className="mx-auto mb-3 text-rose-700" />
-              <p className="mb-5 text-sm text-rose-700">{error}</p>
-              <button
-                onClick={reload}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-ink-950 px-4 py-2 text-sm text-slate-600 shadow-sm hover:border-emerald-500/40 hover:text-slate-900 transition"
-              >
+            <button className="relative rounded-full p-2 text-slate-600 transition hover:bg-emerald-50" title="ស្តុកជិតអស់">
+              <Bell size={18} />
+              {lowStock.length > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white">
+                  {lowStock.length}
+                </span>
+              )}
+            </button>
+
+            <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/10 text-sm font-bold text-emerald-700">
+                {initial}
+              </span>
+              <div className="hidden sm:block">
+                <p className="text-sm font-semibold text-slate-900">{user?.username}</p>
+                <p className="text-xs text-slate-500">អ្នកគ្រប់គ្រង</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 space-y-6 p-4 sm:p-6">
+          {error && (
+            <div className="flex items-center justify-between gap-4 rounded-2xl border border-rose-500/30 bg-rose-500/5 px-5 py-4 text-sm text-rose-700">
+              <span className="flex items-center gap-2"><AlertCircle size={16} /> {error}</span>
+              <button onClick={reload} className="flex items-center gap-1.5 font-semibold hover:underline">
                 <RefreshCw size={14} /> ព្យាយាមម្តងទៀត
               </button>
             </div>
           )}
 
-          {!loading && !error && sales.length === 0 && (
-            <div className="p-14 text-center">
-              <Receipt size={40} className="mx-auto mb-4 text-slate-600" />
-              <p className="text-slate-500">មិនទាន់មានការលក់នៅឡើយទេ</p>
-            </div>
-          )}
-
-          {!loading && !error && sales.length > 0 && (
-            <div className="divide-y divide-slate-200">
-              {sales.slice(0, 8).map((sale) => (
-                <Link
-                  key={sale.id}
-                  to={`/sales/${sale.id}`}
-                  className="flex items-center justify-between gap-4 px-6 py-4 transition hover:bg-emerald-50"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-700">{sale.invoiceNumber}</p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {sale.cashier} · {formatDate(sale.createdAt)}
+          {/* ------- Stat cards ------- */}
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-2xl border border-slate-200 bg-ink-900 p-6 shadow-sm">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-slate-500">ចំណូលសរុប</p>
+                  <p className="mt-2 text-3xl font-bold text-slate-900">{loading ? '—' : formatCurrency(stats.revenue)}</p>
+                  {weekly.revenueChange != null && (
+                    <p className={`mt-1 text-xs font-medium ${weekly.revenueChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {weekly.revenueChange >= 0 ? '↑' : '↓'} {Math.abs(weekly.revenueChange).toFixed(1)}% ធៀបនឹងសប្តាហ៍មុន
                     </p>
-                  </div>
-
-                  <div className="flex shrink-0 items-center gap-3">
-                    <span className="text-sm font-semibold text-slate-900">{formatCurrency(sale.total)}</span>
-                    <PaymentStatusBadge status={sale.paymentStatus} />
-                    <SaleStatusBadge status={sale.status} />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* ស្តុកទាប */}
-        <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-            <h2 className="flex items-center gap-2 font-semibold text-slate-900">
-              <Boxes size={18} className="text-amber-700" />
-              ស្តុកជិតអស់
-            </h2>
-          </div>
-
-          {lowStockLoading && (
-            <div className="space-y-3 p-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-12 animate-pulse rounded-xl bg-ink-800" />
-              ))}
-            </div>
-          )}
-
-          {!lowStockLoading && lowStock.length === 0 && (
-            <div className="p-10 text-center">
-              <CheckCircle size={32} className="mx-auto mb-3 text-emerald-500/60" />
-              <p className="text-sm text-slate-500">គ្មានទំនិញជិតអស់ស្តុកទេ</p>
-            </div>
-          )}
-
-          {!lowStockLoading && lowStock.length > 0 && (
-            <div className="divide-y divide-slate-200">
-              {lowStock.map((item) => (
-                <div key={item.id} className="flex items-center justify-between px-6 py-3.5">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <AlertTriangle size={15} className="shrink-0 text-amber-700" />
-                    <span className="truncate text-sm text-slate-700">{item.product}</span>
-                  </div>
-                  <span className="shrink-0 text-xs font-semibold text-amber-700">
-                    {item.quantity} / {item.minimumStock}
-                  </span>
+                  )}
                 </div>
-              ))}
+                <div className="rounded-xl bg-emerald-500/10 p-3 text-emerald-700">
+                  <DollarSign size={22} />
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        {/* អ្នកគិតលុយទាំងអស់ */}
-        <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-            <h2 className="flex items-center gap-2 font-semibold text-slate-900">
-              <UserCheck size={18} className="text-emerald-600" />
-              អ្នកគិតលុយទាំងអស់
-            </h2>
+            <div className="rounded-2xl border border-slate-200 bg-ink-900 p-6 shadow-sm">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-slate-500">ការបញ្ជាទិញសរុប</p>
+                  <p className="mt-2 text-3xl font-bold text-slate-900">{loading ? '—' : stats.total}</p>
+                  {weekly.ordersChange != null && (
+                    <p className={`mt-1 text-xs font-medium ${weekly.ordersChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {weekly.ordersChange >= 0 ? '↑' : '↓'} {Math.abs(weekly.ordersChange).toFixed(1)}% ធៀបនឹងសប្តាហ៍មុន
+                    </p>
+                  )}
+                </div>
+                <div className="rounded-xl bg-sky-500/10 p-3 text-sky-700">
+                  <ReceiptIcon size={22} />
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-ink-900 p-6 shadow-sm sm:col-span-2 lg:col-span-1">
+              <p className="mb-3 text-sm text-slate-500">កំពុងរង់ចាំ & បោះបង់</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="rounded-xl bg-amber-500/10 p-2.5 text-amber-700"><Clock size={18} /></div>
+                  <div>
+                    <p className="text-xl font-bold text-slate-900">{loading ? '—' : stats.pending}</p>
+                    <p className="text-xs text-slate-500">កំពុងរង់ចាំ</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 border-l border-slate-200 pl-4">
+                  <div className="rounded-xl bg-rose-500/10 p-2.5 text-rose-700"><XCircle size={18} /></div>
+                  <div>
+                    <p className="text-xl font-bold text-slate-900">{loading ? '—' : stats.cancelled}</p>
+                    <p className="text-xs text-slate-500">បោះបង់</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {loading && (
-            <div className="space-y-3 p-6">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-12 animate-pulse rounded-xl bg-ink-800" />
-              ))}
+          {/* ------- Chart + right column ------- */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <WeeklyRevenueChart sales={sales} loading={loading} />
             </div>
-          )}
 
-          {!loading && cashierStats.length === 0 && (
-            <div className="p-10 text-center">
-              <p className="text-sm text-slate-500">មិនទាន់មានទិន្នន័យអ្នកគិតលុយទេ</p>
-            </div>
-          )}
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
+                <div className="border-b border-slate-200 px-6 py-5">
+                  <h2 className="flex items-center gap-2 font-semibold text-slate-900">
+                    <Boxes size={18} className="text-amber-700" />
+                    ស្តុកជិតអស់
+                  </h2>
+                </div>
 
-          {!loading && cashierStats.length > 0 && (
-            <div className="divide-y divide-slate-200">
-              {cashierStats.map((c) => (
-                <Link
-                  key={c.cashier}
-                  to={`/sales?cashier=${encodeURIComponent(c.cashier)}`}
-                  className="flex items-center justify-between gap-4 px-6 py-3.5 transition hover:bg-emerald-50"
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-xs font-bold text-emerald-700">
-                      {c.cashier.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-700">{c.cashier}</p>
-                      <p className="text-xs text-slate-500">{c.count} ការលក់</p>
-                    </div>
+                {lowStockLoading && (
+                  <div className="space-y-3 p-6">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-10 animate-pulse rounded-xl bg-ink-800" />
+                    ))}
                   </div>
-                  <span className="shrink-0 text-sm font-semibold text-slate-900">{formatCurrency(c.revenue)}</span>
-                </Link>
-              ))}
+                )}
+
+                {!lowStockLoading && lowStockError && (
+                  <div className="p-8 text-center">
+                    <AlertCircle size={28} className="mx-auto mb-2 text-rose-700" />
+                    <p className="text-sm text-rose-700">{lowStockError}</p>
+                    <button
+                      onClick={reloadLowStock}
+                      className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700"
+                    >
+                      <RefreshCw size={13} /> ព្យាយាមម្តងទៀត
+                    </button>
+                  </div>
+                )}
+
+                {!lowStockLoading && !lowStockError && lowStock.length === 0 && (
+                  <div className="p-8 text-center">
+                    <CheckCircle size={28} className="mx-auto mb-2 text-emerald-500/60" />
+                    <p className="text-sm text-slate-500">គ្មានទំនិញជិតអស់ស្តុកទេ</p>
+                  </div>
+                )}
+
+                {!lowStockLoading && !lowStockError && lowStock.length > 0 && (
+                  <div className="divide-y divide-slate-200">
+                    {lowStock.slice(0, 5).map((item) => (
+                      <div key={item.id} className="flex items-center justify-between gap-3 px-6 py-3">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <AlertTriangle size={14} className="shrink-0 text-amber-700" />
+                          <span className="truncate text-sm text-slate-700">{item.product}</span>
+                        </div>
+                        <span className="shrink-0 text-xs font-semibold text-amber-700">
+                          {item.quantity}/{item.minimumStock}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
+                <div className="border-b border-slate-200 px-6 py-5">
+                  <h2 className="flex items-center gap-2 font-semibold text-slate-900">
+                    <UserCheck size={18} className="text-emerald-600" />
+                    អ្នកគិតលុយឆ្នើម
+                  </h2>
+                </div>
+
+                {loading && (
+                  <div className="space-y-3 p-6">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-10 animate-pulse rounded-xl bg-ink-800" />
+                    ))}
+                  </div>
+                )}
+
+                {!loading && cashierStats.length === 0 && (
+                  <p className="p-8 text-center text-sm text-slate-500">មិនទាន់មានទិន្នន័យទេ</p>
+                )}
+
+                {!loading && cashierStats.length > 0 && (
+                  <div className="space-y-4 p-6">
+                    {cashierStats.slice(0, 4).map((c) => (
+                      <div key={c.cashier}>
+                        <div className="mb-1.5 flex items-center justify-between gap-2 text-sm">
+                          <span className="flex min-w-0 items-center gap-2 truncate font-medium text-slate-700">
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-[11px] font-bold text-emerald-700">
+                              {c.cashier.charAt(0).toUpperCase()}
+                            </span>
+                            {c.cashier}
+                          </span>
+                          <span className="shrink-0 font-semibold text-slate-900">{formatCurrency(c.revenue)}</span>
+                        </div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-ink-800">
+                          <div
+                            className="h-full rounded-full bg-emerald-600"
+                            style={{ width: `${(c.revenue / topCashierRevenue) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+          </div>
 
-        <CategoryRevenuePie sales={sales} loading={loading} />
+          {/* ------- Transactions + top products ------- */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-ink-900 shadow-sm lg:col-span-2">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-6 py-5">
+                <h2 className="font-semibold text-slate-900">ប្រតិបត្តិការ</h2>
+                <div className="flex items-center gap-2">
+                  <Filter size={14} className="text-slate-400" />
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="rounded-lg border border-slate-300 bg-ink-950 px-2.5 py-1.5 text-xs font-medium text-slate-600 focus:border-emerald-500/40 focus:outline-none"
+                  >
+                    {STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                  <Link to="/sales" className="text-sm font-semibold text-emerald-600 transition hover:text-emerald-700">
+                    មើលទាំងអស់
+                  </Link>
+                </div>
+              </div>
+
+              {loading && (
+                <div className="space-y-3 p-6">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="h-12 animate-pulse rounded-xl bg-ink-800" />
+                  ))}
+                </div>
+              )}
+
+              {!loading && filteredSales.length === 0 && (
+                <div className="p-14 text-center">
+                  <ReceiptIcon size={36} className="mx-auto mb-3 text-slate-600" />
+                  <p className="text-slate-500">គ្មានប្រតិបត្តិការត្រូវនឹងលក្ខខណ្ឌនេះទេ</p>
+                </div>
+              )}
+
+              {!loading && filteredSales.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-140 text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
+                        <th className="px-6 py-3 font-medium">No</th>
+                        <th className="px-3 py-3 font-medium">អតិថិជន</th>
+                        <th className="px-3 py-3 font-medium">កាលបរិច្ឆេទ</th>
+                        <th className="px-3 py-3 font-medium">ស្ថានភាព</th>
+                        <th className="px-6 py-3 text-right font-medium">ចំនួនទឹកប្រាក់</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {filteredSales.slice(0, 8).map((sale, i) => (
+                        <tr
+                          key={sale.id}
+                          onClick={() => navigate(`/sales/${sale.id}`)}
+                          className="cursor-pointer transition hover:bg-emerald-50"
+                        >
+                          <td className="px-6 py-3.5 text-slate-500">{i + 1}</td>
+                          <td className="px-3 py-3.5">
+                            <p className="font-medium text-slate-700">{customerNameById.get(sale.customer) ?? 'អតិថិជនទូទៅ'}</p>
+                            <p className="text-xs text-slate-500">{sale.invoiceNumber}</p>
+                          </td>
+                          <td className="px-3 py-3.5 text-slate-500">{formatDate(sale.createdAt)}</td>
+                          <td className="px-3 py-3.5"><SaleStatusBadge status={sale.status} /></td>
+                          <td className="px-6 py-3.5 text-right font-semibold text-slate-900">{formatCurrency(sale.total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <TopProductsPanel sales={sales} loading={loading} />
+          </div>
+
+          <CategoryRevenuePie sales={sales} loading={loading} />
+
+          <BakongDiagnostics />
+        </main>
       </div>
-
-      <BakongDiagnostics />
     </div>
   );
 }

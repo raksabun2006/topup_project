@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 function userFromClaims(claims) {
   if (!claims) return null;
   return {
+    sub: claims.sub,
     username: claims.preferred_username,
     email: claims.email,
     name: claims.name,

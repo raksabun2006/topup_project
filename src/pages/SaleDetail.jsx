@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Loader2, AlertCircle, ArrowLeft, Printer, XCircle } from 'lucide-react';
+import { Loader2, AlertCircle, ArrowLeft, Printer, XCircle, RotateCcw } from 'lucide-react';
 import { useSale } from '../hooks/useSales';
+import { useAuth } from '../context/AuthContext';
 import { saleApi } from '../api/saleApi';
 import { getErrorMessage } from '../api/client';
 import Receipt from '../components/pos/Receipt';
@@ -9,9 +10,12 @@ import { SaleStatusBadge, PaymentStatusBadge } from '../components/ui/SaleStatus
 
 export default function SaleDetail() {
   const { id } = useParams();
+  const { isAdmin } = useAuth();
   const { sale, loading, error, setSale } = useSale(id);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
+  const [refunding, setRefunding] = useState(false);
+  const [refundError, setRefundError] = useState('');
 
   const handleCancel = async () => {
     if (!window.confirm('តើអ្នកពិតជាចង់បោះបង់ការលក់នេះមែនទេ?')) return;
@@ -23,6 +27,22 @@ export default function SaleDetail() {
       setCancelError(getErrorMessage(err));
     } finally {
       setCancelling(false);
+    }
+  };
+
+  // Sale ដែលបានបង់ប្រាក់រួច (paymentStatus: PAID) - cancel() បដិសេធជាមួយ
+  // 400 ដូច្នេះត្រូវប្រើ refund() ជំនួសវិញ (ADMIN role ប៉ុណ្ណោះ)។
+  const handleRefund = async () => {
+    const reason = window.prompt('មូលហេតុសងប្រាក់វិញ (មិនចាំបាច់):') ?? undefined;
+    if (reason === undefined) return;
+    setRefunding(true);
+    setRefundError('');
+    try {
+      setSale(await saleApi.refund(id, reason.trim() || undefined));
+    } catch (err) {
+      setRefundError(getErrorMessage(err));
+    } finally {
+      setRefunding(false);
     }
   };
 
@@ -73,7 +93,18 @@ export default function SaleDetail() {
             <Printer size={15} />
             បោះពុម្ព
           </button>
-          {sale.status === 'PENDING' || sale.status === 'COMPLETED' ? (
+          {sale.paymentStatus === 'PAID' && sale.status === 'COMPLETED' ? (
+            isAdmin && (
+              <button
+                onClick={handleRefund}
+                disabled={refunding}
+                className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 px-4 py-2 text-sm font-medium text-rose-700 shadow-sm transition hover:bg-rose-500/10 disabled:opacity-50"
+              >
+                {refunding ? <Loader2 size={15} className="animate-spin" /> : <RotateCcw size={15} />}
+                សងប្រាក់វិញ
+              </button>
+            )
+          ) : (sale.status === 'PENDING' || sale.status === 'COMPLETED') ? (
             <button
               onClick={handleCancel}
               disabled={cancelling}
@@ -88,6 +119,9 @@ export default function SaleDetail() {
 
       {cancelError && (
         <p className="mb-4 text-sm text-rose-700">{cancelError}</p>
+      )}
+      {refundError && (
+        <p className="mb-4 text-sm text-rose-700">{refundError}</p>
       )}
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">

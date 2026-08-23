@@ -23,27 +23,40 @@ import { env } from '../config/env';
  * ដោយផ្ទាល់។ បើ backend ជ្រើសរើសរុំវិញ សូមកែ res.data -> res.data.data
  * ខាងក្រោម។
  */
+/**
+ * ករណីខ្លះ backend រុំចម្លើយក្នុង { message, data } (ដូច endpoint ចាស់មួយចំនួន)
+ * ករណីខ្លះទៀតត្រឡប់ PaymentResponse ដោយផ្ទាល់ (ដូចឯកសារខាងលើសន្មត់)។ មិន
+ * ដឹងច្បាស់មួយណាត្រូវសម្រាប់ endpoint នេះទេ ដូច្នេះទទួលយកទាំងពីរបែប -
+ * បើ body.status គ្មាន តែ body.data.status មាន ទាញ .data ជំនួសវិញ។
+ */
+function unwrapPaymentResponse(body) {
+  if (body && typeof body === 'object' && body.status === undefined && body.data && typeof body.data === 'object') {
+    return body.data;
+  }
+  return body;
+}
+
 export const salePaymentApi = {
   create: async (saleId, provider = 'BAKONG', expirationMinutes = env.qrExpirationMinutes) => {
     const res = await apiClient.post(`/api/v1/sales/${saleId}/payment`, {
       provider,
       expirationMinutes,
     });
-    return res.data;
+    return unwrapPaymentResponse(res.data);
   },
 
   get: async (saleId) => {
     const res = await apiClient.get(`/api/v1/sales/${saleId}/payment`);
-    return res.data;
+    return unwrapPaymentResponse(res.data);
   },
 
   checkStatus: async (saleId) => {
     const res = await apiClient.get(`/api/v1/sales/${saleId}/payment/status`);
-    return res.data;
+    return unwrapPaymentResponse(res.data);
   },
 
   cancel: async (saleId) => {
     const res = await apiClient.post(`/api/v1/sales/${saleId}/payment/cancel`);
-    return res.data;
+    return unwrapPaymentResponse(res.data);
   },
 };

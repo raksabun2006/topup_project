@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { X, Loader2, AlertCircle, Banknote, Clock, QrCode } from 'lucide-react';
 import { formatCurrency, formatCurrencyPrecise } from '../../utils/format';
-import { useAuth } from '../../context/AuthContext';
 import { saleApi } from '../../api/saleApi';
 import { getErrorMessage } from '../../api/client';
 import BakongPaymentModal from './BakongPaymentModal';
@@ -9,12 +8,15 @@ import BakongPaymentModal from './BakongPaymentModal';
 /**
  * បញ្ចុះតម្លៃ/ពន្ធ ត្រូវបានគណនារួចហើយនៅ CartPanel (ដកចេញ % ត្រង់នោះ) -
  * modal នេះទទួលបានតែចំនួនទឹកប្រាក់ចុងក្រោយ ដើម្បីជ្រើសរើសវិធីបង់ប្រាក់
- * ប៉ុណ្ណោះ។ PAID/UNPAID កំណត់ paymentStatus ដោយផ្ទាល់ដូចម៉ាស៊ីនគិតលុយ
- * ធម្មតា។ BAKONG បង្កើត Sale ជាមុន (paymentStatus: 'PENDING') រួចហៅ
- * salePaymentApi ដើម្បីស្នើសុំ QR ភ្ជាប់នឹង Sale នោះផ្ទាល់។
+ * ប៉ុណ្ណោះ។ cashier/paymentStatus/unitPrice មិនត្រូវផ្ញើក្នុង create()
+ * ទេ - backend កំណត់ cashier ពី JWT ខ្លួនឯង, Sale ថ្មីតែងចាប់ផ្តើម
+ * PENDING/PENDING ជានិច្ច, ហើយតម្លៃអានពី Product ក្នុង database វិញ
+ * (សុវត្ថិភាព - client មិនត្រូវកំណត់តម្លៃ/អ្នកគិតលុយខ្លួនឯងបានទេ)។
+ * method (PAID/BAKONG/UNPAID) សម្រេចតែជំហានក្រោយ create(): PAID ហៅ
+ * markPaid() ភ្លាមៗ, BAKONG បើក QR modal (markPaid() នៅទីនោះវិញ ពេល
+ * polling បញ្ជាក់ថាបានបង់), UNPAID មិនធ្វើអ្វីបន្ថែម (Sale នៅ PENDING)។
  */
 export default function CheckoutModal({ items, customer, subtotal, discountAmount, taxAmount, total, onClose, onSuccess }) {
-  const { user } = useAuth();
   const [method, setMethod] = useState('PAID');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -26,14 +28,11 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
     try {
       const sale = await saleApi.create({
         customer: customer?.id,
-        cashier: user?.username,
         discount: discountAmount,
         tax: taxAmount,
-        paymentStatus: method === 'BAKONG' ? 'PENDING' : method,
         items: items.map((item) => ({
-          product: item.product.id,
+          productId: item.product.id,
           quantity: item.quantity,
-          unitPrice: item.product.price,
           discount: item.discount || 0,
         })),
       });
@@ -41,6 +40,13 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
       if (method === 'BAKONG') {
         setPendingSale(sale);
       } else {
+        // សាច់ប្រាក់ - អ្នកគិតលុយទទួលលុយនៅដៃរួចហើយ ដូច្នេះកត់ត្រា "បានបង់"
+        // ភ្លាមៗ (ហៅ /paid ដាច់ដោយឡែក ព្រោះ Telegram notification ជំរុញ
+        // ពី endpoint នេះផ្ទាល់ - មើលកំណត់ចំណាំនៅ saleApi.markPaid)។
+        // "បង់ក្រោយ" (UNPAID) មិនហៅ - Sale នៅតែមិនទាន់បង់ប្រាក់។
+        if (method === 'PAID') {
+          await saleApi.markPaid(sale.id);
+        }
         onSuccess(sale);
       }
     } catch (err) {

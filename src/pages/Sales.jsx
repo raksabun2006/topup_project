@@ -2,17 +2,26 @@ import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AlertCircle, RefreshCw, Receipt, Search, User } from 'lucide-react';
 import { useSales } from '../hooks/useSales';
+import { useCustomers } from '../hooks/useCustomers';
 import { formatCurrency, formatDate } from '../utils/format';
 import { SaleStatusBadge, PaymentStatusBadge } from '../components/ui/SaleStatusBadge';
 
 export default function Sales() {
   const { sales, loading, error, reload } = useSales();
+  const { customers } = useCustomers();
   const [search, setSearch] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const cashierFilter = searchParams.get('cashier') ?? '';
 
+  const customerNameById = useMemo(
+    () => new Map(customers.map((c) => [c.id, c.name])),
+    [customers]
+  );
+
+  // cashier ជា Keycloak user id - ប្រើ cashierName សម្រាប់ filter/display/search
+  // ព្រោះនោះជាអ្វីដែលអាចអានយល់បាន, fallback ទៅ cashier (raw id) បើគ្មាន។
   const cashiers = useMemo(
-    () => Array.from(new Set(sales.map((s) => s.cashier).filter(Boolean))).sort(),
+    () => Array.from(new Set(sales.map((s) => s.cashierName ?? s.cashier).filter(Boolean))).sort(),
     [sales]
   );
 
@@ -23,15 +32,17 @@ export default function Sales() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return sales.filter((s) => {
-      if (cashierFilter && s.cashier !== cashierFilter) return false;
+      const cashierName = s.cashierName ?? s.cashier;
+      if (cashierFilter && cashierName !== cashierFilter) return false;
       if (!q) return true;
+      const customerName = customerNameById.get(s.customer) ?? '';
       return (
         s.invoiceNumber?.toLowerCase().includes(q) ||
-        s.customer?.toLowerCase().includes(q) ||
-        s.cashier?.toLowerCase().includes(q)
+        customerName.toLowerCase().includes(q) ||
+        cashierName?.toLowerCase().includes(q)
       );
     });
-  }, [sales, search, cashierFilter]);
+  }, [sales, search, cashierFilter, customerNameById]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -104,12 +115,12 @@ export default function Sales() {
                 <div className="min-w-0">
                   <p className="truncate font-medium text-slate-700">{sale.invoiceNumber}</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    {sale.customer ?? 'អតិថិជនទូទៅ'} · {formatDate(sale.createdAt)}
+                    {customerNameById.get(sale.customer) ?? 'អតិថិជនទូទៅ'} · {formatDate(sale.createdAt)}
                   </p>
                   {sale.cashier && (
                     <p className="mt-1 flex items-center gap-1 text-xs text-emerald-700">
                       <User size={11} />
-                      {sale.cashier}
+                      {sale.cashierName ?? sale.cashier}
                     </p>
                   )}
                 </div>

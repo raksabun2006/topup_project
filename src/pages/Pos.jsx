@@ -97,8 +97,8 @@ export default function Pos() {
 
   return (
     <div className="flex h-full flex-col bg-emerald-50/50">
-      <div className="grid flex-1 grid-cols-1 gap-4 overflow-hidden p-4 lg:grid-cols-[1fr_380px]">
-        <div className="flex flex-col overflow-hidden rounded-2xl bg-white p-4 shadow-sm">
+      <div className="grid flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(0,1fr)] gap-4 overflow-hidden p-4 lg:grid-cols-[1fr_380px] lg:grid-rows-1">
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl bg-white p-4 shadow-sm">
           <ProductGrid
             category={category}
             onAdd={(product) => addItem(product, 1)}
@@ -106,7 +106,7 @@ export default function Pos() {
           />
         </div>
 
-        <div className="min-h-[50vh] overflow-hidden lg:min-h-0">
+        <div className="min-h-0 overflow-hidden">
           <CartPanel
             items={items}
             onSetQuantity={setQuantity}

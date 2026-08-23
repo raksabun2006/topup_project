@@ -16,13 +16,13 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
   useEffect(() => setImageBroken(false), [product.imageUrl]);
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-ink-900 shadow-sm transition hover:border-emerald-500/40 hover:shadow-md">
-      <div className="flex aspect-square items-center justify-center bg-ink-950">
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-ink-900 shadow-sm transition hover:border-emerald-500/40 hover:shadow-md">
+      <div className="flex aspect-square items-center justify-center bg-ink-950 p-4">
         {product.imageUrl && !imageBroken ? (
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-contain"
             onError={() => setImageBroken(true)}
           />
         ) : (
@@ -30,11 +30,11 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 p-3">
-        <p className="line-clamp-2 text-sm font-semibold text-slate-900">{product.name}</p>
-        {product.sku && <p className="text-xs text-slate-500">SKU: {product.sku}</p>}
+      <div className="flex flex-1 flex-col p-3">
+        <p className="line-clamp-2 min-h-10 text-sm font-semibold text-slate-900">{product.name}</p>
+        <p className="min-h-4 text-xs text-slate-500">{product.sku ? `SKU: ${product.sku}` : ''}</p>
 
-        <div className="mt-1 flex items-center justify-between">
+        <div className="mt-auto flex items-center justify-between pt-1">
           <span className="text-base font-bold text-emerald-600">
             {formatCurrency(product.price)}
           </span>

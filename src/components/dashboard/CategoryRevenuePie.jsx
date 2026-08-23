@@ -24,10 +24,11 @@ function sliceArcPath(startAngle, endAngle) {
 
 /**
  * ចំណូលតាមប្រភេទផលិតផល - backend គ្មាន report endpoint ទេ ដូច្នេះគណនាពី
- * sales (COMPLETED) ដែលទាញយករួច ផ្គូផ្គង item.product (តាមពិតជា product id
- * UUID - មើល Receipt.jsx) ទៅនឹង category របស់ផលិតផលនោះ តាម id មិនមែនតាម
- * ឈ្មោះទេ។ កំណត់ត្រឹម ៦ ប្រភេទធំបំផុត - ដែលនៅសល់បញ្ចូលរួមជា "ផ្សេងៗ"
- * (ដូច choosing-a-form: part-to-whole pie ≤ 6 segments)។
+ * sales ដែលបានបង់ប្រាក់ពិត (status COMPLETED និង paymentStatus PAID ទាំងពីរ
+ * ព្រោះ Sale អាចជា COMPLETED តែមិនទាន់បង់ - ឧ. UNPAID) ដែលទាញយករួច
+ * ផ្គូផ្គង item.productId ទៅនឹង category របស់ផលិតផលនោះ។ កំណត់ត្រឹម ៦
+ * ប្រភេទធំបំផុត - ដែលនៅសល់បញ្ចូលរួមជា "ផ្សេងៗ" (ដូច choosing-a-form:
+ * part-to-whole pie ≤ 6 segments)។
  */
 export default function CategoryRevenuePie({ sales, loading }) {
   const [products, setProducts] = useState([]);
@@ -56,11 +57,11 @@ export default function CategoryRevenuePie({ sales, loading }) {
 
     const totals = new Map();
     sales
-      .filter((s) => s.status === 'COMPLETED')
+      .filter((s) => s.status === 'COMPLETED' && s.paymentStatus === 'PAID')
       .forEach((sale) => {
         (sale.items ?? []).forEach((item) => {
-          const category = categoryByProductId.get(item.product) || OTHER_SLICE_LABEL;
-          totals.set(category, (totals.get(category) ?? 0) + (item.subtotal || 0));
+          const category = categoryByProductId.get(item.productId) || OTHER_SLICE_LABEL;
+          totals.set(category, (totals.get(category) ?? 0) + (item.lineTotal || 0));
         });
       });
 
@@ -132,11 +133,10 @@ export default function CategoryRevenuePie({ sales, loading }) {
 
       {!busy && !productsError && slices.length > 1 && (
         <div className="flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-center sm:justify-around">
-          <div className="relative shrink-0">
+          <div className="relative w-60 max-w-full shrink-0">
             <svg
               viewBox={`0 0 ${SIZE} ${SIZE}`}
-              width={SIZE}
-              height={SIZE}
+              className="h-auto w-full"
               role="img"
               aria-label={`ចំណូលតាមប្រភេទ សរុប ${formatCurrency(total)}`}
               onMouseLeave={() => setHover(null)}

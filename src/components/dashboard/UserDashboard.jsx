@@ -12,17 +12,18 @@ export default function UserDashboard() {
   const { sales, loading, error, reload } = useSales();
 
   // Backend គ្មាន endpoint ស្ថិតិផ្ទាល់ខ្លួនទេ - គណនានៅ client ពី
-  // /api/sales ដែលត្រូវបានទាញយកទាំងអស់រួចហើយ។
+  // /api/sales ដែលត្រូវបានទាញយកទាំងអស់រួចហើយ។ sale.cashier ជា Keycloak
+  // user id (JWT sub claim) មិនមែន username ទេ - ត្រូវប្រៀបធៀបនឹង user.sub។
   const mySales = useMemo(
-    () => sales.filter((s) => s.cashier === user?.username),
-    [sales, user?.username]
+    () => sales.filter((s) => s.cashier === user?.sub),
+    [sales, user?.sub]
   );
   const stats = useMemo(() => {
-    const completed = mySales.filter((s) => s.status === 'COMPLETED');
+    const paid = mySales.filter((s) => s.status === 'COMPLETED' && s.paymentStatus === 'PAID');
     return {
       total: mySales.length,
-      completed: completed.length,
-      revenue: completed.reduce((sum, s) => sum + (s.total || 0), 0),
+      completed: paid.length,
+      revenue: paid.reduce((sum, s) => sum + (s.total || 0), 0),
     };
   }, [mySales]);
 

@@ -11,8 +11,10 @@ export function useSales() {
     setLoading(true);
     setError('');
     try {
-      const data = await saleApi.list();
-      // ថ្មីៗនៅលើគេ - backend ត្រឡប់តាមលំដាប់បង្កើត មិនប្រាកដ sort ទេ
+      // size ធំមួយ (មិនមែន pagination UI ពិត) ដើម្បីទាញយក sale ទាំងអស់ម្តងតែម្តង
+      // ព្រោះ dashboard/របាយការណ៍ត្រូវការសរុបលើ sale ទាំងអស់ មិនមែនតែទំព័រតែមួយទេ។
+      const { sales: data } = await saleApi.list({ page: 0, size: 1000, sort: 'createdAt,desc' });
+      // ថ្មីៗនៅលើគេ - sort ត្រង់នេះជា fallback បើ sort param មិនត្រូវបានគោរព
       setSales([...(data ?? [])].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
     } catch (err) {
       setError(getErrorMessage(err));

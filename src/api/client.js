@@ -73,13 +73,31 @@ function looksLikeRawException(message) {
  * បម្លែង error ពី Axios ទៅជាសារដែលអាចបង្ហាញដល់អ្នកប្រើ។
  *
  * Backend មានទម្រង់ error ចម្រុះ៖
+ *  - ថ្មីបំផុត (sale module): { code, message, details, timestamp } - code ក្នុង
+ *    ចំណោម INSUFFICIENT_STOCK/NOT_FOUND/INVALID_SALE/VALIDATION_FAILED/INTERNAL_ERROR
+ *    (VALIDATION_FAILED: details ជា map field path -> message)
  *  - ចាស់ (users/me, orders): { success, message, data }
- *  - ថ្មី (auth/register validation): { status, code, message, errors: [{field, message}] }
+ *  - ចាស់ (auth/register validation): { status, code, message, errors: [{field, message}] }
  *  - Spring Boot default (unhandled exception): { error, message, status, timestamp }
- * ព្យាយាមទាញយក message ជាក់លាក់បំផុតដែលមាន។
+ * ព្យាយាមទាញយក message ជាក់លាក់បំផុតដែលមាន។ console.error លើ error ដើម
+ * ជានិច្ច ដើម្បីមូលហេតុពិត (stack, response ពេញលេញ) នៅតែឃើញក្នុង devtools
+ * ទោះបីសារបង្ហាញដល់អ្នកប្រើខ្លីជាងក៏ដោយ។
  */
 export function getErrorMessage(error) {
+  console.error(error);
   const data = error?.response?.data;
+
+  if (data?.code === 'INSUFFICIENT_STOCK') {
+    return data.details?.available != null
+      ? `ស្តុកមិនគ្រប់គ្រាន់ - នៅសល់ត្រឹម ${data.details.available}`
+      : (data.message || 'ស្តុកមិនគ្រប់គ្រាន់');
+  }
+
+  if (data?.code === 'VALIDATION_FAILED' && data?.details && typeof data.details === 'object') {
+    return Object.entries(data.details)
+      .map(([field, msg]) => `${field}: ${msg}`)
+      .join(' · ');
+  }
 
   if (Array.isArray(data?.errors) && data.errors.length > 0) {
     return data.errors

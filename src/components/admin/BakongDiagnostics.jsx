@@ -94,8 +94,8 @@ export default function BakongDiagnostics() {
               <div className="space-y-1.5 rounded-xl bg-ink-950 p-4 text-sm">
                 {entries.map(([key, value]) => (
                   <div key={key} className="flex justify-between gap-4">
-                    <span className="text-slate-500">{key}</span>
-                    <span className="text-right font-mono text-xs text-slate-700">
+                    <span className="shrink-0 text-slate-500">{key}</span>
+                    <span className="break-all text-right font-mono text-xs text-slate-700">
                       {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                     </span>
                   </div>
