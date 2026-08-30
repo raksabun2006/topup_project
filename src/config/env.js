@@ -1,46 +1,21 @@
 /**
  * ចំណុចតែមួយគត់ដែលអាន import.meta.env។
- *
- * ការហៅ import.meta.env ដោយផ្ទាល់ក្នុងឯកសារនានាមានន័យថា
- * ការសរសេរឈ្មោះខុសមួយ (VITE_API_URL ជំនួស VITE_API_BASE_URL)
- * បរាជ័យស្ងាត់ៗជា undefined ហើយ Axios ហៅទៅ URL ទទេ។
- *
- * ការបោះ error នៅពេលចាប់ផ្តើមប្រសើរជាងការ debug សំណើ 404។
+ * គាំទ្រទាំង VITE_API_BASE_URL និង VITE_API_URL
  */
 
-function required(key, value) {
-  if (!value) {
-    throw new Error(
-      `បាត់ environment variable: ${key}\n` +
-      `សូមចម្លង .env.example ទៅ .env.local នៅ root របស់ project។`
-    );
-  }
-  return value;
-}
+const rawApiUrl = (
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  'https://mart-api-rubm.onrender.com/api/v1'
+).replace(/\/+$/, '');
 
 export const env = {
-  apiBaseUrl: required('VITE_API_BASE_URL', import.meta.env.VITE_API_BASE_URL),
+  apiBaseUrl: rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl}/api/v1`,
 
-  appName: import.meta.env.VITE_APP_NAME ?? 'POS',
+  appName: import.meta.env.VITE_APP_NAME ?? 'Bun Raksa',
 
-  keycloak: {
-    url: required('VITE_KEYCLOAK_URL', import.meta.env.VITE_KEYCLOAK_URL),
-    realm: required('VITE_KEYCLOAK_REALM', import.meta.env.VITE_KEYCLOAK_REALM),
-    clientId: required('VITE_KEYCLOAK_CLIENT_ID', import.meta.env.VITE_KEYCLOAK_CLIENT_ID),
-  },
-
-  // ប្រើសម្រាប់ Bakong QR polling ក្នុង POS checkout ប៉ុណ្ណោះ (មើល
-  // src/api/salePaymentApi.js) - 15s x 10min = 40 សំណើ/ការទូទាត់
-  // ព្រោះ Bakong អនុញ្ញាតតែ 100 សំណើ/ថ្ងៃលើ token developer។
+  // Bakong QR polling ក្នុង POS checkout: 3s មួយដង
   paymentPollIntervalMs: Number(
-    import.meta.env.VITE_PAYMENT_POLL_INTERVAL_MS ?? 15000
-  ),
-
-  paymentTimeoutMs: Number(
-    import.meta.env.VITE_PAYMENT_TIMEOUT_MS ?? 600000
-  ),
-
-  qrExpirationMinutes: Number(
-    import.meta.env.VITE_QR_EXPIRATION_MINUTES ?? 10
+    import.meta.env.VITE_PAYMENT_POLL_INTERVAL_MS ?? 3000
   ),
 };

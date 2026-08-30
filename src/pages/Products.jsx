@@ -30,7 +30,8 @@ export default function Products() {
     setLoading(true);
     setError('');
     try {
-      setPageData(await adminProductApi.list({ page, size: 15 }));
+      const data = await adminProductApi.list({ page, size: 15 });
+      setPageData(data);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -42,7 +43,12 @@ export default function Products() {
     load();
   }, [load]);
 
-  const products = pageData?.content ?? [];
+  // Fallback unwrappers for plain array vs Spring Page objects
+  const products = Array.isArray(pageData)
+    ? pageData
+    : pageData?.content ?? pageData?.data?.content ?? [];
+
+  const totalPages = pageData?.totalPages ?? pageData?.data?.totalPages ?? 0;
 
   const openCreate = () => {
     setEditingProduct(null);
@@ -79,7 +85,7 @@ export default function Products() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setCategoryModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-ink-900 px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900"
           >
             <Tags size={16} />
             ប្រភេទ
@@ -94,22 +100,22 @@ export default function Products() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         {loading && (
           <div className="space-y-3 p-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-14 animate-pulse rounded-xl bg-ink-800" />
+              <div key={i} className="h-14 animate-pulse rounded-xl bg-slate-100" />
             ))}
           </div>
         )}
 
         {!loading && error && (
           <div className="p-10 text-center">
-            <AlertCircle size={32} className="mx-auto mb-3 text-rose-700" />
-            <p className="mb-5 text-sm text-rose-700">{error}</p>
+            <AlertCircle size={32} className="mx-auto mb-3 text-rose-600" />
+            <p className="mb-5 text-sm text-rose-600">{error}</p>
             <button
               onClick={load}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-ink-950 px-4 py-2 text-sm text-slate-600 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 px-4 py-2 text-sm text-slate-600 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900"
             >
               <RefreshCw size={14} />
               ព្យាយាមម្តងទៀត
@@ -119,7 +125,7 @@ export default function Products() {
 
         {!loading && !error && products.length === 0 && (
           <div className="p-14 text-center">
-            <Package size={40} className="mx-auto mb-4 text-slate-600" />
+            <Package size={40} className="mx-auto mb-4 text-slate-400" />
             <p className="mb-6 text-slate-500">មិនទាន់មានផលិតផលនៅឡើយទេ</p>
             <button
               onClick={openCreate}
@@ -136,23 +142,28 @@ export default function Products() {
             {products.map((product) => (
               <div key={product.id} className="flex items-center justify-between gap-4 px-6 py-4">
                 <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-300 bg-ink-950">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
                     {product.imageUrl ? (
-                      <img src={product.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      <img
+                        src={product.imageUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
                     ) : (
-                      <Package size={16} className="text-slate-600" />
+                      <Package size={16} className="text-slate-400" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate font-medium text-slate-700">{product.name}</p>
-                    <span className={`shrink-0 rounded-lg border px-2 py-0.5 text-[10px] font-medium ${STATUS_STYLES[product.status] ?? STATUS_STYLES.DRAFT}`}>
-                      {product.status}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-500">
-                    SKU: {product.sku} {product.category ? `· ${product.category}` : ''} · ស្តុក: {product.stockQuantity}
-                  </p>
+                    <div className="flex items-center gap-2">
+                      <p className="truncate font-medium text-slate-800">{product.name}</p>
+                      <span className={`shrink-0 rounded-lg border px-2 py-0.5 text-[10px] font-medium ${STATUS_STYLES[product.status] ?? STATUS_STYLES.DRAFT}`}>
+                        {product.status}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">
+                      SKU: {product.sku} {product.category ? `· ${product.category}` : ''} · ស្តុក: {product.stockQuantity}
+                    </p>
                   </div>
                 </div>
 
@@ -161,7 +172,7 @@ export default function Products() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => openEdit(product)}
-                      className="rounded-lg p-1.5 text-slate-500 transition hover:bg-emerald-50 hover:text-slate-900"
+                      className="rounded-lg p-1.5 text-slate-500 transition hover:bg-emerald-50 hover:text-emerald-700"
                       title="កែប្រែ"
                     >
                       <Edit2 size={16} />
@@ -169,7 +180,7 @@ export default function Products() {
                     <button
                       onClick={() => handleDelete(product)}
                       disabled={deletingId === product.id}
-                      className="rounded-lg p-1.5 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-700 disabled:opacity-50"
+                      className="rounded-lg p-1.5 text-slate-500 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
                       title="លុប"
                     >
                       {deletingId === product.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
@@ -181,22 +192,22 @@ export default function Products() {
           </div>
         )}
 
-        {!loading && !error && pageData && pageData.totalPages > 1 && (
+        {!loading && !error && totalPages > 1 && (
           <div className="flex items-center justify-center gap-3 border-t border-slate-200 py-4">
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page <= 0}
-              className="rounded-lg border border-slate-300 bg-ink-950 p-1.5 text-slate-600 disabled:opacity-40"
+              className="rounded-lg border border-slate-300 bg-white p-1.5 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
             >
               <ChevronLeft size={16} />
             </button>
             <span className="text-xs text-slate-500">
-              ទំព័រ {page + 1} / {pageData.totalPages}
+              ទំព័រ {page + 1} / {totalPages}
             </span>
             <button
-              onClick={() => setPage((p) => Math.min(pageData.totalPages - 1, p + 1))}
-              disabled={page >= pageData.totalPages - 1}
-              className="rounded-lg border border-slate-300 bg-ink-950 p-1.5 text-slate-600 disabled:opacity-40"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+              className="rounded-lg border border-slate-300 bg-white p-1.5 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
             >
               <ChevronRight size={16} />
             </button>

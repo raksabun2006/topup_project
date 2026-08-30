@@ -86,11 +86,12 @@ export default function CartPanel({
       </div>
 
       {items.length > 0 && (
-        <div className="flex items-center gap-3 px-4 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-          <span className="w-4" />
-          <span className="flex-1">ទំនិញ</span>
+        <div className="flex items-center gap-2.5 px-4 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          <span className="w-4 shrink-0" />
+          <span className="w-10 shrink-0" />
+          <span className="min-w-0 flex-1">ទំនិញ</span>
           <span className="shrink-0">ចំនួន</span>
-          <span className="w-16 shrink-0 text-right">តម្លៃ</span>
+          <span className="w-14 shrink-0 text-right">តម្លៃ</span>
         </div>
       )}
 

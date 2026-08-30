@@ -52,29 +52,29 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
         {isAdmin && (
           <button
             onClick={() => setShowCreate(true)}
-            className="flex shrink-0 items-center gap-2 text-base font-bold tracking-wide text-emerald-600 transition hover:text-emerald-700"
+            className="flex shrink-0 items-center gap-1.5 text-sm font-bold tracking-wide text-emerald-600 transition hover:text-emerald-700"
           >
-            <Plus size={20} />
+            <Plus size={18} />
             ផលិតផលថ្មី
           </button>
         )}
 
-        <div className="ml-auto flex w-full max-w-md items-center rounded-full border border-slate-200 bg-slate-50 pl-4 pr-1 shadow-sm">
+        <div className="ml-auto flex w-full max-w-sm items-center rounded-full border border-slate-200 bg-slate-50 pl-3.5 pr-1 shadow-xs">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="ស្វែងរកទំនិញនៅទីនេះ..."
-            className="w-full bg-transparent py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+            className="w-full bg-transparent py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none sm:text-sm"
           />
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
-            <Search size={15} />
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
+            <Search size={13} />
           </span>
         </div>
       </div>
 
       {/* មាតិកា */}
-      <div className="mt-4 flex-1 overflow-y-auto">
+      <div className="mt-3 flex-1 overflow-y-auto">
         {loading && (
           <div className="flex flex-col items-center justify-center py-16 text-emerald-600">
             <Loader2 size={30} className="animate-spin" />
@@ -102,7 +102,7 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
         )}
 
         {!loading && !error && filtered.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             {filtered.map((product) => (
               <ProductCard
                 key={product.id}
@@ -117,13 +117,13 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
 
       {/* ទំព័រ */}
       {!loading && !error && totalPages > 1 && (
-        <div className="mt-3 flex items-center justify-center gap-3 border-t border-slate-200 pt-3">
+        <div className="mt-2.5 flex items-center justify-center gap-2.5 border-t border-slate-200 pt-2.5">
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page <= 0}
-            className="rounded-lg border border-slate-300 bg-white p-1.5 text-slate-600 disabled:opacity-40"
+            className="rounded-lg border border-slate-300 bg-white p-1.5 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={15} />
           </button>
           <span className="text-xs text-slate-500">
             ទំព័រ {page + 1} / {totalPages}
@@ -131,9 +131,9 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
           <button
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
-            className="rounded-lg border border-slate-300 bg-white p-1.5 text-slate-600 disabled:opacity-40"
+            className="rounded-lg border border-slate-300 bg-white p-1.5 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={15} />
           </button>
         </div>
       )}

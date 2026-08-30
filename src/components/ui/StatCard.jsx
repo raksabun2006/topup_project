@@ -1,7 +1,6 @@
 export function StatCard({ icon: Icon, label, value, hint, accent = 'emerald' }) {
   const accents = {
     emerald: 'bg-emerald-500/10 text-emerald-600',
-    emerald: 'bg-emerald-500/10 text-emerald-700',
     amber: 'bg-amber-500/10 text-amber-700',
     rose: 'bg-rose-500/10 text-rose-700',
   };

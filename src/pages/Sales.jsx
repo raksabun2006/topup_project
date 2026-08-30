@@ -18,8 +18,6 @@ export default function Sales() {
     [customers]
   );
 
-  // cashier ជា Keycloak user id - ប្រើ cashierName សម្រាប់ filter/display/search
-  // ព្រោះនោះជាអ្វីដែលអាចអានយល់បាន, fallback ទៅ cashier (raw id) បើគ្មាន។
   const cashiers = useMemo(
     () => Array.from(new Set(sales.map((s) => s.cashierName ?? s.cashier).filter(Boolean))).sort(),
     [sales]

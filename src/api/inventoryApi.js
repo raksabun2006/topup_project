@@ -1,27 +1,27 @@
 import { apiClient } from './client';
 
 export const inventoryApi = {
-  /** GET /api/v1/inventory */
+  /** GET /inventory */
   list: async () => {
-    const res = await apiClient.get('/api/v1/inventory');
+    const res = await apiClient.get('/inventory');
     return res.data;
   },
 
-  /** GET /api/v1/inventory/low-stock */
+  /** GET /inventory/low-stock */
   lowStock: async () => {
-    const res = await apiClient.get('/api/v1/inventory/low-stock');
+    const res = await apiClient.get('/inventory/low-stock');
     return res.data;
   },
 
-  /** POST /api/v1/inventory/stock-in - { inventoryId, quantity } */
+  /** POST /inventory/stock-in - { inventoryId, quantity } */
   stockIn: async ({ inventoryId, quantity }) => {
-    const res = await apiClient.post('/api/v1/inventory/stock-in', { inventoryId, quantity });
+    const res = await apiClient.post('/inventory/stock-in', { inventoryId, quantity });
     return res.data;
   },
 
-  /** POST /api/v1/inventory/adjust - { inventoryId, newQuantity } */
+  /** POST /inventory/adjust - { inventoryId, newQuantity } */
   adjust: async ({ inventoryId, newQuantity }) => {
-    const res = await apiClient.post('/api/v1/inventory/adjust', { inventoryId, newQuantity });
+    const res = await apiClient.post('/inventory/adjust', { inventoryId, newQuantity });
     return res.data;
   },
 };

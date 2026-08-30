@@ -3,15 +3,13 @@ import { salePaymentApi } from '../api/salePaymentApi';
 import { getErrorMessage } from '../api/client';
 import { env } from '../config/env';
 
-const FINAL_STATUSES = ['PAID', 'FAILED', 'EXPIRED', 'REFUNDED', 'CANCELLED'];
+const TERMINAL_STATUSES = ['PAID', 'COMPLETED', 'SUCCESS', 'FAILED', 'EXPIRED', 'REFUNDED', 'CANCELLED'];
 
 export function useSalePaymentPolling(saleId, enabled) {
   const [payment, setPayment] = useState(null);
   const [error, setError] = useState('');
-  const [timedOut, setTimedOut] = useState(false);
 
   const timerRef = useRef(null);
-  const startedAtRef = useRef(null);
   const aliveRef = useRef(false);
 
   const stop = useCallback(() => {
@@ -23,37 +21,49 @@ export function useSalePaymentPolling(saleId, enabled) {
   }, []);
 
   const poll = useCallback(async () => {
+    if (!aliveRef.current) return;
     try {
       const result = await salePaymentApi.checkStatus(saleId);
       if (!aliveRef.current) return;
       setPayment(result);
+      setError('');
 
-      if (FINAL_STATUSES.includes(result.status)) {
+      const statusUpper = result?.status ? String(result.status).toUpperCase() : '';
+
+      // Stop polling on terminal statuses
+      if (TERMINAL_STATUSES.includes(statusUpper)) {
         stop();
         return;
       }
-      const elapsed = Date.now() - startedAtRef.current;
-      if (elapsed >= env.paymentTimeoutMs) {
-        setTimedOut(true);
-        stop();
-        return;
-      }
+
+      // Schedule next poll in 3000ms
       timerRef.current = setTimeout(poll, env.paymentPollIntervalMs);
     } catch (err) {
       if (!aliveRef.current) return;
-      setError(getErrorMessage(err));
-      stop();
+      const httpStatus = err?.response?.status;
+      console.warn('Payment polling notice:', httpStatus, err?.message);
+
+      // Stop polling on authentication or resource-not-found errors
+      if (httpStatus === 401 || httpStatus === 403 || httpStatus === 404) {
+        setError(getErrorMessage(err));
+        stop();
+        return;
+      }
+
+      // For 502/503 (provider busy) or temporary network glitches, continue retrying
+      timerRef.current = setTimeout(poll, env.paymentPollIntervalMs);
     }
   }, [saleId, stop]);
 
   useEffect(() => {
-    if (!enabled || !saleId) return;
+    if (!enabled || !saleId) {
+      stop();
+      return;
+    }
     aliveRef.current = true;
-    startedAtRef.current = Date.now();
     poll();
     return stop;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, saleId]);
+  }, [enabled, saleId, poll, stop]);
 
-  return { payment, error, timedOut, setPayment };
+  return { payment, error, setPayment, stop };
 }
