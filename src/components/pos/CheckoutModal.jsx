@@ -15,6 +15,7 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
   const [pendingSale, setPendingSale] = useState(null);
 
   const handleConfirm = async () => {
+    if (submitting) return;
     setSubmitting(true);
     setError('');
     try {
@@ -68,7 +69,7 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
           <button
             onClick={onClose}
             disabled={submitting}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
           >
             <X size={18} />
           </button>
@@ -163,8 +164,14 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
             disabled={submitting || items.length === 0}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {submitting && <Loader2 size={16} className="animate-spin" />}
-            {method === 'BAKONG' ? 'បន្តទៅការទូទាត់ Bakong KHQR' : 'បញ្ជាក់ការលក់'}
+            {submitting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                <span>កំពុងបង្កើតការបញ្ជាទិញ...</span>
+              </>
+            ) : (
+              <span>{method === 'BAKONG' ? 'បន្តទៅការទូទាត់ Bakong KHQR' : 'បញ្ជាក់ការលក់'}</span>
+            )}
           </button>
         </div>
       </div>

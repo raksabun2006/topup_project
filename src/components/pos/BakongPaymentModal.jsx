@@ -22,7 +22,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const { payment, error: pollError, setPayment, stop: stopPolling } =
     useSalePaymentPolling(sale.id, pollingEnabled);
 
-  // Normalize status string
+  // Normalize status string from backend
   const rawStatus = payment?.status ? String(payment.status).toUpperCase() : '';
   const status = isExpiredLocal && rawStatus === 'PENDING' ? 'EXPIRED' : rawStatus;
 
@@ -109,7 +109,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     return () => clearInterval(interval);
   }, [payment?.qrString, payment?.expiresAt, status, stopPolling]);
 
-  // When payment status reaches PAID / COMPLETED / SUCCESS
+  // When payment status reaches PAID / COMPLETED / SUCCESS (confirmed by Backend)
   useEffect(() => {
     if ((status !== 'PAID' && status !== 'COMPLETED' && status !== 'SUCCESS') || finalizedRef.current) {
       return;
@@ -217,13 +217,13 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
             {finishing ? (
               <>
                 <Loader2 size={36} className="animate-spin text-emerald-600" />
-                <p className="text-base font-bold text-slate-900">បង់ប្រាក់ជោគជ័យ!</p>
-                <p className="text-xs text-slate-500">កំពុងបញ្ចប់ការលក់...</p>
+                <p className="text-base font-bold text-slate-900">ការទូទាត់បានជោគជ័យ 🎉</p>
+                <p className="text-xs text-slate-500">កំពុងបញ្ចប់ការបញ្ជាទិញ...</p>
               </>
             ) : finishError ? (
               <>
                 <AlertCircle size={36} className="text-amber-600" />
-                <p className="text-base font-bold text-slate-900">បង់ប្រាក់ជោគជ័យ 🎉</p>
+                <p className="text-base font-bold text-slate-900">ការទូទាត់បានជោគជ័យ 🎉</p>
                 <p className="text-xs text-slate-500">{finishError}</p>
               </>
             ) : (
@@ -231,15 +231,15 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                   <CheckCircle size={38} />
                 </div>
-                <h4 className="text-xl font-black text-slate-900">ការទូទាត់បានជោគជ័យ 🎉</h4>
-                <p className="text-sm font-bold text-slate-700">
+                <h4 className="text-xl font-black text-slate-900">🎉 ការទូទាត់បានជោគជ័យ!</h4>
+                <p className="text-sm font-bold text-slate-800">
                   Invoice: {billNo}
                 </p>
-                <p className="text-xs text-emerald-700 font-medium">
+                <p className="text-xs text-emerald-700 font-semibold">
                   {formatCurrency(paymentAmount, paymentCurrency)} · បានទូទាត់រួចរាល់
                 </p>
-                <p className="text-xs text-slate-400 mt-1">
-                  សូមអរគុណសម្រាប់ការទិញទំនិញ។
+                <p className="text-xs text-slate-500 mt-1 max-w-[240px]">
+                  ការបញ្ជាទិញរបស់អ្នកត្រូវបានបញ្ជាក់។ សូមអរគុណសម្រាប់ការគាំទ្រ។
                 </p>
               </>
             )}
@@ -322,7 +322,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                   )}
                   <h4 className="text-base font-bold text-slate-900">
                     {isExpired
-                      ? 'QR ទូទាត់បានផុតកំណត់'
+                      ? 'QR បានផុតកំណត់'
                       : isCancelled
                       ? 'ការទូទាត់ត្រូវបានបោះបង់ (Payment Cancelled)'
                       : 'ការទូទាត់មិនបានជោគជ័យ'}
@@ -330,7 +330,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                   <p className="max-w-[240px] text-xs text-slate-500">
                     {isExpired
                       ? 'QR បានផុតកំណត់ សូមបង្កើតការទូទាត់ថ្មី។'
-                      : payment?.message || 'សូមព្យាយាមម្តងទៀត ឬបង្កើត QR ថ្មីសម្រាប់ការទូទាត់។'}
+                      : payment?.message || 'សូមព្យាយាមម្តងទៀត ឬបង្កើតការទូទាត់ថ្មី។'}
                   </p>
                 </div>
               )}
@@ -364,7 +364,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                   ) : (
                     <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 py-2.5 text-xs font-medium text-emerald-800">
                       <Loader2 size={15} className="animate-spin text-emerald-600" />
-                      កំពុងរង់ចាំការស្កេនបង់ប្រាក់...
+                      <span>Payment Status: កំពុងរង់ចាំការទូទាត់...</span>
                     </div>
                   )}
 
@@ -395,7 +395,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 disabled:opacity-60"
                   >
                     {regenerating ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                    បង្កើត QR ថ្មី (Generate New QR)
+                    បង្កើតការទូទាត់ថ្មី (Generate New QR)
                   </button>
 
                   <button
