@@ -1,8 +1,7 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import MainLayout from '../components/layout/MainLayout';
 import Login from '../pages/Login';
-import Register from '../pages/Register';
 import Pos from '../pages/Pos';
 import Sales from '../pages/Sales';
 import SaleDetail from '../pages/SaleDetail';
@@ -15,8 +14,9 @@ import NotFound from '../pages/NotFound';
 /**
  * Route Structure:
  * 
- * 1. AUTH (Full screen, unauthenticated / optional):
- *    /login, /register
+ * 1. AUTH:
+ *    /login (Sign In for staff/admin only)
+ *    /register -> redirects to /login (registration is managed by Admin)
  * 
  * 2. PUBLIC STOREFRONT (No login required for browsing & purchasing):
  *    / (Storefront / Products / Cart / Checkout)
@@ -33,9 +33,9 @@ import NotFound from '../pages/NotFound';
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* ---------- ១. AUTH (Login & Register) ---------- */}
+      {/* ---------- ១. AUTH (Login Only) ---------- */}
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/register" element={<Navigate to="/login" replace />} />
 
       {/* ---------- ២ & ៣. Main Layout ---------- */}
       <Route element={<MainLayout />}>

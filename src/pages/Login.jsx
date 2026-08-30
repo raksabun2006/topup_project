@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Loader2, AlertCircle, Store, Eye, EyeOff, Lock, User, ArrowLeft } from 'lucide-react';
+import { Loader2, AlertCircle, Store, Eye, EyeOff, Lock, User, ArrowLeft, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getErrorMessage } from '../api/client';
 import { env } from '../config/env';
@@ -145,12 +145,11 @@ export default function Login() {
             )}
           </button>
 
-          <p className="mt-5 text-center text-xs text-slate-500">
-            មិនទាន់មានគណនី?{' '}
-            <Link to="/register" className="font-semibold text-emerald-600 hover:text-emerald-700">
-              ចុះឈ្មោះ (Register)
-            </Link>
-          </p>
+          {/* Admin Managed Registration Notice */}
+          <div className="mt-6 flex items-center justify-center gap-1.5 rounded-xl bg-slate-50 py-2.5 px-3 border border-slate-100 text-center text-[11px] text-slate-500">
+            <ShieldAlert size={14} className="shrink-0 text-slate-400" />
+            <span>គណនីត្រូវបានគ្រប់គ្រង និងបង្កើតដោយ Admin ប៉ុណ្ណោះ</span>
+          </div>
         </form>
       </div>
     </div>

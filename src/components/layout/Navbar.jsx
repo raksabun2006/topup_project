@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import {
   Store, Menu, X, User, LogOut, Receipt, LayoutDashboard, ShoppingCart,
-  Package, ChevronDown, Users,
+  Package, ChevronDown, Users, LogIn,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { env } from '../../config/env';
@@ -74,15 +74,10 @@ export default function Navbar() {
             <div className="flex items-center gap-3">
               <Link
                 to="/login"
-                className="px-4 py-2 text-sm font-medium text-white/90 transition hover:text-white"
+                className="flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50 active:scale-95"
               >
-                ចូល
-              </Link>
-              <Link
-                to="/register"
-                className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50"
-              >
-                ចុះឈ្មោះ
+                <LogIn size={16} />
+                ចូលគណនី (Login)
               </Link>
             </div>
           ) : (
@@ -101,9 +96,9 @@ export default function Navbar() {
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 bg-ink-900 shadow-lg shadow-black/20">
+                  <div className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-black/20">
                     {[
-                      { to: '/dashboard', icon: LayoutDashboard, label: 'Dahboard' },
+                      { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
                       { to: '/sales', icon: Receipt, label: 'Sales' },
                       ...(isAdmin ? [{ to: '/products', icon: Package, label: 'Products' }] : []),
                       ...(isAdmin ? [{ to: '/customers', icon: Users, label: 'Customers' }] : []),
@@ -175,16 +170,10 @@ export default function Navbar() {
                 <Link
                   to="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-xl border border-white/30 px-3 py-3 text-center text-sm font-medium text-white"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-3 text-center text-sm font-bold text-emerald-700 shadow-sm"
                 >
-                  ចូល
-                </Link>
-                <Link
-                  to="/register"
-                  onClick={() => setMobileOpen(false)}
-                  className="rounded-xl bg-white px-3 py-3 text-center text-sm font-semibold text-emerald-700"
-                >
-                  ចុះឈ្មោះ
+                  <LogIn size={17} />
+                  ចូលគណនី (Login)
                 </Link>
               </div>
             )}

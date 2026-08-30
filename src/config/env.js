@@ -12,7 +12,7 @@ const rawApiUrl = (
 export const env = {
   apiBaseUrl: rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl}/api/v1`,
 
-  appName: import.meta.env.VITE_APP_NAME ?? 'Bun Raksa',
+  appName: import.meta.env.VITE_APP_NAME ?? 'Mart System',
 
   // Bakong QR polling ក្នុង POS checkout: 3s មួយដង
   paymentPollIntervalMs: Number(
