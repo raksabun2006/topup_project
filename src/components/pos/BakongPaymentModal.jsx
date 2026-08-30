@@ -217,13 +217,13 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
             {finishing ? (
               <>
                 <Loader2 size={36} className="animate-spin text-emerald-600" />
-                <p className="text-base font-bold text-slate-900">ការទូទាត់បានជោគជ័យ 🎉</p>
+                <p className="text-base font-bold text-slate-900">ការទូទាត់បានជោគជ័យ</p>
                 <p className="text-xs text-slate-500">កំពុងបញ្ចប់ការបញ្ជាទិញ...</p>
               </>
             ) : finishError ? (
               <>
                 <AlertCircle size={36} className="text-amber-600" />
-                <p className="text-base font-bold text-slate-900">ការទូទាត់បានជោគជ័យ 🎉</p>
+                <p className="text-base font-bold text-slate-900">ការទូទាត់បានជោគជ័យ</p>
                 <p className="text-xs text-slate-500">{finishError}</p>
               </>
             ) : (
@@ -231,7 +231,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                   <CheckCircle size={38} />
                 </div>
-                <h4 className="text-xl font-black text-slate-900">🎉 ការទូទាត់បានជោគជ័យ!</h4>
+                <h4 className="text-xl font-black text-slate-900">ការទូទាត់បានជោគជ័យ!</h4>
                 <p className="text-sm font-bold text-slate-800">
                   Invoice: {billNo}
                 </p>

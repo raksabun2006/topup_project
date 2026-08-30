@@ -83,7 +83,7 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
       >
         <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3.5 sm:px-6 sm:py-4">
           <h3 className="text-base sm:text-lg font-bold text-slate-900">
-            {isAuthenticated ? 'សង្ខេបការគិតលុយ (Checkout)' : '🛒 សង្ខេបការបញ្ជាទិញ'}
+            {isAuthenticated ? 'សង្ខេបការគិតលុយ (Checkout)' : 'សង្ខេបការបញ្ជាទិញ'}
           </h3>
           <button
             onClick={onClose}

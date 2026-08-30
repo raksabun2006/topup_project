@@ -1,29 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Minus, Plus, Trash2, Package } from 'lucide-react';
+import { Minus, Plus, Trash2, Package, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 
 export default function CartItem({ item, onSetQuantity, onRemove }) {
   const { product, quantity } = item;
   const lineTotal = product.price * quantity - (item.discount || 0);
-  const atMaxStock = quantity >= (product.stockQuantity ?? Infinity);
+  const maxStock = product.stockQuantity ?? Infinity;
+  const atMaxStock = quantity >= maxStock;
   const [imageBroken, setImageBroken] = useState(false);
 
   useEffect(() => setImageBroken(false), [product.imageUrl]);
 
   return (
-    <div className="flex items-center gap-2.5 py-3 border-b border-slate-100 last:border-0">
-      {/* Delete button */}
-      <button
-        type="button"
-        onClick={() => onRemove(product.id)}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-300 transition hover:bg-rose-50 hover:text-rose-600 active:scale-95"
-        title="លុបចេញ"
-      >
-        <Trash2 size={16} />
-      </button>
-
+    <div className="group relative flex items-center gap-2.5 py-3 transition-colors hover:bg-slate-50/60 -mx-2 px-2 rounded-xl border-b border-slate-100 last:border-0">
       {/* Product thumbnail */}
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50 p-1">
+      <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/80 bg-white p-1 shadow-2xs">
         {product.imageUrl && !imageBroken ? (
           <img
             src={product.imageUrl}
@@ -32,47 +23,78 @@ export default function CartItem({ item, onSetQuantity, onRemove }) {
             onError={() => setImageBroken(true)}
           />
         ) : (
-          <Package size={20} className="text-slate-300" />
+          <Package size={20} className="text-slate-400" />
         )}
       </div>
 
       {/* Product info */}
       <div className="min-w-0 flex-1">
-        <p className="truncate text-xs font-semibold text-slate-900" title={product.name}>
+        <p className="truncate text-xs font-bold text-slate-800 group-hover:text-emerald-700 transition-colors" title={product.name}>
           {product.name}
         </p>
-        <p className="text-[11px] font-medium text-slate-500">
-          {formatCurrency(product.price)}
-        </p>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className="text-[11px] font-medium text-slate-500">
+            {formatCurrency(product.price)}
+          </span>
+          {atMaxStock && (
+            <span className="inline-flex items-center gap-0.5 rounded-md bg-amber-50 px-1 py-0.2 text-[9px] font-semibold text-amber-700">
+              <AlertCircle size={10} /> អតិបរមា
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Touch-friendly Quantity selector */}
-      <div className="flex shrink-0 items-center gap-1.5 bg-slate-50 rounded-full p-0.5 border border-slate-200">
+      <div className="flex shrink-0 items-center gap-1 bg-slate-100/80 rounded-lg p-0.5 border border-slate-200/70">
         <button
           type="button"
-          onClick={() => onSetQuantity(product.id, quantity - 1)}
-          className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-slate-700 shadow-xs transition hover:bg-slate-100 active:scale-90"
+          onClick={() => {
+            if (quantity === 1) {
+              onRemove(product.id);
+            } else {
+              onSetQuantity(product.id, quantity - 1);
+            }
+          }}
+          className="flex h-6 w-6 items-center justify-center rounded-md bg-white text-slate-700 shadow-2xs transition hover:bg-rose-50 hover:text-rose-600 active:scale-90"
+          title={quantity === 1 ? 'លុបទំនិញ' : 'បន្ថយចំនួន'}
           aria-label="Decrease quantity"
         >
-          <Minus size={13} />
+          {quantity === 1 ? <Trash2 size={12} className="text-rose-500" /> : <Minus size={12} />}
         </button>
-        <span className="w-6 text-center text-xs font-bold text-slate-900">{quantity}</span>
+
+        <span className="w-5 text-center text-xs font-bold text-slate-800 select-none">
+          {quantity}
+        </span>
+
         <button
           type="button"
           onClick={() => onSetQuantity(product.id, quantity + 1)}
           disabled={atMaxStock}
-          title={atMaxStock ? 'លើសស្តុកដែលមាន' : undefined}
-          className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-slate-700 shadow-xs transition hover:bg-slate-100 active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
+          title={atMaxStock ? `ស្តុកអតិបរមា ${maxStock}` : 'បន្ថែមចំនួន'}
+          className="flex h-6 w-6 items-center justify-center rounded-md bg-white text-slate-700 shadow-2xs transition hover:bg-emerald-50 hover:text-emerald-700 active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
           aria-label="Increase quantity"
         >
-          <Plus size={13} />
+          <Plus size={12} />
         </button>
       </div>
 
       {/* Line Total */}
-      <span className="w-16 shrink-0 text-right text-xs font-bold text-emerald-600">
-        {formatCurrency(lineTotal)}
-      </span>
+      <div className="w-16 shrink-0 text-right">
+        <span className="text-xs font-black text-emerald-600">
+          {formatCurrency(lineTotal)}
+        </span>
+      </div>
+
+      {/* Quick remove button */}
+      <button
+        type="button"
+        onClick={() => onRemove(product.id)}
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-300 opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-50 hover:text-rose-600 active:scale-95 sm:opacity-0 focus:opacity-100"
+        title="លុបចេញ"
+      >
+        <Trash2 size={14} />
+      </button>
     </div>
   );
 }
+

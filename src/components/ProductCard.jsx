@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Package, Plus } from 'lucide-react';
+import { Package, Plus, Check } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 
 /**
@@ -18,12 +18,23 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
   return (
     <div
       onClick={() => !outOfStock && onAdd(product)}
-      className={`group flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition-all duration-150 ${
+      className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-2xs transition-all duration-150 select-none ${
         outOfStock
-          ? 'cursor-not-allowed opacity-60'
-          : 'cursor-pointer hover:-translate-y-0.5 hover:border-emerald-500/50 hover:shadow-md'
+          ? 'border-slate-200 opacity-60 cursor-not-allowed'
+          : cartQuantity > 0
+          ? 'border-emerald-500/60 ring-2 ring-emerald-500/20 cursor-pointer hover:-translate-y-0.5 hover:shadow-md'
+          : 'border-slate-200 cursor-pointer hover:-translate-y-0.5 hover:border-emerald-500/50 hover:shadow-md'
       }`}
     >
+      {/* In-Cart Quantity Badge */}
+      {cartQuantity > 0 && (
+        <span className="absolute top-2 right-2 z-10 flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm animate-scale-in">
+          <Check size={11} />
+          <span>{cartQuantity} ក្នុងរទេះ</span>
+        </span>
+      )}
+
+      {/* Product Image Area */}
       <div className="flex aspect-[4/3] items-center justify-center bg-slate-50/80 p-2 overflow-hidden">
         {product.imageUrl && !imageBroken ? (
           <img
@@ -33,13 +44,13 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
             onError={() => setImageBroken(true)}
           />
         ) : (
-          <Package size={22} className="text-slate-300" />
+          <Package size={24} className="text-slate-300" />
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-2 sm:p-2.5">
+      <div className="flex flex-1 flex-col p-2.5">
         <p
-          className="line-clamp-1 text-xs font-semibold text-slate-800 transition-colors group-hover:text-emerald-600"
+          className="line-clamp-1 text-xs font-bold text-slate-800 transition-colors group-hover:text-emerald-700"
           title={product.name}
         >
           {product.name}
@@ -48,12 +59,12 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
           {product.sku ? `SKU: ${product.sku}` : '\u00A0'}
         </p>
 
-        <div className="mt-auto flex items-center justify-between pt-1">
-          <span className="text-xs font-bold text-emerald-600 sm:text-sm">
+        <div className="mt-auto flex items-center justify-between pt-1.5">
+          <span className="text-xs font-black text-emerald-600 sm:text-sm">
             {formatCurrency(product.price)}
           </span>
           <span
-            className={`text-[10px] font-medium ${
+            className={`text-[10px] font-semibold ${
               outOfStock ? 'text-rose-600' : 'text-slate-400'
             }`}
           >
@@ -68,12 +79,17 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
             onAdd(product);
           }}
           disabled={outOfStock}
-          className="mt-1.5 flex h-7 items-center justify-center gap-1 rounded-lg bg-emerald-600 px-2 text-xs font-medium text-white transition hover:bg-emerald-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:opacity-60"
+          className={`mt-2 flex h-7 items-center justify-center gap-1 rounded-xl text-xs font-bold text-white transition active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 ${
+            cartQuantity > 0
+              ? 'bg-emerald-700 hover:bg-emerald-600 shadow-2xs'
+              : 'bg-emerald-600 hover:bg-emerald-500 shadow-2xs'
+          }`}
         >
           <Plus size={13} />
-          <span>{outOfStock ? 'អស់ស្តុក' : 'បន្ថែម'}</span>
+          <span>{outOfStock ? 'អស់ស្តុក' : cartQuantity > 0 ? `បន្ថែមទៀត (${cartQuantity})` : 'បន្ថែម'}</span>
         </button>
       </div>
     </div>
   );
 }
+

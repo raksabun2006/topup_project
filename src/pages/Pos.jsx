@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { XCircle, PauseCircle, ShoppingCart, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { ShoppingCart, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useCategories } from '../hooks/useCategories';
@@ -144,7 +144,7 @@ export default function Pos() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-2.5 sm:p-4 lg:grid lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_390px] lg:gap-4 lg:overflow-hidden">
+      <div className="flex-1 p-2.5 sm:p-4 lg:grid lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_390px] lg:gap-4 lg:items-start lg:overflow-hidden">
         {/* Product Grid Container */}
         <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 sm:p-4 shadow-xs">
           <ProductGrid
@@ -155,11 +155,12 @@ export default function Pos() {
         </div>
 
         {/* Desktop Cart Panel (Hidden on mobile, shown on lg+) */}
-        <div className="hidden min-h-0 overflow-hidden lg:block">
+        <div className="hidden lg:block">
           <CartPanel
             items={items}
             onSetQuantity={setQuantity}
             onRemove={removeItem}
+            onClear={resetActiveSale}
             subtotal={subtotal}
             selectedCustomer={customer}
             onSelectCustomer={setCustomer}
@@ -173,23 +174,27 @@ export default function Pos() {
             heldOrders={heldOrders}
             onResumeHeld={handleResumeHeld}
             onDiscardHeld={handleDiscardHeld}
+            onCheckout={() => setShowCheckout(true)}
+            onHold={isAuthenticated ? handleHoldOrder : undefined}
+            onCancel={isAuthenticated ? handleCancelOrder : undefined}
           />
         </div>
       </div>
 
-      {/* Desktop Bottom Action & Checkout Bar */}
-      <div className="hidden px-4 pb-4 lg:grid lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_390px] lg:gap-4">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+      {/* Desktop Bottom Category Bar */}
+      <div className="hidden px-4 pb-4 lg:block">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none rounded-2xl border border-slate-200/80 bg-white p-2.5 shadow-2xs">
+          <span className="text-xs font-bold text-slate-500 pl-2 pr-1 shrink-0">ប្រភេទទំនិញ:</span>
           <button
             onClick={() => setCategory('')}
-            className={`flex shrink-0 flex-col items-center gap-1 rounded-xl border-2 px-3.5 py-2 text-xs font-semibold transition ${
+            className={`flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition active:scale-95 ${
               !category
-                ? 'border-emerald-600 bg-white text-emerald-700 shadow-xs'
-                : 'border-transparent bg-white/60 text-slate-400 hover:text-slate-600'
+                ? 'border-emerald-600 bg-emerald-50 text-emerald-700 shadow-2xs'
+                : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
             }`}
           >
-            <AllCategoriesIcon size={20} />
-            ទាំងអស់
+            <AllCategoriesIcon size={15} />
+            <span>ទាំងអស់</span>
           </button>
           {categories.map((cat) => {
             const Icon = getCategoryIcon(cat.name);
@@ -198,47 +203,18 @@ export default function Pos() {
               <button
                 key={cat.id}
                 onClick={() => setCategory(cat.name)}
-                className={`flex shrink-0 flex-col items-center gap-1 rounded-xl border-2 px-3.5 py-2 text-xs font-semibold transition ${
+                className={`flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition active:scale-95 ${
                   active
-                    ? 'border-emerald-600 bg-white text-emerald-700 shadow-xs'
-                    : 'border-transparent bg-white/60 text-slate-400 hover:text-slate-600'
+                    ? 'border-emerald-600 bg-emerald-50 text-emerald-700 shadow-2xs'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >
-                <Icon size={20} />
-                {cat.name}
+                <Icon size={15} />
+                <span>{cat.name}</span>
               </button>
             );
           })}
-
-          {isAuthenticated && (
-            <div className="ml-auto flex shrink-0 items-center gap-2">
-              <button
-                onClick={handleCancelOrder}
-                disabled={items.length === 0}
-                className="flex items-center gap-1.5 rounded-xl border-2 border-rose-500 px-4 py-2.5 text-sm font-bold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-300"
-              >
-                <XCircle size={16} />
-                បោះបង់
-              </button>
-              <button
-                onClick={handleHoldOrder}
-                disabled={items.length === 0}
-                className="flex items-center gap-1.5 rounded-xl border-2 border-emerald-600 px-4 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-300"
-              >
-                <PauseCircle size={16} />
-                រង់ចាំ
-              </button>
-            </div>
-          )}
         </div>
-
-        <button
-          onClick={() => setShowCheckout(true)}
-          disabled={items.length === 0}
-          className="w-full rounded-xl bg-emerald-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
-        >
-          បង់ប្រាក់ ({formatCurrency(total)})
-        </button>
       </div>
 
       {/* Floating Mobile Cart & Checkout Bar (Sticky Bottom on Mobile) */}
@@ -258,7 +234,7 @@ export default function Pos() {
                 </span>
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] text-slate-500 leading-tight truncate">{itemCount} មុខ</p>
+                <p className="text-[10px] text-slate-500 leading-tight truncate">{itemCount} ចំនួន</p>
                 <p className="text-xs font-bold text-slate-900 leading-tight">{formatCurrency(total)}</p>
               </div>
               {mobileCartOpen ? <ChevronDown size={14} className="text-slate-400 shrink-0" /> : <ChevronUp size={14} className="text-slate-400 shrink-0" />}
@@ -273,7 +249,7 @@ export default function Pos() {
               }}
               className="flex flex-1 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-600 py-3 px-3 sm:px-4 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 active:scale-[0.98]"
             >
-              <span>បង់ប្រាក់</span>
+              <span>បង់ប្រាក់ឥឡូវនេះ</span>
               <span className="font-extrabold">{formatCurrency(total)}</span>
             </button>
           </div>
@@ -284,12 +260,12 @@ export default function Pos() {
       {mobileCartOpen && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs lg:hidden animate-fade-in">
           <div className="fixed inset-0" onClick={() => setMobileCartOpen(false)} />
-          <div className="relative z-10 max-h-[88vh] w-full overflow-hidden rounded-t-3xl border-t border-slate-200 bg-white shadow-2xl flex flex-col animate-slide-up pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <div className="relative z-10 max-h-[90vh] w-full overflow-hidden rounded-t-3xl border-t border-slate-200 bg-white shadow-2xl flex flex-col animate-slide-up pb-[max(0.5rem,env(safe-area-inset-bottom))]">
             {/* Sheet Handle & Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 sm:px-5 py-3 sm:py-3.5">
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50/70">
               <div className="flex items-center gap-2">
                 <ShoppingCart size={18} className="text-emerald-600" />
-                <h3 className="text-sm font-bold text-slate-900">រទេះទំនិញរបស់អ្នក ({itemCount})</h3>
+                <h3 className="text-sm font-bold text-slate-900">រទេះទំនិញរបស់អ្នក ({itemCount} ចំនួន)</h3>
               </div>
               <button
                 onClick={() => setMobileCartOpen(false)}
@@ -305,6 +281,7 @@ export default function Pos() {
                 items={items}
                 onSetQuantity={setQuantity}
                 onRemove={removeItem}
+                onClear={resetActiveSale}
                 subtotal={subtotal}
                 selectedCustomer={customer}
                 onSelectCustomer={setCustomer}
@@ -318,21 +295,13 @@ export default function Pos() {
                 heldOrders={heldOrders}
                 onResumeHeld={handleResumeHeld}
                 onDiscardHeld={handleDiscardHeld}
-              />
-            </div>
-
-            {/* Sheet Footer Action */}
-            <div className="border-t border-slate-100 bg-slate-50/90 p-3.5 sm:p-4">
-              <button
-                onClick={() => {
+                onCheckout={() => {
                   setMobileCartOpen(false);
                   setShowCheckout(true);
                 }}
-                disabled={items.length === 0}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 active:scale-[0.98] disabled:opacity-50"
-              >
-                បន្តទៅការគិតលុយ ({formatCurrency(total)})
-              </button>
+                onHold={isAuthenticated ? () => { handleHoldOrder(); setMobileCartOpen(false); } : undefined}
+                onCancel={isAuthenticated ? () => { handleCancelOrder(); setMobileCartOpen(false); } : undefined}
+              />
             </div>
           </div>
         </div>

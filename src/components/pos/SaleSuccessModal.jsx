@@ -12,7 +12,7 @@ export default function SaleSuccessModal({ sale, onNewSale }) {
           <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
             <CheckCircle size={28} className="sm:w-8 sm:h-8" />
           </div>
-          <h2 className="text-lg sm:text-xl font-black text-slate-900">🎉 ការទូទាត់បានជោគជ័យ!</h2>
+          <h2 className="text-lg sm:text-xl font-black text-slate-900">ការទូទាត់បានជោគជ័យ!</h2>
           <p className="text-xs sm:text-sm font-bold text-slate-700">Invoice: {sale.invoiceNumber}</p>
           <p className="text-[11px] sm:text-xs text-slate-500">
             ការបញ្ជាទិញរបស់អ្នកត្រូវបានបញ្ជាក់។ សូមអរគុណសម្រាប់ការគាំទ្រ។
