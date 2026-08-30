@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { ShoppingCart, ChevronDown, History, RotateCcw, X } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import CartItem from './CartItem';
 import CustomerSelector from './CustomerSelector';
 import { formatCurrency, formatCurrencyPrecise } from '../../utils/format';
 
 function HeldOrders({ heldOrders, onResume, onDiscard }) {
   const [open, setOpen] = useState(false);
-  if (heldOrders.length === 0) return null;
+  if (!heldOrders || heldOrders.length === 0) return null;
 
   return (
     <div className="relative">
@@ -74,16 +75,24 @@ export default function CartPanel({
   onResumeHeld,
   onDiscardHeld,
 }) {
+  const { isAuthenticated } = useAuth();
+
   return (
     <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3.5">
-        <h2 className="text-base font-bold text-slate-900">សរុបគិតលុយ</h2>
-        <HeldOrders heldOrders={heldOrders} onResume={onResumeHeld} onDiscard={onDiscardHeld} />
+        <h2 className="text-base font-bold text-slate-900">
+          {isAuthenticated ? 'សរុបគិតលុយ (POS)' : 'រទេះទំនិញរបស់អ្នក'}
+        </h2>
+        {isAuthenticated && (
+          <HeldOrders heldOrders={heldOrders} onResume={onResumeHeld} onDiscard={onDiscardHeld} />
+        )}
       </div>
 
-      <div className="border-b border-slate-100 p-3">
-        <CustomerSelector selectedCustomer={selectedCustomer} onSelect={onSelectCustomer} />
-      </div>
+      {isAuthenticated && (
+        <div className="border-b border-slate-100 p-3">
+          <CustomerSelector selectedCustomer={selectedCustomer} onSelect={onSelectCustomer} />
+        </div>
+      )}
 
       {items.length > 0 && (
         <div className="flex items-center gap-2.5 px-4 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
@@ -115,45 +124,59 @@ export default function CartPanel({
       </div>
 
       <div className="border-t border-slate-100 p-4">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-500">បញ្ចុះតម្លៃ (%)</span>
-          <input
-            type="number" min="0" max="100" step="0.1"
-            value={discountPct}
-            onChange={(e) => onDiscountPctChange(e.target.value)}
-            className="w-16 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-right text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-          />
-        </div>
-        {discountAmount > 0 && (
-          <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
-            <span>ចំនួនបញ្ចុះ</span>
-            <span>-{formatCurrencyPrecise(discountAmount)}</span>
+        {isAuthenticated ? (
+          /* Staff/Admin Pricing Controls */
+          <>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-slate-500">បញ្ចុះតម្លៃ (%)</span>
+              <input
+                type="number" min="0" max="100" step="0.1"
+                value={discountPct}
+                onChange={(e) => onDiscountPctChange(e.target.value)}
+                className="w-16 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-right text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+            {discountAmount > 0 && (
+              <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
+                <span>ចំនួនបញ្ចុះ</span>
+                <span>-{formatCurrencyPrecise(discountAmount)}</span>
+              </div>
+            )}
+
+            <div className="mt-2.5 flex items-center justify-between text-sm">
+              <span className="text-slate-500">សរុបរង</span>
+              <span className="font-medium text-slate-700">{formatCurrency(subtotal)}</span>
+            </div>
+
+            <div className="mt-1.5 flex items-center justify-between text-sm">
+              <span className="flex items-center gap-1.5 text-slate-500">
+                ពន្ធ
+                <input
+                  type="number" min="0" max="100" step="0.1"
+                  value={taxPct}
+                  onChange={(e) => onTaxPctChange(e.target.value)}
+                  className="w-12 rounded border-b border-dashed border-slate-300 bg-transparent text-center text-xs text-emerald-700 focus:border-emerald-500 focus:outline-none"
+                />
+                %
+              </span>
+              <span className="font-medium text-slate-700">{formatCurrencyPrecise(taxAmount)}</span>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between border-t border-dashed border-slate-200 pt-3">
+              <span className="text-base font-bold text-slate-900">សរុប</span>
+              <span className="text-xl font-black text-emerald-600">{formatCurrency(total)}</span>
+            </div>
+          </>
+        ) : (
+          /* Customer Summary (Hide Tax, Discount & Subtotal breakdown) */
+          <div className="flex items-center justify-between py-1">
+            <div>
+              <span className="text-sm font-bold text-slate-900">សរុបត្រូវបង់</span>
+              <p className="text-[11px] text-slate-400">រួមបញ្ចូលទាំងស្រុង</p>
+            </div>
+            <span className="text-2xl font-black text-emerald-600">{formatCurrency(total)}</span>
           </div>
         )}
-
-        <div className="mt-2.5 flex items-center justify-between text-sm">
-          <span className="text-slate-500">សរុបរង</span>
-          <span className="font-medium text-slate-700">{formatCurrency(subtotal)}</span>
-        </div>
-
-        <div className="mt-1.5 flex items-center justify-between text-sm">
-          <span className="flex items-center gap-1.5 text-slate-500">
-            ពន្ធ
-            <input
-              type="number" min="0" max="100" step="0.1"
-              value={taxPct}
-              onChange={(e) => onTaxPctChange(e.target.value)}
-              className="w-12 rounded border-b border-dashed border-slate-300 bg-transparent text-center text-xs text-emerald-700 focus:border-emerald-500 focus:outline-none"
-            />
-            %
-          </span>
-          <span className="font-medium text-slate-700">{formatCurrencyPrecise(taxAmount)}</span>
-        </div>
-
-        <div className="mt-3 flex items-center justify-between border-t border-dashed border-slate-200 pt-3">
-          <span className="text-base font-bold text-slate-900">សរុប</span>
-          <span className="text-xl font-black text-emerald-600">{formatCurrency(total)}</span>
-        </div>
       </div>
     </div>
   );

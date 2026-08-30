@@ -161,18 +161,18 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const merchantDisplayName = payment?.merchantName || 'Bun Raksa';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-sm overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-2xl animate-scale-in">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-sm max-h-[92vh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 bg-white shadow-2xl animate-slide-up sm:animate-scale-in">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3 sm:px-6 sm:py-4">
           <div>
-            <h3 className="text-lg font-bold text-slate-900">ស្កេនដើម្បីបង់ប្រាក់ KHQR</h3>
-            <p className="text-xs text-slate-500">លេខវិក្កយបត្រ៖ {billNo}</p>
+            <h3 className="text-base sm:text-lg font-bold text-slate-900">ស្កេនដើម្បីបង់ប្រាក់ KHQR</h3>
+            <p className="text-[11px] sm:text-xs text-slate-500">លេខវិក្កយបត្រ៖ {billNo}</p>
           </div>
           <button
             onClick={isSuccess ? onClose : handleCancel}
             disabled={canceling}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
+            className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 transition"
             aria-label="Close"
           >
             <X size={18} />
@@ -246,169 +246,175 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
           </div>
         )}
 
-        {/* Main Display: PENDING QR Code or Failed / Expired state */}
-        {!creating && !createError && !isSuccess && (
-          <>
-            <div className="flex justify-center px-6 py-5">
-              {status === 'PENDING' ? (
-                <div className="relative w-full">
-                  {payment?.qrString ? (
-                    /* Standard KHQR Red Card */
-                    <div className="relative mx-auto w-full max-w-[270px] overflow-hidden rounded-2xl bg-white shadow-lg border border-slate-200 animate-fade-in">
-                      {/* KHQR Header Banner */}
-                      <div
-                        className="bg-[#E61924] px-5 py-2.5 text-right text-white font-bold tracking-wider"
-                        style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 93% 100%, 0 100%)' }}
-                      >
-                        <span className="text-xl font-extrabold italic tracking-tight">KHQR</span>
-                      </div>
-
-                      {/* Merchant & Amount Details */}
-                      <div className="px-5 pt-3 pb-2 text-left">
-                        <p className="truncate text-[11px] font-bold uppercase tracking-wide text-slate-600">
-                          {merchantDisplayName}
-                        </p>
-                        <p className="mt-0.5 text-2xl font-black text-slate-900">
-                          {formatCurrency(paymentAmount, paymentCurrency)}
-                        </p>
-                      </div>
-
-                      {/* Dashed Separator */}
-                      <div className="mx-4 border-t-2 border-dashed border-slate-200" />
-
-                      {/* Real KHQR QR Code rendered from backend data.qrString */}
-                      <div className="flex items-center justify-center p-5 bg-white">
-                        <QRCodeSVG
-                          value={payment.qrString}
-                          size={190}
-                          level="M"
-                          marginSize={0}
-                        />
-                      </div>
-
-                      {/* Acceptance Networks Footer */}
-                      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-4 py-2 text-[10px] text-slate-500">
-                        <div className="flex flex-col text-left">
-                          <span className="text-[8px] uppercase tracking-wider text-slate-400">Member of</span>
-                          <span className="font-extrabold italic text-slate-700">KHQR</span>
+        {/* Main Body Container with Scroll */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Main Display: PENDING QR Code or Failed / Expired state */}
+          {!creating && !createError && !isSuccess && (
+            <>
+              <div className="flex justify-center px-4 py-4 sm:px-6 sm:py-5">
+                {status === 'PENDING' ? (
+                  <div className="relative w-full">
+                    {payment?.qrString ? (
+                      /* Standard KHQR Red Card */
+                      <div className="relative mx-auto w-full max-w-[260px] sm:max-w-[270px] overflow-hidden rounded-2xl bg-white shadow-lg border border-slate-200 animate-fade-in">
+                        {/* KHQR Header Banner */}
+                        <div
+                          className="bg-[#E61924] px-4 sm:px-5 py-2 sm:py-2.5 text-right text-white font-bold tracking-wider"
+                          style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 93% 100%, 0 100%)' }}
+                        >
+                          <span className="text-lg sm:text-xl font-extrabold italic tracking-tight">KHQR</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="rounded bg-[#00427A] px-1.5 py-0.5 text-[8px] font-bold text-white">UnionPay</span>
-                          <span className="rounded bg-[#E60012] px-1.5 py-0.5 text-[8px] font-bold text-white">云闪付</span>
-                          <span className="rounded bg-[#1677FF] px-1.5 py-0.5 text-[8px] font-bold text-white">Alipay+</span>
+
+                        {/* Merchant & Amount Details */}
+                        <div className="px-4 sm:px-5 pt-2.5 pb-1.5 text-left">
+                          <p className="truncate text-[10px] sm:text-[11px] font-bold uppercase tracking-wide text-slate-600">
+                            {merchantDisplayName}
+                          </p>
+                          <p className="mt-0.5 text-xl sm:text-2xl font-black text-slate-900">
+                            {formatCurrency(paymentAmount, paymentCurrency)}
+                          </p>
+                        </div>
+
+                        {/* Dashed Separator */}
+                        <div className="mx-4 border-t-2 border-dashed border-slate-200" />
+
+                        {/* Real KHQR QR Code rendered from backend data.qrString */}
+                        <div className="flex items-center justify-center p-4 sm:p-5 bg-white">
+                          <QRCodeSVG
+                            value={payment.qrString}
+                            size={180}
+                            level="M"
+                            marginSize={0}
+                            className="max-w-full h-auto"
+                          />
+                        </div>
+
+                        {/* Acceptance Networks Footer */}
+                        <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-3.5 sm:px-4 py-2 text-[9px] sm:text-[10px] text-slate-500">
+                          <div className="flex flex-col text-left">
+                            <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-slate-400">Member of</span>
+                            <span className="font-extrabold italic text-slate-700">KHQR</span>
+                          </div>
+                          <div className="flex items-center gap-1 sm:gap-1.5">
+                            <span className="rounded bg-[#00427A] px-1.5 py-0.5 text-[7px] sm:text-[8px] font-bold text-white">UnionPay</span>
+                            <span className="rounded bg-[#E60012] px-1.5 py-0.5 text-[7px] sm:text-[8px] font-bold text-white">云闪付</span>
+                            <span className="rounded bg-[#1677FF] px-1.5 py-0.5 text-[7px] sm:text-[8px] font-bold text-white">Alipay+</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="flex h-72 w-full items-center justify-center rounded-2xl border border-slate-200 bg-white">
-                      <Loader2 size={32} className="animate-spin text-slate-600" />
-                    </div>
-                  )}
+                    ) : (
+                      <div className="flex h-64 sm:h-72 w-full items-center justify-center rounded-2xl border border-slate-200 bg-white">
+                        <Loader2 size={32} className="animate-spin text-slate-600" />
+                      </div>
+                    )}
 
-                  {regenerating && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-2xl bg-white/95">
-                      <Loader2 size={28} className="animate-spin text-emerald-600" />
-                      <p className="text-xs font-medium text-slate-600">កំពុងបង្កើត QR ថ្មី...</p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                /* Expired or Failed State */
-                <div className="flex flex-col items-center gap-2.5 py-8 text-center animate-fade-in">
-                  {isExpired ? (
-                    <Clock size={40} className="text-amber-500" />
-                  ) : (
-                    <XCircle size={40} className="text-rose-500" />
-                  )}
-                  <h4 className="text-base font-bold text-slate-900">
-                    {isExpired
-                      ? 'QR បានផុតកំណត់'
-                      : isCancelled
-                      ? 'ការទូទាត់ត្រូវបានបោះបង់ (Payment Cancelled)'
-                      : 'ការទូទាត់មិនបានជោគជ័យ'}
-                  </h4>
-                  <p className="max-w-[240px] text-xs text-slate-500">
-                    {isExpired
-                      ? 'QR បានផុតកំណត់ សូមបង្កើតការទូទាត់ថ្មី។'
-                      : payment?.message || 'សូមព្យាយាមម្តងទៀត ឬបង្កើតការទូទាត់ថ្មី។'}
+                    {regenerating && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-2xl bg-white/95">
+                        <Loader2 size={28} className="animate-spin text-emerald-600" />
+                        <p className="text-xs font-medium text-slate-600">កំពុងបង្កើត QR ថ្មី...</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Expired or Failed State */
+                  <div className="flex flex-col items-center gap-2.5 py-6 sm:py-8 text-center animate-fade-in">
+                    {isExpired ? (
+                      <Clock size={36} className="text-amber-500" />
+                    ) : (
+                      <XCircle size={36} className="text-rose-500" />
+                    )}
+                    <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                      {isExpired
+                        ? 'QR បានផុតកំណត់'
+                        : isCancelled
+                        ? 'ការទូទាត់ត្រូវបានបោះបង់ (Payment Cancelled)'
+                        : 'ការទូទាត់មិនបានជោគជ័យ'}
+                    </h4>
+                    <p className="max-w-[240px] text-xs text-slate-500">
+                      {isExpired
+                        ? 'QR បានផុតកំណត់ សូមបង្កើតការទូទាត់ថ្មី។'
+                        : payment?.message || 'សូមព្យាយាមម្តងទៀត ឬបង្កើតការទូទាត់ថ្មី។'}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Expiration Countdown Banner (Pending State) */}
+              {status === 'PENDING' && secondsLeft != null && (
+                <div className="px-4 sm:px-6 pb-2 text-center">
+                  <p className={`text-xs font-semibold ${secondsLeft <= 60 ? 'text-rose-600 animate-pulse' : 'text-slate-500'}`}>
+                    QR ផុតកំណត់ក្នុង {formatCountdown(secondsLeft)}
                   </p>
                 </div>
               )}
-            </div>
 
-            {/* Expiration Countdown Banner (Pending State) */}
-            {status === 'PENDING' && secondsLeft != null && (
-              <div className="px-6 pb-2 text-center">
-                <p className={`text-xs font-semibold ${secondsLeft <= 60 ? 'text-rose-600 animate-pulse' : 'text-slate-500'}`}>
-                  QR ផុតកំណត់ក្នុង {formatCountdown(secondsLeft)}
-                </p>
-              </div>
-            )}
-
-            {/* Bill Details Summary when not pending */}
-            {status !== 'PENDING' && (
-              <div className="border-y border-slate-100 bg-slate-50/80 px-6 py-3 text-center">
-                <p className="text-xs text-slate-500">ចំនួនទឹកប្រាក់សរុប</p>
-                <p className="mt-0.5 text-xl font-bold text-slate-900">
-                  {formatCurrency(paymentAmount, paymentCurrency)}
-                </p>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="px-6 py-4">
-              {status === 'PENDING' ? (
-                <>
-                  {pollError ? (
-                    <p className="mb-2 text-center text-xs text-rose-600">{pollError}</p>
-                  ) : (
-                    <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 py-2.5 text-xs font-medium text-emerald-800">
-                      <Loader2 size={15} className="animate-spin text-emerald-600" />
-                      <span>Payment Status: កំពុងរង់ចាំការទូទាត់...</span>
-                    </div>
-                  )}
-
-                  {payment?.deeplinkUrl && (
-                    <a
-                      href={payment.deeplinkUrl}
-                      className="mt-2.5 flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-slate-50 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
-                    >
-                      <Smartphone size={15} />
-                      បើកកម្មវិធី Bakong
-                    </a>
-                  )}
-
-                  <button
-                    onClick={handleCancel}
-                    disabled={canceling}
-                    className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl border border-rose-300/60 bg-rose-50/50 py-2 text-xs font-medium text-rose-700 hover:bg-rose-100/60 disabled:opacity-50"
-                  >
-                    {canceling ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />}
-                    បោះបង់ការទូទាត់
-                  </button>
-                </>
-              ) : (
-                <div className="space-y-2">
-                  <button
-                    onClick={regenerateQr}
-                    disabled={regenerating}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 disabled:opacity-60"
-                  >
-                    {regenerating ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                    បង្កើតការទូទាត់ថ្មី (Generate New QR)
-                  </button>
-
-                  <button
-                    onClick={handleCancel}
-                    disabled={canceling}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
-                  >
-                    ត្រឡប់ក្រោយ (Close)
-                  </button>
+              {/* Bill Details Summary when not pending */}
+              {status !== 'PENDING' && (
+                <div className="border-y border-slate-100 bg-slate-50/80 px-4 sm:px-6 py-2.5 sm:py-3 text-center">
+                  <p className="text-xs text-slate-500">ចំនួនទឹកប្រាក់សរុប</p>
+                  <p className="mt-0.5 text-lg sm:text-xl font-bold text-slate-900">
+                    {formatCurrency(paymentAmount, paymentCurrency)}
+                  </p>
                 </div>
               )}
-            </div>
-          </>
+            </>
+          )}
+        </div>
+
+        {/* Action Buttons Footer */}
+        {!creating && !createError && !isSuccess && (
+          <div className="shrink-0 border-t border-slate-100 bg-white px-4 py-3 sm:px-6 sm:py-4">
+            {status === 'PENDING' ? (
+              <>
+                {pollError ? (
+                  <p className="mb-2 text-center text-xs text-rose-600">{pollError}</p>
+                ) : (
+                  <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 py-2 sm:py-2.5 text-xs font-medium text-emerald-800">
+                    <Loader2 size={14} className="animate-spin text-emerald-600 shrink-0" />
+                    <span className="truncate">កំពុងរង់ចាំការទូទាត់...</span>
+                  </div>
+                )}
+
+                {payment?.deeplinkUrl && (
+                  <a
+                    href={payment.deeplinkUrl}
+                    className="mt-2 flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-slate-50 py-2 sm:py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                  >
+                    <Smartphone size={14} />
+                    បើកកម្មវិធី Bakong
+                  </a>
+                )}
+
+                <button
+                  onClick={handleCancel}
+                  disabled={canceling}
+                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/50 py-2 text-xs font-medium text-rose-700 hover:bg-rose-100/60 disabled:opacity-50 transition"
+                >
+                  {canceling ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />}
+                  បោះបង់ការទូទាត់
+                </button>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <button
+                  onClick={regenerateQr}
+                  disabled={regenerating}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 disabled:opacity-60"
+                >
+                  {regenerating ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={15} />}
+                  បង្កើតការទូទាត់ថ្មី (Generate New QR)
+                </button>
+
+                <button
+                  onClick={handleCancel}
+                  disabled={canceling}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition"
+                >
+                  ត្រឡប់ក្រោយ (Close)
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>

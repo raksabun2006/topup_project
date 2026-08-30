@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
+import { useAuth } from '../context/AuthContext';
 import MainLayout from '../components/layout/MainLayout';
 import Login from '../pages/Login';
 import Pos from '../pages/Pos';
@@ -12,24 +13,19 @@ import Profile from '../pages/Profile';
 import NotFound from '../pages/NotFound';
 
 /**
- * Route Structure:
- * 
- * 1. AUTH:
- *    /login (Sign In for staff/admin only)
- *    /register -> redirects to /login (registration is managed by Admin)
- * 
- * 2. PUBLIC STOREFRONT (No login required for browsing & purchasing):
- *    / (Storefront / Products / Cart / Checkout)
- *    /pos
- * 
- * 3. PROTECTED (Staff & Admin only):
- *    /dashboard
- *    /sales
- *    /sales/:id
- *    /products (Inventory Management - Admin only)
- *    /customers (Customer Management - Admin only)
- *    /profile (Staff/Admin Profile)
+ * Route handler for /products:
+ * - Admin logged in: Admin Products Management
+ * - Customers/Guests: Public Product Storefront (Pos)
  */
+function ProductsRouteHandler() {
+  const { isAdmin, isAuthenticated, loading } = useAuth();
+  if (loading) return null;
+  if (isAuthenticated && isAdmin) {
+    return <Products />;
+  }
+  return <Pos />;
+}
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -40,9 +36,13 @@ export default function AppRoutes() {
       {/* ---------- ២ & ៣. Main Layout ---------- */}
       <Route element={<MainLayout />}>
 
-        {/* Public Storefront / Shopping Flow */}
+        {/* Public Storefront / Shopping Flow (No login required) */}
         <Route path="/" element={<Pos />} />
         <Route path="/pos" element={<Pos />} />
+        <Route path="/cart" element={<Pos />} />
+        <Route path="/checkout" element={<Pos />} />
+        <Route path="/payment/:saleId" element={<Pos />} />
+        <Route path="/products" element={<ProductsRouteHandler />} />
 
         {/* Protected Staff & Admin Routes */}
         <Route
@@ -70,7 +70,7 @@ export default function AppRoutes() {
           }
         />
         <Route
-          path="/products"
+          path="/admin/products"
           element={
             <ProtectedRoute requireAdmin>
               <Products />

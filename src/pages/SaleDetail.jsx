@@ -125,7 +125,7 @@ export default function SaleDetail() {
       )}
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
-        <Receipt sale={sale} />
+        <Receipt sale={sale} showTaxDiscount={true} />
       </div>
     </div>
   );
