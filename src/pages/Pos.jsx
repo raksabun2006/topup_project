@@ -105,6 +105,10 @@ export default function Pos() {
     setStockReloadSignal((n) => n + 1);
   };
 
+  const handleNewSale = () => {
+    setCompletedSale(null);
+  };
+
   const isProductsPage = pathname === '/products';
   const isPosPage = pathname === '/pos';
   const isCheckoutFlow = pathname === '/cart' || pathname === '/checkout' || pathname.startsWith('/payment');
