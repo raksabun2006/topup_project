@@ -14,14 +14,14 @@ import { useAuth } from '../../context/AuthContext';
 export default function MainLayout() {
   const { pathname } = useLocation();
   const { isAdmin } = useAuth();
-  const isPos = pathname === '/pos';
+  const isPos = pathname === '/pos' || pathname === '/' || pathname === '/cart' || pathname === '/checkout' || pathname.startsWith('/payment');
   const isAdminDashboard = pathname === '/dashboard' && isAdmin;
   const isFullScreen = isPos || isAdminDashboard;
 
   return (
     <div className={`flex flex-col bg-ink-950 text-slate-700 selection:bg-emerald-500 selection:text-white ${isFullScreen ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
       {!isAdminDashboard && <Navbar />}
-      <main className={isFullScreen ? 'min-h-0 flex-1' : 'flex-1'}>
+      <main className={isFullScreen ? 'min-h-0 flex-1 flex flex-col' : 'flex-1'}>
         <Outlet />
       </main>
       {!isPos && !isAdminDashboard && <Footer />}

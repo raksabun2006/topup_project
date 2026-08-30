@@ -18,6 +18,30 @@ body {
   font-family: 'Siemreap', ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Custom sleek scrollbar styling for product grids & panels */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Fade-in-up សម្រាប់ section entrance - Tailwind v4 មិនមាន utility នេះជាមូលដ្ឋានទេ */
 @keyframes fade-in-up {
   from {

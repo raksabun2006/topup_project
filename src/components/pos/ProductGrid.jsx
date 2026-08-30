@@ -35,9 +35,9 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
   }, [products, search]);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       {/* ស្វែងរក + បន្ថែមផលិតផលថ្មី */}
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-3">
         {isAdmin && (
           <button
             onClick={() => setShowCreate(true)}
@@ -63,7 +63,7 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
       </div>
 
       {/* មាតិកាទំនិញ */}
-      <div className="mt-3 flex-1 overflow-y-auto">
+      <div className="mt-3 flex-1 min-h-0 overflow-y-auto pr-1 pb-1">
         {loading && (
           <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
             <Loader2 size={32} className="animate-spin text-emerald-600 mb-2.5" />
@@ -109,7 +109,7 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
 
       {/* ទំព័រ Pagination */}
       {!loading && !error && totalPages > 1 && (
-        <div className="mt-2.5 flex items-center justify-center gap-2.5 border-t border-slate-200 pt-2.5">
+        <div className="mt-2.5 shrink-0 flex items-center justify-center gap-2.5 border-t border-slate-200 pt-2.5">
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page <= 0}

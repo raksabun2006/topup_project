@@ -107,9 +107,9 @@ export default function Pos() {
   };
 
   return (
-    <div className="flex min-h-[calc(100dvh-4rem)] flex-col bg-slate-50/50 pb-20 sm:pb-24 lg:h-full lg:min-h-0 lg:pb-0">
+    <div className="flex h-full min-h-0 flex-1 flex-col bg-slate-50/50 pb-20 sm:pb-24 lg:pb-0">
       {/* Category Pills Header on Mobile */}
-      <div className="sticky top-16 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-3 py-2 sm:px-4 sm:py-2.5 lg:hidden">
+      <div className="shrink-0 sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-3 py-2 sm:px-4 sm:py-2.5 lg:hidden">
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none">
           <button
             onClick={() => setCategory('')}
@@ -144,9 +144,9 @@ export default function Pos() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-2.5 sm:p-4 lg:grid lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_390px] lg:gap-4 lg:items-start lg:overflow-hidden">
+      <div className="flex-1 min-h-0 p-2.5 sm:p-4 lg:grid lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_390px] lg:gap-4 lg:overflow-hidden">
         {/* Product Grid Container */}
-        <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 sm:p-4 shadow-xs">
+        <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 sm:p-4 shadow-xs">
           <ProductGrid
             category={category}
             onAdd={(product) => addItem(product, 1)}
@@ -155,7 +155,7 @@ export default function Pos() {
         </div>
 
         {/* Desktop Cart Panel (Hidden on mobile, shown on lg+) */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:overflow-hidden">
           <CartPanel
             items={items}
             onSetQuantity={setQuantity}
@@ -182,7 +182,7 @@ export default function Pos() {
       </div>
 
       {/* Desktop Bottom Category Bar */}
-      <div className="hidden px-4 pb-4 lg:block">
+      <div className="shrink-0 hidden px-4 pb-4 lg:block">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none rounded-2xl border border-slate-200/80 bg-white p-2.5 shadow-2xs">
           <span className="text-xs font-bold text-slate-500 pl-2 pr-1 shrink-0">ប្រភេទទំនិញ:</span>
           <button

@@ -128,7 +128,7 @@ export default function CartPanel({
   };
 
   return (
-    <div className="flex flex-col rounded-2xl border border-slate-200/90 bg-white shadow-sm overflow-hidden transition-all duration-200">
+    <div className="flex flex-col rounded-2xl border border-slate-200/90 bg-white shadow-sm overflow-hidden transition-all duration-200 lg:h-full lg:min-h-0">
       {/* Top Header */}
       <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4 py-3">
         <div className="flex items-center gap-2">
@@ -182,7 +182,7 @@ export default function CartPanel({
       )}
 
       {/* Cart Items List or Welcoming Empty State (Dynamic Hug-Content Area) */}
-      <div className={`${items.length === 0 ? 'py-10' : 'max-h-[48vh] overflow-y-auto px-4 py-1 divide-y divide-slate-100'}`}>
+      <div className={`${items.length === 0 ? 'py-10 lg:flex-1 lg:flex lg:flex-col lg:justify-center' : 'flex-1 min-h-0 overflow-y-auto px-4 py-1 divide-y divide-slate-100'}`}>
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-6 text-center animate-fade-in">
             <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
