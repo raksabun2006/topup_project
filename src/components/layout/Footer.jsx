@@ -24,10 +24,10 @@ export default function Footer() {
               <div className="flex items-center gap-1.5 md:justify-end">
                 <span className="font-semibold text-slate-900">Phone:</span>
                 <a
-                  href="tel:0968782197"
+                  href="tel:0968782196"
                   className="font-medium text-emerald-600 hover:text-emerald-700 hover:underline transition"
                 >
-                  0968782197
+                  0968782196
                 </a>
               </div>
               <div className="flex flex-wrap items-center gap-1.5 md:justify-end">
