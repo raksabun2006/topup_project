@@ -33,8 +33,8 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-emerald-600 shadow-md shadow-emerald-900/10">
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-        <div className="flex items-center gap-3">
+      <nav className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3 sm:px-4">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="rounded-lg p-1.5 text-white/90 transition hover:bg-white/10 md:hidden"

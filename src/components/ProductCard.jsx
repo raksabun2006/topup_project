@@ -18,7 +18,7 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
   return (
     <div
       onClick={() => !outOfStock && onAdd(product)}
-      className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-2xs transition-all duration-150 select-none ${
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-2xs transition-all duration-150 select-none ${
         outOfStock
           ? 'border-slate-200 opacity-60 cursor-not-allowed'
           : cartQuantity > 0
@@ -34,8 +34,8 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
         </span>
       )}
 
-      {/* Product Image Area */}
-      <div className="flex aspect-[4/3] items-center justify-center bg-slate-50/80 p-2 overflow-hidden">
+      {/* Product Image Area - shrink-0 prevents flex compression on mobile landscape */}
+      <div className="relative flex aspect-[4/3] min-h-[100px] sm:min-h-[120px] w-full shrink-0 items-center justify-center bg-slate-50/80 p-2 overflow-hidden">
         {product.imageUrl && !imageBroken ? (
           <img
             src={product.imageUrl}
@@ -44,11 +44,11 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
             onError={() => setImageBroken(true)}
           />
         ) : (
-          <Package size={24} className="text-slate-300" />
+          <Package size={28} className="text-slate-300" />
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-2.5">
+      <div className="flex flex-1 flex-col p-2 sm:p-2.5">
         <p
           className="line-clamp-1 text-xs font-bold text-slate-800 transition-colors group-hover:text-emerald-700"
           title={product.name}

@@ -107,13 +107,13 @@ export default function Pos() {
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col bg-slate-50/50 pb-20 sm:pb-24 lg:pb-0">
+    <div className={`flex h-full min-h-0 flex-1 flex-col bg-slate-50/50 ${items.length > 0 ? 'pb-20 sm:pb-24' : 'pb-2 sm:pb-3'} lg:pb-0`}>
       {/* Category Pills Header on Mobile */}
-      <div className="shrink-0 sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-3 py-2 sm:px-4 sm:py-2.5 lg:hidden">
+      <div className="shrink-0 sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-2.5 py-1.5 sm:px-4 sm:py-2 lg:hidden">
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none">
           <button
             onClick={() => setCategory('')}
-            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 sm:px-3.5 sm:py-1.5 text-xs font-semibold transition ${
+            className={`flex shrink-0 items-center gap-1 sm:gap-1.5 rounded-full px-2.5 py-1 sm:px-3.5 sm:py-1.5 text-xs font-semibold transition ${
               !category
                 ? 'bg-emerald-600 text-white shadow-xs'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
