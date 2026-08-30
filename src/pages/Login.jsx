@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { getErrorMessage } from '../api/client';
 import { env } from '../config/env';
 import SEO from '../components/SEO';
+import ThemeToggle from '../components/ui/ThemeToggle';
 
 export default function Login() {
   const { login } = useAuth();
@@ -50,16 +51,20 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50/80 px-4 py-10">
+    <div className="relative flex min-h-screen items-center justify-center bg-slate-50/80 dark:bg-slate-950 px-4 py-10">
       <SEO
         title="ចូលប្រើប្រាស់ (Login) | Mart System"
         robots="noindex, nofollow"
       />
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+        <ThemeToggle variant="navbar" />
+      </div>
+
       <div className="w-full max-w-md animate-fade-in">
         {/* Back to store navigation */}
         <Link
           to="/"
-          className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-emerald-700"
+          className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 transition hover:text-emerald-700 dark:hover:text-emerald-400"
         >
           <ArrowLeft size={15} />
           ត្រឡប់ទៅកាន់ហាងទំនិញ (Back to Store)
@@ -70,17 +75,17 @@ export default function Login() {
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 shadow-md shadow-emerald-600/20">
             <Store size={26} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">ចូលគណនី (Sign In)</h1>
-          <p className="text-xs text-slate-500">{env.appName} · ផ្ទាំងគ្រប់គ្រងបុគ្គលិក និងអ្នកគ្រប់គ្រង</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">ចូលគណនី (Sign In)</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{env.appName} · ផ្ទាំងគ្រប់គ្រងបុគ្គលិក និងអ្នកគ្រប់គ្រង</p>
         </div>
 
         {/* Login Form Card */}
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50 sm:p-8"
+          className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xl shadow-slate-200/50 dark:shadow-none sm:p-8"
         >
           {error && (
-            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs font-medium text-rose-700">
+            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/30 p-3.5 text-xs font-medium text-rose-700 dark:text-rose-400">
               <AlertCircle size={17} className="mt-0.5 shrink-0" />
               <div className="flex-1 leading-relaxed">{error}</div>
             </div>
@@ -89,7 +94,7 @@ export default function Login() {
           <div className="space-y-4">
             {/* Username field */}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+              <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                 ឈ្មោះអ្នកប្រើ (Username) *
               </label>
               <div className="relative">
@@ -100,7 +105,7 @@ export default function Login() {
                   disabled={submitting}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-3.5 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3.5 text-sm text-slate-900 dark:text-white shadow-xs transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
                   placeholder="បញ្ចូល username របស់អ្នក"
                 />
               </div>
@@ -108,7 +113,7 @@ export default function Login() {
 
             {/* Password field with Show/Hide toggle */}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+              <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                 ពាក្យសម្ងាត់ (Password) *
               </label>
               <div className="relative">
@@ -119,13 +124,13 @@ export default function Login() {
                   disabled={submitting}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-11 text-sm text-slate-900 shadow-xs transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-11 text-sm text-slate-900 dark:text-white shadow-xs transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-slate-400 transition hover:text-slate-700 focus:outline-none"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition focus:outline-none"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   tabIndex={-1}
                 >
@@ -151,7 +156,7 @@ export default function Login() {
           </button>
 
           {/* Admin Managed Registration Notice */}
-          <div className="mt-6 flex items-center justify-center gap-1.5 rounded-xl bg-slate-50 py-2.5 px-3 border border-slate-100 text-center text-[11px] text-slate-500">
+          <div className="mt-6 flex items-center justify-center gap-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 py-2.5 px-3 border border-slate-100 dark:border-slate-800 text-center text-[11px] text-slate-500 dark:text-slate-400">
             <ShieldAlert size={14} className="shrink-0 text-slate-400" />
             <span>គណនីត្រូវបានគ្រប់គ្រង និងបង្កើតដោយ Admin ប៉ុណ្ណោះ</span>
           </div>

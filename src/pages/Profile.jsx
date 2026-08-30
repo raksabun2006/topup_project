@@ -3,9 +3,11 @@ import { User, Loader2, Check, AlertCircle, ImageOff } from 'lucide-react';
 import { usersApi } from '../api/userApi';
 import { getErrorMessage } from '../api/client';
 import { formatDate } from '../utils/format';
+import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
 
 export default function Profile() {
+  const { refreshProfile } = useAuth();
   const [profile, setProfile] = useState(null);
   const [form, setForm] = useState({
     email: '', displayName: '', phoneNumber: '', avatarUrl: '',
@@ -44,7 +46,9 @@ export default function Profile() {
     setError('');
 
     try {
-      setProfile(await usersApi.updateMe(form));
+      const updated = await usersApi.updateMe(form);
+      setProfile(updated);
+      await refreshProfile?.();
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
@@ -63,8 +67,8 @@ export default function Profile() {
   }
 
   const inputClass =
-    'w-full rounded-xl border border-slate-300 bg-ink-950 px-3.5 py-2.5 text-slate-900 shadow-sm ' +
-    'transition placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
+    'w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-slate-900 dark:text-white shadow-sm ' +
+    'transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
 
   return (
     <div className="mx-auto max-w-2xl px-3 sm:px-6 py-6 sm:py-10">
@@ -73,29 +77,29 @@ export default function Profile() {
         robots="noindex, nofollow"
       />
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wide text-slate-900">ព័ត៌មានផ្ទាល់ខ្លួន</h1>
-        <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-500">គ្រប់គ្រងព័ត៌មានគណនីរបស់អ្នក</p>
+        <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wide text-slate-900 dark:text-white">ព័ត៌មានផ្ទាល់ខ្លួន</h1>
+        <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">គ្រប់គ្រងព័ត៌មានគណនីរបស់អ្នក</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-ink-900 p-5 sm:p-8 shadow-sm">
+      <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-ink-900 p-5 sm:p-8 shadow-sm">
 
         {error && (
-          <div className="mb-5 sm:mb-6 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-950/30 p-3 text-xs sm:text-sm text-rose-700">
+          <div className="mb-5 sm:mb-6 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-50 dark:bg-rose-950/30 p-3 text-xs sm:text-sm text-rose-700 dark:text-rose-400">
             <AlertCircle size={16} className="mt-0.5 shrink-0" />
             {error}
           </div>
         )}
 
         {saved && (
-          <div className="mb-5 sm:mb-6 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-950/30 p-3 text-xs sm:text-sm text-emerald-700">
+          <div className="mb-5 sm:mb-6 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/30 p-3 text-xs sm:text-sm text-emerald-700 dark:text-emerald-400">
             <Check size={16} />
             រក្សាទុករួចរាល់
           </div>
         )}
 
         {/* ---------- រូបភាព ---------- */}
-        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5 border-b border-slate-200 pb-6 sm:pb-8 text-center sm:text-left">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ink-950 border border-slate-200 shadow-2xs">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5 border-b border-slate-200 dark:border-slate-800 pb-6 sm:pb-8 text-center sm:text-left">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ink-950 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs">
             {form.avatarUrl && !imageBroken ? (
               <img
                 src={form.avatarUrl}
@@ -104,14 +108,14 @@ export default function Profile() {
                 onError={() => setImageBroken(true)}
               />
             ) : imageBroken ? (
-              <ImageOff size={28} className="text-slate-500" />
+              <ImageOff size={28} className="text-slate-400 dark:text-slate-500" />
             ) : (
-              <User size={28} className="text-slate-500" />
+              <User size={28} className="text-slate-400 dark:text-slate-500" />
             )}
           </div>
 
           <div className="min-w-0 w-full flex-1">
-            <label className="mb-1 block text-xs sm:text-sm font-medium text-slate-600 text-left">
+            <label className="mb-1 block text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 text-left">
               តំណភ្ជាប់រូបភាព
             </label>
             <input
@@ -121,12 +125,12 @@ export default function Profile() {
               placeholder="https://example.com/avatar.png"
               className={inputClass}
             />
-            <p className="mt-1.5 text-[11px] sm:text-xs text-slate-500 text-left">
+            <p className="mt-1.5 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 text-left">
               ត្រូវជា https។ រូបភាពរក្សាទុកនៅ server ដើម - បើវាដួល
               រូបភាពនឹងបាត់។
             </p>
             {imageBroken && (
-              <p className="mt-1 text-xs text-amber-700 text-left">
+              <p className="mt-1 text-xs text-amber-700 dark:text-amber-400 text-left">
                 មិនអាចផ្ទុករូបភាពពីតំណភ្ជាប់នេះទេ
               </p>
             )}
@@ -134,20 +138,20 @@ export default function Profile() {
         </div>
 
         {/* ---------- មិនអាចកែ ---------- */}
-        <div className="mb-6 rounded-xl bg-ink-950 p-4">
+        <div className="mb-6 rounded-xl bg-ink-950 dark:bg-slate-800/80 p-4">
           <div className="flex justify-between text-sm">
-            <span className="text-slate-500">ឈ្មោះអ្នកប្រើ</span>
-            <span className="font-medium text-slate-900">{profile?.username}</span>
+            <span className="text-slate-500 dark:text-slate-400">ឈ្មោះអ្នកប្រើ</span>
+            <span className="font-medium text-slate-900 dark:text-white">{profile?.username}</span>
           </div>
           <div className="mt-2 flex justify-between text-sm">
-            <span className="text-slate-500">តួនាទី</span>
-            <span className="font-medium text-slate-900">{profile?.role}</span>
+            <span className="text-slate-500 dark:text-slate-400">តួនាទី</span>
+            <span className="font-medium text-slate-900 dark:text-white">{profile?.role}</span>
           </div>
           <div className="mt-2 flex justify-between text-sm">
-            <span className="text-slate-500">ចូលរួមនៅ</span>
-            <span className="font-medium text-slate-900">{formatDate(profile?.createdAt)}</span>
+            <span className="text-slate-500 dark:text-slate-400">ចូលរួមនៅ</span>
+            <span className="font-medium text-slate-900 dark:text-white">{formatDate(profile?.createdAt)}</span>
           </div>
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
             ឈ្មោះអ្នកប្រើនិងតួនាទីគ្រប់គ្រងដោយប្រព័ន្ធអត្តសញ្ញាណ
           </p>
         </div>
@@ -155,7 +159,7 @@ export default function Profile() {
         {/* ---------- វាលដែលកែបាន ---------- */}
         <div className="space-y-5">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-600">
+            <label className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">
               ឈ្មោះបង្ហាញ
             </label>
             <input
@@ -168,20 +172,20 @@ export default function Profile() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-600">អ៊ីមែល</label>
+            <label className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">អ៊ីមែល</label>
             <input
               type="email"
               value={form.email}
               onChange={set('email')}
               className={inputClass}
             />
-            <p className="mt-1.5 text-xs text-slate-500">
+            <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
               ការប្តូរនៅទីនេះមិនប៉ះពាល់ដល់ការ login ទេ
             </p>
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-600">
+            <label className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">
               លេខទូរស័ព្ទ
             </label>
             <input

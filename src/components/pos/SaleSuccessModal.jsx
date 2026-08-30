@@ -7,14 +7,14 @@ export default function SaleSuccessModal({ sale, onNewSale }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4 backdrop-blur-sm animate-fade-in print:bg-white print:p-0 print:backdrop-blur-none">
-      <div className="max-h-[92vh] w-full max-w-md flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 bg-white shadow-2xl animate-slide-up sm:animate-scale-in print:max-h-none print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
-        <div className="flex shrink-0 flex-col items-center gap-1.5 sm:gap-2 border-b border-slate-200 p-4 sm:p-6 text-center print:hidden">
-          <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+      <div className="max-h-[92vh] w-full max-w-md flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-slide-up sm:animate-scale-in print:max-h-none print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
+        <div className="flex shrink-0 flex-col items-center gap-1.5 sm:gap-2 border-b border-slate-200 dark:border-slate-800 p-4 sm:p-6 text-center print:hidden">
+          <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
             <CheckCircle size={28} className="sm:w-8 sm:h-8" />
           </div>
-          <h2 className="text-lg sm:text-xl font-black text-slate-900">ការទូទាត់បានជោគជ័យ!</h2>
-          <p className="text-xs sm:text-sm font-bold text-slate-700">Invoice: {sale.invoiceNumber}</p>
-          <p className="text-[11px] sm:text-xs text-slate-500">
+          <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">ការទូទាត់បានជោគជ័យ!</h2>
+          <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">Invoice: {sale.invoiceNumber}</p>
+          <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
             ការបញ្ជាទិញរបស់អ្នកត្រូវបានបញ្ជាក់។ សូមអរគុណសម្រាប់ការគាំទ្រ។
           </p>
         </div>
@@ -23,10 +23,10 @@ export default function SaleSuccessModal({ sale, onNewSale }) {
           <Receipt sale={sale} showTaxDiscount={isAuthenticated} />
         </div>
 
-        <div className="shrink-0 flex gap-2.5 sm:gap-3 border-t border-slate-200 p-3.5 sm:p-5 print:hidden bg-white">
+        <div className="shrink-0 flex gap-2.5 sm:gap-3 border-t border-slate-200 dark:border-slate-800 p-3.5 sm:p-5 print:hidden bg-white dark:bg-slate-900">
           <button
             onClick={() => window.print()}
-            className="flex flex-1 items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-slate-300 bg-slate-50 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-slate-700 shadow-xs transition hover:bg-slate-100"
+            className="flex flex-1 items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-xs transition hover:bg-slate-100 dark:hover:bg-slate-700"
           >
             <Printer size={15} />
             បោះពុម្ព

@@ -10,8 +10,8 @@ export default function NotFound() {
         robots="noindex, nofollow"
       />
       <p className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-500 bg-clip-text text-7xl font-black text-transparent">404</p>
-      <h1 className="mt-4 text-2xl font-bold text-slate-900">រកមិនឃើញទំព័រ</h1>
-      <p className="mt-2 max-w-sm text-slate-500">
+      <h1 className="mt-4 text-2xl font-bold text-slate-900 dark:text-white">រកមិនឃើញទំព័រ</h1>
+      <p className="mt-2 max-w-sm text-slate-500 dark:text-slate-400">
         ទំព័រដែលអ្នកកំពុងស្វែងរកមិនមានទេ ឬត្រូវបានផ្លាស់ទី។
       </p>
 

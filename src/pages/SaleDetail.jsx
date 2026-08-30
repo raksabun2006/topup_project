@@ -75,7 +75,7 @@ export default function SaleDetail() {
       />
       <Link
         to="/sales"
-        className="mb-4 sm:mb-6 inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 transition hover:text-slate-900"
+        className="mb-4 sm:mb-6 inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 transition hover:text-slate-900 dark:hover:text-white"
       >
         <ArrowLeft size={16} />
         ត្រឡប់ក្រោយ
@@ -83,7 +83,7 @@ export default function SaleDetail() {
 
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-lg sm:text-xl font-bold text-slate-900">{sale.invoiceNumber}</h1>
+          <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{sale.invoiceNumber}</h1>
           <div className="mt-1.5 sm:mt-2 flex items-center gap-2">
             <SaleStatusBadge status={sale.status} />
             <PaymentStatusBadge status={sale.paymentStatus} />
@@ -93,7 +93,7 @@ export default function SaleDetail() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => window.print()}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-ink-900 px-4 py-2 text-xs sm:text-sm font-medium text-slate-600 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-ink-900 px-4 py-2 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900 dark:hover:text-white"
           >
             <Printer size={15} />
             បោះពុម្ព
@@ -103,7 +103,7 @@ export default function SaleDetail() {
               <button
                 onClick={handleRefund}
                 disabled={refunding}
-                className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 px-4 py-2 text-sm font-medium text-rose-700 shadow-sm transition hover:bg-rose-500/10 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 dark:bg-rose-950/30 px-4 py-2 text-sm font-medium text-rose-700 dark:text-rose-400 shadow-sm transition hover:bg-rose-500/10 dark:hover:bg-rose-950/50 disabled:opacity-50"
               >
                 {refunding ? <Loader2 size={15} className="animate-spin" /> : <RotateCcw size={15} />}
                 សងប្រាក់វិញ
@@ -113,7 +113,7 @@ export default function SaleDetail() {
             <button
               onClick={handleCancel}
               disabled={cancelling}
-              className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 px-4 py-2 text-sm font-medium text-rose-700 shadow-sm transition hover:bg-rose-500/10 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 dark:bg-rose-950/30 px-4 py-2 text-sm font-medium text-rose-700 dark:text-rose-400 shadow-sm transition hover:bg-rose-500/10 dark:hover:bg-rose-950/50 disabled:opacity-50"
             >
               {cancelling ? <Loader2 size={15} className="animate-spin" /> : <XCircle size={15} />}
               បោះបង់
@@ -123,13 +123,13 @@ export default function SaleDetail() {
       </div>
 
       {cancelError && (
-        <p className="mb-4 text-sm text-rose-700">{cancelError}</p>
+        <p className="mb-4 text-sm text-rose-700 dark:text-rose-400">{cancelError}</p>
       )}
       {refundError && (
-        <p className="mb-4 text-sm text-rose-700">{refundError}</p>
+        <p className="mb-4 text-sm text-rose-700 dark:text-rose-400">{refundError}</p>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <Receipt sale={sale} showTaxDiscount={true} />
       </div>
     </div>

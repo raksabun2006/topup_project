@@ -33,10 +33,10 @@ export default function TopProductsPanel({ sales, loading }) {
   }, [sales]);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
-      <div className="border-b border-slate-200 px-6 py-5">
-        <h2 className="flex items-center gap-2 font-semibold text-slate-900">
-          <Package size={18} className="text-emerald-600" />
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-ink-900 shadow-sm">
+      <div className="border-b border-slate-200 dark:border-slate-800 px-6 py-5">
+        <h2 className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+          <Package size={18} className="text-emerald-600 dark:text-emerald-400" />
           ផលិតផលលក់ដាច់
         </h2>
       </div>
@@ -50,23 +50,23 @@ export default function TopProductsPanel({ sales, loading }) {
       )}
 
       {!loading && top.length === 0 && (
-        <p className="p-8 text-center text-sm text-slate-500">មិនទាន់មានទិន្នន័យលក់គ្រប់គ្រាន់ទេ</p>
+        <p className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">មិនទាន់មានទិន្នន័យលក់គ្រប់គ្រាន់ទេ</p>
       )}
 
       {!loading && top.length > 0 && (
-        <ul className="divide-y divide-slate-200">
+        <ul className="divide-y divide-slate-200 dark:divide-slate-800">
           {top.map((p, i) => (
             <li key={p.id} className="flex items-center justify-between gap-3 px-6 py-3.5">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-xs font-bold text-emerald-700">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 dark:bg-emerald-950/60 text-xs font-bold text-emerald-700 dark:text-emerald-400">
                   {i + 1}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-700">{p.name}</p>
-                  <p className="text-xs text-slate-500">{p.quantity} បានលក់</p>
+                  <p className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">{p.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{p.quantity} បានលក់</p>
                 </div>
               </div>
-              <span className="shrink-0 text-sm font-semibold text-slate-900">{formatCurrency(p.revenue)}</span>
+              <span className="shrink-0 text-sm font-semibold text-slate-900 dark:text-white">{formatCurrency(p.revenue)}</span>
             </li>
           ))}
         </ul>

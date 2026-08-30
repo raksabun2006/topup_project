@@ -11,10 +11,10 @@ import CategoryManagerModal from '../components/admin/CategoryManagerModal';
 import SEO from '../components/SEO';
 
 const STATUS_STYLES = {
-  ACTIVE: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  DRAFT: 'bg-slate-100 text-slate-600 border-slate-200',
-  INACTIVE: 'bg-amber-50 text-amber-700 border-amber-200',
-  ARCHIVED: 'bg-rose-50 text-rose-700 border-rose-200',
+  ACTIVE: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60',
+  DRAFT: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700',
+  INACTIVE: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60',
+  ARCHIVED: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60',
 };
 
 export default function Products() {
@@ -85,12 +85,12 @@ export default function Products() {
         robots="noindex, nofollow"
       />
       <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wide text-slate-900">គ្រប់គ្រងផលិតផល</h1>
+        <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wide text-slate-900 dark:text-white">គ្រប់គ្រងផលិតផល</h1>
         
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setCategoryModalOpen(true)}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 shadow-xs transition hover:border-emerald-500 hover:text-slate-900"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-xs transition hover:border-emerald-500 hover:text-slate-900 dark:hover:text-white"
           >
             <Tags size={15} />
             ប្រភេទ
@@ -105,22 +105,22 @@ export default function Products() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
         {loading && (
           <div className="space-y-3 p-4 sm:p-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-14 animate-pulse rounded-xl bg-slate-100" />
+              <div key={i} className="h-14 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
             ))}
           </div>
         )}
 
         {!loading && error && (
           <div className="p-8 sm:p-10 text-center">
-            <AlertCircle size={32} className="mx-auto mb-3 text-rose-600" />
-            <p className="mb-5 text-sm text-rose-600">{error}</p>
+            <AlertCircle size={32} className="mx-auto mb-3 text-rose-600 dark:text-rose-400" />
+            <p className="mb-5 text-sm text-rose-600 dark:text-rose-400">{error}</p>
             <button
               onClick={load}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 px-4 py-2 text-sm text-slate-600 shadow-xs transition hover:border-emerald-500 hover:text-slate-900"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 shadow-xs transition hover:border-emerald-500 hover:text-slate-900 dark:hover:text-white"
             >
               <RefreshCw size={14} />
               ព្យាយាមម្តងទៀត
@@ -130,8 +130,8 @@ export default function Products() {
 
         {!loading && !error && products.length === 0 && (
           <div className="p-12 sm:p-14 text-center">
-            <Package size={40} className="mx-auto mb-4 text-slate-300" />
-            <p className="mb-6 text-sm text-slate-500">មិនទាន់មានផលិតផលនៅឡើយទេ</p>
+            <Package size={40} className="mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+            <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">មិនទាន់មានផលិតផលនៅឡើយទេ</p>
             <button
               onClick={openCreate}
               className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500"
@@ -143,11 +143,11 @@ export default function Products() {
         )}
 
         {!loading && !error && products.length > 0 && (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {products.map((product) => (
-              <div key={product.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 sm:px-6 sm:py-4 transition hover:bg-slate-50">
+              <div key={product.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 sm:px-6 sm:py-4 transition hover:bg-slate-50 dark:hover:bg-slate-800/60">
                 <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
                     {product.imageUrl ? (
                       <img
                         src={product.imageUrl}
@@ -161,23 +161,23 @@ export default function Products() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="truncate font-semibold text-slate-900 text-sm">{product.name}</p>
+                      <p className="truncate font-semibold text-slate-900 dark:text-white text-sm">{product.name}</p>
                       <span className={`shrink-0 rounded-md border px-1.5 py-0.5 text-[9px] font-bold ${STATUS_STYLES[product.status] ?? STATUS_STYLES.DRAFT}`}>
                         {product.status}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-xs text-slate-500">
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                       SKU: {product.sku || '—'} {product.category ? `· ${product.category}` : ''} · ស្តុក: {product.stockQuantity ?? 0}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t border-slate-50 sm:border-0">
-                  <span className="font-bold text-slate-900 text-sm">{formatCurrency(product.price)}</span>
+                <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t border-slate-100 dark:border-slate-800 sm:border-0">
+                  <span className="font-bold text-slate-900 dark:text-white text-sm">{formatCurrency(product.price)}</span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => openEdit(product)}
-                      className="rounded-lg p-2 text-slate-500 transition hover:bg-emerald-50 hover:text-emerald-700 active:scale-95"
+                      className="rounded-lg p-2 text-slate-500 dark:text-slate-400 transition hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300 active:scale-95"
                       title="កែប្រែ"
                     >
                       <Edit2 size={16} />
@@ -185,7 +185,7 @@ export default function Products() {
                     <button
                       onClick={() => handleDelete(product)}
                       disabled={deletingId === product.id}
-                      className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50 active:scale-95"
+                      className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-600 dark:hover:text-rose-400 disabled:opacity-50 active:scale-95"
                       title="លុប"
                     >
                       {deletingId === product.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
@@ -198,21 +198,21 @@ export default function Products() {
         )}
 
         {!loading && !error && totalPages > 1 && (
-          <div className="flex items-center justify-center gap-3 border-t border-slate-100 py-3.5">
+          <div className="flex items-center justify-center gap-3 border-t border-slate-100 dark:border-slate-800 py-3.5">
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page <= 0}
-              className="rounded-lg border border-slate-300 bg-white p-1.5 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40"
             >
               <ChevronLeft size={16} />
             </button>
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
               ទំព័រ {page + 1} / {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="rounded-lg border border-slate-300 bg-white p-1.5 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40"
             >
               <ChevronRight size={16} />
             </button>

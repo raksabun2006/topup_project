@@ -99,10 +99,10 @@ export default function CategoryRevenuePie({ sales, loading }) {
   const busy = loading || productsLoading;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between border-b border-slate-200 px-4 sm:px-6 py-4 sm:py-5">
-        <h2 className="flex items-center gap-2 font-semibold text-slate-900 text-sm sm:text-base">
-          <PieChart size={18} className="text-emerald-600" />
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-ink-900 shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-4 sm:py-5">
+        <h2 className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white text-sm sm:text-base">
+          <PieChart size={18} className="text-emerald-600 dark:text-emerald-400" />
           ចំណូលតាមប្រភេទ
         </h2>
       </div>
@@ -114,18 +114,18 @@ export default function CategoryRevenuePie({ sales, loading }) {
       )}
 
       {!busy && productsError && (
-        <p className="p-8 sm:p-10 text-center text-sm text-rose-700">មិនអាចទាញយកទិន្នន័យប្រភេទបានទេ</p>
+        <p className="p-8 sm:p-10 text-center text-sm text-rose-700 dark:text-rose-400">មិនអាចទាញយកទិន្នន័យប្រភេទបានទេ</p>
       )}
 
       {!busy && !productsError && slices.length === 0 && (
-        <p className="p-8 sm:p-10 text-center text-sm text-slate-500">មិនទាន់មានទិន្នន័យលក់គ្រប់គ្រាន់សម្រាប់វិភាគទេ</p>
+        <p className="p-8 sm:p-10 text-center text-sm text-slate-500 dark:text-slate-400">មិនទាន់មានទិន្នន័យលក់គ្រប់គ្រាន់សម្រាប់វិភាគទេ</p>
       )}
 
       {/* ប្រភេទតែមួយ = 100% - pie មិនចាំបាច់ទេ (ដូចលេខតែមួយមិនត្រូវការ chart) */}
       {!busy && !productsError && slices.length === 1 && (
         <div className="flex items-center gap-4 p-4 sm:p-6">
           <span className="h-4 w-4 shrink-0 rounded-full" style={{ backgroundColor: slices[0].color }} />
-          <p className="text-xs sm:text-sm text-slate-700">
+          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200">
             ចំណូលទាំងអស់ ({formatCurrency(slices[0].value)}) មកពីប្រភេទ <strong>{slices[0].name}</strong> តែមួយ
           </p>
         </div>
@@ -183,9 +183,9 @@ export default function CategoryRevenuePie({ sales, loading }) {
             </svg>
 
             {hover != null && (
-              <div className="pointer-events-none absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full rounded-lg border border-slate-200 bg-ink-900 px-3 py-1.5 text-center text-xs shadow-lg shadow-black/10">
-                <p className="font-semibold text-slate-900">{formatCurrency(slices[hover].value)}</p>
-                <p className="text-slate-500">{slices[hover].name} · {slices[hover].pct.toFixed(1)}%</p>
+              <div className="pointer-events-none absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full rounded-lg border border-slate-200 dark:border-slate-700 bg-ink-900 dark:bg-slate-800 px-3 py-1.5 text-center text-xs shadow-lg shadow-black/10 z-10">
+                <p className="font-semibold text-slate-900 dark:text-white">{formatCurrency(slices[hover].value)}</p>
+                <p className="text-slate-500 dark:text-slate-400">{slices[hover].name} · {slices[hover].pct.toFixed(1)}%</p>
               </div>
             )}
           </div>
@@ -197,13 +197,13 @@ export default function CategoryRevenuePie({ sales, loading }) {
                 key={s.name}
                 onMouseEnter={() => setHover(i)}
                 onMouseLeave={() => setHover(null)}
-                className={`flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 transition ${hover === i ? 'bg-emerald-50' : ''}`}
+                className={`flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 transition ${hover === i ? 'bg-emerald-50 dark:bg-slate-800/60' : ''}`}
               >
                 <span className="flex min-w-0 items-center gap-2">
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
-                  <span className="truncate text-sm text-slate-700">{s.name}</span>
+                  <span className="truncate text-sm text-slate-700 dark:text-slate-200">{s.name}</span>
                 </span>
-                <span className="shrink-0 text-xs font-semibold text-slate-500">
+                <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
                   {formatCurrency(s.value)} · {s.pct.toFixed(1)}%
                 </span>
               </li>

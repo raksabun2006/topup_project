@@ -102,9 +102,9 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
   };
 
   const inputClass =
-    'w-full rounded-xl border border-slate-300 bg-ink-950 px-3.5 py-2 text-sm text-slate-900 shadow-sm ' +
-    'transition placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
-  const labelClass = 'mb-1 block text-xs font-medium text-slate-600';
+    'w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-sm text-slate-900 dark:text-white shadow-sm ' +
+    'transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
+  const labelClass = 'mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300';
 
   return (
     <div
@@ -112,19 +112,19 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
       onClick={() => !saving && onClose()}
     >
       <div
-        className="w-full max-w-lg max-h-[92dvh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 bg-white shadow-2xl animate-slide-up sm:animate-scale-in pb-safe sm:pb-0"
+        className="w-full max-w-lg max-h-[92dvh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-slide-up sm:animate-scale-in pb-safe sm:pb-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3.5 sm:px-6 sm:py-4">
-          <h3 className="text-base sm:text-lg font-bold text-slate-900">{isEdit ? 'កែប្រែផលិតផល' : 'ផលិតផលថ្មី'}</h3>
-          <button onClick={onClose} disabled={saving} className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 py-3.5 sm:px-6 sm:py-4">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">{isEdit ? 'កែប្រែផលិតផល' : 'ផលិតផលថ្មី'}</h3>
+          <button onClick={onClose} disabled={saving} className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
           {error && (
-            <div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-50 p-3 text-xs sm:text-sm text-rose-700">
+            <div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-50 dark:bg-rose-950/30 p-3 text-xs sm:text-sm text-rose-700 dark:text-rose-400">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
               {error}
             </div>
@@ -155,7 +155,7 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
             <div>
               <label className={labelClass}>តំណភ្ជាប់រូបភាព (Image URL)</label>
               <div className="flex items-center gap-3">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-300 bg-ink-950">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
                   {form.imageUrl && !imageBroken ? (
                     <img
                       src={form.imageUrl}
@@ -164,9 +164,9 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
                       onError={() => setImageBroken(true)}
                     />
                   ) : imageBroken ? (
-                    <ImageOff size={20} className="text-slate-500" />
+                    <ImageOff size={20} className="text-slate-500 dark:text-slate-400" />
                   ) : (
-                    <Package size={20} className="text-slate-500" />
+                    <Package size={20} className="text-slate-500 dark:text-slate-400" />
                   )}
                 </div>
                 <input
@@ -178,7 +178,7 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
                 />
               </div>
               {imageBroken && (
-                <p className="mt-1.5 text-xs text-amber-700">មិនអាចផ្ទុករូបភាពពីតំណភ្ជាប់នេះទេ</p>
+                <p className="mt-1.5 text-xs text-amber-700 dark:text-amber-400">មិនអាចផ្ទុករូបភាពពីតំណភ្ជាប់នេះទេ</p>
               )}
             </div>
 
@@ -224,7 +224,7 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
                   type="button"
                   onClick={() => setShowNewCategory((v) => !v)}
                   title="បន្ថែមប្រភេទថ្មី"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-ink-950 text-slate-500 transition hover:border-emerald-500/40 hover:text-emerald-700"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 transition hover:border-emerald-500/40 hover:text-emerald-700 dark:hover:text-emerald-400"
                 >
                   <Plus size={18} />
                 </button>
@@ -256,20 +256,20 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
                   <button
                     type="button"
                     onClick={() => { setShowNewCategory(false); setNewCategoryName(''); setCategoryError(''); }}
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-300 text-slate-500 hover:text-slate-900"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   >
                     <X size={16} />
                   </button>
                 </div>
               )}
-              {categoryError && <p className="mt-1.5 text-xs text-rose-700">{categoryError}</p>}
+              {categoryError && <p className="mt-1.5 text-xs text-rose-700 dark:text-rose-400">{categoryError}</p>}
             </div>
           </div>
 
           <button
             type="submit"
             disabled={saving}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:from-emerald-500 hover:to-emerald-500 disabled:opacity-60"
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 disabled:opacity-60"
           >
             {saving && <Loader2 size={16} className="animate-spin" />}
             រក្សាទុក

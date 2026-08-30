@@ -11,6 +11,8 @@ import { useLowStockInventory } from '../../hooks/useInventory';
 import { useCustomers } from '../../hooks/useCustomers';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { SaleStatusBadge } from '../ui/SaleStatusBadge';
+import ThemeToggle from '../ui/ThemeToggle';
+import UserAvatar from '../ui/UserAvatar';
 import CategoryRevenuePie from './CategoryRevenuePie';
 import WeeklyRevenueChart from './WeeklyRevenueChart';
 import TopProductsPanel from './TopProductsPanel';
@@ -138,16 +140,16 @@ export default function AdminDashboard() {
 
       {/* ------- Sidebar ------- */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-slate-200 bg-ink-900 transition-transform lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-slate-200 dark:border-slate-800 bg-ink-900 transition-transform lg:static lg:translate-x-0 ${
           mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex items-center gap-2 border-b border-slate-200 px-6 py-5">
+        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 px-6 py-5">
           <Store size={22} className="text-emerald-600" />
-          <span className="text-lg font-bold text-slate-900">{env.appName}</span>
+          <span className="text-lg font-bold text-slate-900 dark:text-white">{env.appName}</span>
           <button
             onClick={() => setMobileNavOpen(false)}
-            className="ml-auto rounded-lg p-1 text-slate-500 hover:bg-emerald-50 lg:hidden"
+            className="ml-auto rounded-lg p-1 text-slate-500 hover:bg-emerald-50 dark:hover:bg-slate-800 lg:hidden"
           >
             <X size={18} />
           </button>
@@ -162,7 +164,7 @@ export default function AdminDashboard() {
               onClick={() => setMobileNavOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
-                  isActive ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-emerald-50 hover:text-slate-900'
+                  isActive ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 dark:text-slate-400 hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                 }`
               }
             >
@@ -172,17 +174,17 @@ export default function AdminDashboard() {
           ))}
         </nav>
 
-        <div className="border-t border-slate-200 p-3">
+        <div className="border-t border-slate-200 dark:border-slate-800 p-3">
           <Link
             to="/profile"
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-emerald-50 hover:text-slate-900"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400 transition hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
           >
             <User size={17} />
             ព័ត៌មានផ្ទាល់ខ្លួន
           </Link>
           <button
             onClick={logout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-700 transition hover:bg-rose-500/10"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-700 dark:text-rose-400 transition hover:bg-rose-500/10 dark:hover:bg-rose-950/30"
           >
             <LogOut size={17} />
             ចាកចេញ
@@ -193,16 +195,16 @@ export default function AdminDashboard() {
       {/* ------- Content ------- */}
       <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
         {/* ------- Header ------- */}
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200 bg-ink-900 px-3 py-3 sm:px-6 sm:py-4">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 bg-ink-900 px-3 py-3 sm:px-6 sm:py-4">
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => setMobileNavOpen(true)}
-              className="rounded-lg p-2 text-slate-600 hover:bg-emerald-50 lg:hidden"
+              className="rounded-lg p-2 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-800 lg:hidden"
               aria-label="បើកម៉ឺនុយ"
             >
               <Menu size={20} />
             </button>
-            <h1 className="text-base font-bold text-slate-900 sm:text-xl">Dashboard</h1>
+            <h1 className="text-base font-bold text-slate-900 dark:text-white sm:text-xl">Dashboard</h1>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -212,11 +214,13 @@ export default function AdminDashboard() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="ស្វែងរកលេខវិក្កយបត្រ ឬអតិថិជន..."
-                className="w-48 lg:w-56 rounded-xl border border-slate-300 bg-ink-950 py-2 pl-9 pr-3 text-xs sm:text-sm text-slate-700 placeholder:text-slate-400 focus:border-emerald-500/40 focus:outline-none"
+                className="w-48 lg:w-56 rounded-xl border border-slate-300 dark:border-slate-700 bg-ink-950 py-2 pl-9 pr-3 text-xs sm:text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500/40 focus:outline-none"
               />
             </div>
 
-            <button className="relative rounded-full p-2 text-slate-600 transition hover:bg-emerald-50" title="ស្តុកជិតអស់">
+            <ThemeToggle variant="admin" />
+
+            <button className="relative rounded-full p-2 text-slate-600 dark:text-slate-400 transition hover:bg-emerald-50 dark:hover:bg-slate-800" title="ស្តុកជិតអស់">
               <Bell size={18} />
               {lowStock.length > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white">
@@ -225,13 +229,15 @@ export default function AdminDashboard() {
               )}
             </button>
 
-            <div className="flex items-center gap-2 border-l border-slate-200 pl-2.5 sm:pl-3">
-              <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-emerald-500/10 text-xs sm:text-sm font-bold text-emerald-700">
-                {initial}
-              </span>
+            <div className="flex items-center gap-2 border-l border-slate-200 dark:border-slate-800 pl-2.5 sm:pl-3">
+              <UserAvatar
+                user={user}
+                className="h-8 w-8 sm:h-9 sm:w-9 text-xs sm:text-sm"
+                fallbackClass="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+              />
               <div className="hidden sm:block">
-                <p className="text-xs sm:text-sm font-semibold text-slate-900 truncate max-w-[120px]">{user?.username}</p>
-                <p className="text-[10px] sm:text-xs text-slate-500">អ្នកគ្រប់គ្រង</p>
+                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate max-w-[120px]">{user?.displayName || user?.username}</p>
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">អ្នកគ្រប់គ្រង</p>
               </div>
             </div>
           </div>
@@ -245,12 +251,12 @@ export default function AdminDashboard() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="ស្វែងរកលេខវិក្កយបត្រ ឬអតិថិជន..."
-              className="w-full rounded-xl border border-slate-300 bg-ink-900 py-2 pl-9 pr-3 text-xs text-slate-700 placeholder:text-slate-400 focus:border-emerald-500/40 focus:outline-none shadow-2xs"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-ink-900 py-2 pl-9 pr-3 text-xs text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500/40 focus:outline-none shadow-2xs"
             />
           </div>
 
           {error && (
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4 sm:px-5 sm:py-4 text-xs sm:text-sm text-rose-700">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4 sm:px-5 sm:py-4 text-xs sm:text-sm text-rose-700 dark:text-rose-400">
               <span className="flex items-center gap-2"><AlertCircle size={16} className="shrink-0" /> {error}</span>
               <button onClick={reload} className="flex items-center gap-1.5 font-semibold hover:underline shrink-0">
                 <RefreshCw size={14} /> ព្យាយាមម្តងទៀត
@@ -260,55 +266,55 @@ export default function AdminDashboard() {
 
           {/* ------- Stat cards ------- */}
           <div className="grid gap-3.5 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200 bg-ink-900 p-4 sm:p-6 shadow-2xs">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-ink-900 p-4 sm:p-6 shadow-2xs">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs sm:text-sm text-slate-500">ចំណូលសរុប</p>
-                  <p className="mt-1.5 text-2xl sm:text-3xl font-bold text-slate-900">{loading ? '—' : formatCurrency(stats.revenue)}</p>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">ចំណូលសរុប</p>
+                  <p className="mt-1.5 text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">{loading ? '—' : formatCurrency(stats.revenue)}</p>
                   {weekly.revenueChange != null && (
-                    <p className={`mt-1 text-[11px] sm:text-xs font-medium ${weekly.revenueChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    <p className={`mt-1 text-[11px] sm:text-xs font-medium ${weekly.revenueChange >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                       {weekly.revenueChange >= 0 ? '↑' : '↓'} {Math.abs(weekly.revenueChange).toFixed(1)}% ធៀបនឹងសប្តាហ៍មុន
                     </p>
                   )}
                 </div>
-                <div className="rounded-xl bg-emerald-500/10 p-2.5 sm:p-3 text-emerald-700">
+                <div className="rounded-xl bg-emerald-500/10 dark:bg-emerald-950/60 p-2.5 sm:p-3 text-emerald-700 dark:text-emerald-400">
                   <DollarSign size={20} className="sm:w-[22px] sm:h-[22px]" />
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-ink-900 p-4 sm:p-6 shadow-2xs">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-ink-900 p-4 sm:p-6 shadow-2xs">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs sm:text-sm text-slate-500">ការបញ្ជាទិញសរុប</p>
-                  <p className="mt-1.5 text-2xl sm:text-3xl font-bold text-slate-900">{loading ? '—' : stats.total}</p>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">ការបញ្ជាទិញសរុប</p>
+                  <p className="mt-1.5 text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">{loading ? '—' : stats.total}</p>
                   {weekly.ordersChange != null && (
-                    <p className={`mt-1 text-[11px] sm:text-xs font-medium ${weekly.ordersChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    <p className={`mt-1 text-[11px] sm:text-xs font-medium ${weekly.ordersChange >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                       {weekly.ordersChange >= 0 ? '↑' : '↓'} {Math.abs(weekly.ordersChange).toFixed(1)}% ធៀបនឹងសប្តាហ៍មុន
                     </p>
                   )}
                 </div>
-                <div className="rounded-xl bg-sky-500/10 p-2.5 sm:p-3 text-sky-700">
+                <div className="rounded-xl bg-sky-500/10 dark:bg-sky-950/60 p-2.5 sm:p-3 text-sky-700 dark:text-sky-400">
                   <ReceiptIcon size={20} className="sm:w-[22px] sm:h-[22px]" />
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-ink-900 p-4 sm:p-6 shadow-2xs sm:col-span-2 lg:col-span-1">
-              <p className="mb-2 sm:mb-3 text-xs sm:text-sm text-slate-500">កំពុងរង់ចាំ & បោះបង់</p>
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-ink-900 p-4 sm:p-6 shadow-2xs sm:col-span-2 lg:col-span-1">
+              <p className="mb-2 sm:mb-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400">កំពុងរង់ចាំ & បោះបង់</p>
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div className="flex items-center gap-2 sm:gap-2.5">
-                  <div className="rounded-xl bg-amber-500/10 p-2 sm:p-2.5 text-amber-700"><Clock size={16} /></div>
+                  <div className="rounded-xl bg-amber-500/10 dark:bg-amber-950/60 p-2 sm:p-2.5 text-amber-700 dark:text-amber-400"><Clock size={16} /></div>
                   <div>
-                    <p className="text-lg sm:text-xl font-bold text-slate-900">{loading ? '—' : stats.pending}</p>
-                    <p className="text-[11px] sm:text-xs text-slate-500">កំពុងរង់ចាំ</p>
+                    <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{loading ? '—' : stats.pending}</p>
+                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">កំពុងរង់ចាំ</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 sm:gap-2.5 border-l border-slate-200 pl-3 sm:pl-4">
-                  <div className="rounded-xl bg-rose-500/10 p-2 sm:p-2.5 text-rose-700"><XCircle size={16} /></div>
+                <div className="flex items-center gap-2 sm:gap-2.5 border-l border-slate-200 dark:border-slate-800 pl-3 sm:pl-4">
+                  <div className="rounded-xl bg-rose-500/10 dark:bg-rose-950/60 p-2 sm:p-2.5 text-rose-700 dark:text-rose-400"><XCircle size={16} /></div>
                   <div>
-                    <p className="text-lg sm:text-xl font-bold text-slate-900">{loading ? '—' : stats.cancelled}</p>
-                    <p className="text-[11px] sm:text-xs text-slate-500">បោះបង់</p>
+                    <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{loading ? '—' : stats.cancelled}</p>
+                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">បោះបង់</p>
                   </div>
                 </div>
               </div>
@@ -322,10 +328,10 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-6">
-              <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
-                <div className="border-b border-slate-200 px-6 py-5">
-                  <h2 className="flex items-center gap-2 font-semibold text-slate-900">
-                    <Boxes size={18} className="text-amber-700" />
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-ink-900 shadow-sm">
+                <div className="border-b border-slate-200 dark:border-slate-800 px-6 py-5">
+                  <h2 className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+                    <Boxes size={18} className="text-amber-700 dark:text-amber-400" />
                     ស្តុកជិតអស់
                   </h2>
                 </div>
@@ -340,11 +346,11 @@ export default function AdminDashboard() {
 
                 {!lowStockLoading && lowStockError && (
                   <div className="p-8 text-center">
-                    <AlertCircle size={28} className="mx-auto mb-2 text-rose-700" />
-                    <p className="text-sm text-rose-700">{lowStockError}</p>
+                    <AlertCircle size={28} className="mx-auto mb-2 text-rose-700 dark:text-rose-400" />
+                    <p className="text-sm text-rose-700 dark:text-rose-400">{lowStockError}</p>
                     <button
                       onClick={reloadLowStock}
-                      className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700"
+                      className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700"
                     >
                       <RefreshCw size={13} /> ព្យាយាមម្តងទៀត
                     </button>
@@ -353,20 +359,20 @@ export default function AdminDashboard() {
 
                 {!lowStockLoading && !lowStockError && lowStock.length === 0 && (
                   <div className="p-8 text-center">
-                    <CheckCircle size={28} className="mx-auto mb-2 text-emerald-500/60" />
-                    <p className="text-sm text-slate-500">គ្មានទំនិញជិតអស់ស្តុកទេ</p>
+                    <CheckCircle size={28} className="mx-auto mb-2 text-emerald-500/60 dark:text-emerald-400/60" />
+                    <p className="text-sm text-slate-500 dark:text-slate-400">គ្មានទំនិញជិតអស់ស្តុកទេ</p>
                   </div>
                 )}
 
                 {!lowStockLoading && !lowStockError && lowStock.length > 0 && (
-                  <div className="divide-y divide-slate-200">
+                  <div className="divide-y divide-slate-200 dark:divide-slate-800">
                     {lowStock.slice(0, 5).map((item) => (
                       <div key={item.id} className="flex items-center justify-between gap-3 px-6 py-3">
                         <div className="flex min-w-0 items-center gap-2">
-                          <AlertTriangle size={14} className="shrink-0 text-amber-700" />
-                          <span className="truncate text-sm text-slate-700">{item.product}</span>
+                          <AlertTriangle size={14} className="shrink-0 text-amber-700 dark:text-amber-400" />
+                          <span className="truncate text-sm text-slate-700 dark:text-slate-300">{item.product}</span>
                         </div>
-                        <span className="shrink-0 text-xs font-semibold text-amber-700">
+                        <span className="shrink-0 text-xs font-semibold text-amber-700 dark:text-amber-400">
                           {item.quantity}/{item.minimumStock}
                         </span>
                       </div>
@@ -375,10 +381,10 @@ export default function AdminDashboard() {
                 )}
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
-                <div className="border-b border-slate-200 px-6 py-5">
-                  <h2 className="flex items-center gap-2 font-semibold text-slate-900">
-                    <UserCheck size={18} className="text-emerald-600" />
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-ink-900 shadow-sm">
+                <div className="border-b border-slate-200 dark:border-slate-800 px-6 py-5">
+                  <h2 className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+                    <UserCheck size={18} className="text-emerald-600 dark:text-emerald-400" />
                     អ្នកគិតលុយឆ្នើម
                   </h2>
                 </div>
@@ -392,7 +398,7 @@ export default function AdminDashboard() {
                 )}
 
                 {!loading && cashierStats.length === 0 && (
-                  <p className="p-8 text-center text-sm text-slate-500">មិនទាន់មានទិន្នន័យទេ</p>
+                  <p className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">មិនទាន់មានទិន្នន័យទេ</p>
                 )}
 
                 {!loading && cashierStats.length > 0 && (
@@ -400,13 +406,13 @@ export default function AdminDashboard() {
                     {cashierStats.slice(0, 4).map((c) => (
                       <div key={c.cashier}>
                         <div className="mb-1.5 flex items-center justify-between gap-2 text-sm">
-                          <span className="flex min-w-0 items-center gap-2 truncate font-medium text-slate-700">
-                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-[11px] font-bold text-emerald-700">
+                          <span className="flex min-w-0 items-center gap-2 truncate font-medium text-slate-700 dark:text-slate-300">
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 dark:bg-emerald-950/60 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
                               {c.cashier.charAt(0).toUpperCase()}
                             </span>
                             {c.cashier}
                           </span>
-                          <span className="shrink-0 font-semibold text-slate-900">{formatCurrency(c.revenue)}</span>
+                          <span className="shrink-0 font-semibold text-slate-900 dark:text-white">{formatCurrency(c.revenue)}</span>
                         </div>
                         <div className="h-1.5 overflow-hidden rounded-full bg-ink-800">
                           <div
@@ -424,21 +430,21 @@ export default function AdminDashboard() {
 
           {/* ------- Transactions + top products ------- */}
           <div className="grid gap-6 lg:grid-cols-3">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-ink-900 shadow-sm lg:col-span-2">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-6 py-5">
-                <h2 className="font-semibold text-slate-900">ប្រតិបត្តិការ</h2>
+            <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-ink-900 shadow-sm lg:col-span-2">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 px-6 py-5">
+                <h2 className="font-semibold text-slate-900 dark:text-white">ប្រតិបត្តិការ</h2>
                 <div className="flex items-center gap-2">
                   <Filter size={14} className="text-slate-400" />
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="rounded-lg border border-slate-300 bg-ink-950 px-2.5 py-1.5 text-xs font-medium text-slate-600 focus:border-emerald-500/40 focus:outline-none"
+                    className="rounded-lg border border-slate-300 dark:border-slate-700 bg-ink-950 px-2.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 focus:border-emerald-500/40 focus:outline-none"
                   >
                     {STATUS_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
-                  <Link to="/sales" className="text-sm font-semibold text-emerald-600 transition hover:text-emerald-700">
+                  <Link to="/sales" className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 transition hover:text-emerald-700 dark:hover:text-emerald-300">
                     មើលទាំងអស់
                   </Link>
                 </div>
@@ -454,8 +460,8 @@ export default function AdminDashboard() {
 
               {!loading && filteredSales.length === 0 && (
                 <div className="p-14 text-center">
-                  <ReceiptIcon size={36} className="mx-auto mb-3 text-slate-600" />
-                  <p className="text-slate-500">គ្មានប្រតិបត្តិការត្រូវនឹងលក្ខខណ្ឌនេះទេ</p>
+                  <ReceiptIcon size={36} className="mx-auto mb-3 text-slate-600 dark:text-slate-500" />
+                  <p className="text-slate-500 dark:text-slate-400">គ្មានប្រតិបត្តិការត្រូវនឹងលក្ខខណ្ឌនេះទេ</p>
                 </div>
               )}
 
@@ -463,7 +469,7 @@ export default function AdminDashboard() {
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-140 text-sm">
                     <thead>
-                      <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
+                      <tr className="border-b border-slate-200 dark:border-slate-800 text-left text-xs text-slate-500 dark:text-slate-400">
                         <th className="px-6 py-3 font-medium">No</th>
                         <th className="px-3 py-3 font-medium">អតិថិជន</th>
                         <th className="px-3 py-3 font-medium">កាលបរិច្ឆេទ</th>
@@ -471,21 +477,21 @@ export default function AdminDashboard() {
                         <th className="px-6 py-3 text-right font-medium">ចំនួនទឹកប្រាក់</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                       {filteredSales.slice(0, 8).map((sale, i) => (
                         <tr
                           key={sale.id}
                           onClick={() => navigate(`/sales/${sale.id}`)}
-                          className="cursor-pointer transition hover:bg-emerald-50"
+                          className="cursor-pointer transition hover:bg-emerald-50 dark:hover:bg-slate-800/60"
                         >
-                          <td className="px-6 py-3.5 text-slate-500">{i + 1}</td>
+                          <td className="px-6 py-3.5 text-slate-500 dark:text-slate-400">{i + 1}</td>
                           <td className="px-3 py-3.5">
-                            <p className="font-medium text-slate-700">{customerNameById.get(sale.customer) ?? 'អតិថិជនទូទៅ'}</p>
-                            <p className="text-xs text-slate-500">{sale.invoiceNumber}</p>
+                            <p className="font-medium text-slate-700 dark:text-slate-200">{customerNameById.get(sale.customer) ?? 'អតិថិជនទូទៅ'}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{sale.invoiceNumber}</p>
                           </td>
-                          <td className="px-3 py-3.5 text-slate-500">{formatDate(sale.createdAt)}</td>
+                          <td className="px-3 py-3.5 text-slate-500 dark:text-slate-400">{formatDate(sale.createdAt)}</td>
                           <td className="px-3 py-3.5"><SaleStatusBadge status={sale.status} /></td>
-                          <td className="px-6 py-3.5 text-right font-semibold text-slate-900">{formatCurrency(sale.total)}</td>
+                          <td className="px-6 py-3.5 text-right font-semibold text-slate-900 dark:text-white">{formatCurrency(sale.total)}</td>
                         </tr>
                       ))}
                     </tbody>

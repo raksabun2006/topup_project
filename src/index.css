@@ -1,21 +1,45 @@
 @import url('https://fonts.googleapis.com/css2?family=Siemreap&display=swap');
 @import "tailwindcss";
 
+/* Manual class-based dark mode variant for Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /**
- * ពណ៌ស្រាលតែមួយសម្រាប់ទំព័រទាំងអស់ - ink-950 ជាផ្ទៃខាងក្រោយទំព័រ
- * (មានពណ៌ស្រាលបន្តិចដើម្បីឲ្យកាតលេចធ្លោ), ink-900 ជាផ្ទៃកាត/surface
- * (សុទ្ធ), ink-800 ជាផ្ទៃរងសម្រាប់ hover/skeleton។ ឈ្មោះថ្នាក់ (ink-*)
- * ចាស់នៅតែប្រើដដែលទូទាំង app - គ្រាន់តែផ្លាស់ប្តូរតម្លៃត្រង់នេះ។
+ * Global Color Tokens & Theming for Mart System:
+ * - Light: Clean white & slate surfaces with crisp contrasts.
+ * - Dark: Rich slate/zinc surfaces (no harsh pure-black).
  */
-@theme {
+:root {
   --color-ink-950: #f8f7fb;
   --color-ink-900: #ffffff;
   --color-ink-800: #f1f0f6;
+  --color-ink-700: #e2e8f0;
+  --color-ink-600: #cbd5e1;
+  color-scheme: light;
+}
+
+.dark {
+  --color-ink-950: #0b0f19;
+  --color-ink-900: #111827;
+  --color-ink-800: #1e293b;
+  --color-ink-700: #334155;
+  --color-ink-600: #475569;
+  color-scheme: dark;
+}
+
+@theme {
+  --color-ink-950: var(--color-ink-950);
+  --color-ink-900: var(--color-ink-900);
+  --color-ink-800: var(--color-ink-800);
+  --color-ink-700: var(--color-ink-700);
+  --color-ink-600: var(--color-ink-600);
   --font-sans: 'Siemreap', ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
   font-family: 'Siemreap', ui-sans-serif, system-ui, sans-serif;
+  background-color: var(--color-ink-950);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Custom sleek scrollbar styling for product grids & panels */
@@ -32,6 +56,13 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
 
 .scrollbar-none::-webkit-scrollbar {
@@ -141,5 +172,7 @@ body {
     left: 0;
     top: 0;
     width: 100%;
+    background: #ffffff !important;
+    color: #000000 !important;
   }
 }

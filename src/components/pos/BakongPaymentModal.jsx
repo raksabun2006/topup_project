@@ -162,17 +162,17 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-sm max-h-[92vh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 bg-white shadow-2xl animate-slide-up sm:animate-scale-in">
+      <div className="w-full max-w-sm max-h-[92vh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-slide-up sm:animate-scale-in">
         {/* Modal Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 py-3 sm:px-6 sm:py-4">
           <div>
-            <h3 className="text-base sm:text-lg font-bold text-slate-900">ស្កេនដើម្បីបង់ប្រាក់ KHQR</h3>
-            <p className="text-[11px] sm:text-xs text-slate-500">លេខវិក្កយបត្រ៖ {billNo}</p>
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">ស្កេនដើម្បីបង់ប្រាក់ KHQR</h3>
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">លេខវិក្កយបត្រ៖ {billNo}</p>
           </div>
           <button
             onClick={isSuccess ? onClose : handleCancel}
             disabled={canceling}
-            className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 transition"
+            className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-50 transition"
             aria-label="Close"
           >
             <X size={18} />
@@ -183,7 +183,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         {creating && (
           <div className="flex flex-col items-center justify-center gap-3 py-16">
             <Loader2 size={32} className="animate-spin text-emerald-600" />
-            <p className="text-sm font-medium text-slate-600">កំពុងបង្កើត Bakong KHQR...</p>
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-300">កំពុងបង្កើត Bakong KHQR...</p>
           </div>
         )}
 
@@ -191,7 +191,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         {!creating && createError && (
           <div className="p-8 text-center">
             <AlertCircle size={32} className="mx-auto mb-3 text-rose-600" />
-            <p className="mb-5 text-sm text-rose-600">{createError}</p>
+            <p className="mb-5 text-sm text-rose-600 dark:text-rose-400">{createError}</p>
             <div className="flex gap-3">
               <button
                 onClick={regenerateQr}
@@ -203,7 +203,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
               <button
                 onClick={handleCancel}
                 disabled={canceling}
-                className="rounded-xl border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-slate-600 hover:text-slate-900 disabled:opacity-50"
+                className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white disabled:opacity-50"
               >
                 បិទ
               </button>
@@ -217,28 +217,28 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
             {finishing ? (
               <>
                 <Loader2 size={36} className="animate-spin text-emerald-600" />
-                <p className="text-base font-bold text-slate-900">ការទូទាត់បានជោគជ័យ</p>
-                <p className="text-xs text-slate-500">កំពុងបញ្ចប់ការបញ្ជាទិញ...</p>
+                <p className="text-base font-bold text-slate-900 dark:text-white">ការទូទាត់បានជោគជ័យ</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">កំពុងបញ្ចប់ការបញ្ជាទិញ...</p>
               </>
             ) : finishError ? (
               <>
                 <AlertCircle size={36} className="text-amber-600" />
-                <p className="text-base font-bold text-slate-900">ការទូទាត់បានជោគជ័យ</p>
-                <p className="text-xs text-slate-500">{finishError}</p>
+                <p className="text-base font-bold text-slate-900 dark:text-white">ការទូទាត់បានជោគជ័យ</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{finishError}</p>
               </>
             ) : (
               <>
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
                   <CheckCircle size={38} />
                 </div>
-                <h4 className="text-xl font-black text-slate-900">ការទូទាត់បានជោគជ័យ!</h4>
-                <p className="text-sm font-bold text-slate-800">
+                <h4 className="text-xl font-black text-slate-900 dark:text-white">ការទូទាត់បានជោគជ័យ!</h4>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
                   Invoice: {billNo}
                 </p>
-                <p className="text-xs text-emerald-700 font-semibold">
+                <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
                   {formatCurrency(paymentAmount, paymentCurrency)} · បានទូទាត់រួចរាល់
                 </p>
-                <p className="text-xs text-slate-500 mt-1 max-w-[240px]">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-[240px]">
                   ការបញ្ជាទិញរបស់អ្នកត្រូវបានបញ្ជាក់។ សូមអរគុណសម្រាប់ការគាំទ្រ។
                 </p>
               </>
@@ -255,7 +255,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                 {status === 'PENDING' ? (
                   <div className="relative w-full">
                     {payment?.qrString ? (
-                      /* Standard KHQR Red Card */
+                      /* Standard KHQR Red Card - Keep white bg inside card for optical scanner contrast */
                       <div className="relative mx-auto w-full max-w-[260px] sm:max-w-[270px] overflow-hidden rounded-2xl bg-white shadow-lg border border-slate-200 animate-fade-in">
                         {/* KHQR Header Banner */}
                         <div
@@ -303,15 +303,15 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex h-64 sm:h-72 w-full items-center justify-center rounded-2xl border border-slate-200 bg-white">
-                        <Loader2 size={32} className="animate-spin text-slate-600" />
+                      <div className="flex h-64 sm:h-72 w-full items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                        <Loader2 size={32} className="animate-spin text-slate-600 dark:text-slate-400" />
                       </div>
                     )}
 
                     {regenerating && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-2xl bg-white/95">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-2xl bg-white/95 dark:bg-slate-900/95">
                         <Loader2 size={28} className="animate-spin text-emerald-600" />
-                        <p className="text-xs font-medium text-slate-600">កំពុងបង្កើត QR ថ្មី...</p>
+                        <p className="text-xs font-medium text-slate-600 dark:text-slate-300">កំពុងបង្កើត QR ថ្មី...</p>
                       </div>
                     )}
                   </div>
@@ -323,14 +323,14 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                     ) : (
                       <XCircle size={36} className="text-rose-500" />
                     )}
-                    <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                    <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                       {isExpired
                         ? 'QR បានផុតកំណត់'
                         : isCancelled
                         ? 'ការទូទាត់ត្រូវបានបោះបង់ (Payment Cancelled)'
                         : 'ការទូទាត់មិនបានជោគជ័យ'}
                     </h4>
-                    <p className="max-w-[240px] text-xs text-slate-500">
+                    <p className="max-w-[240px] text-xs text-slate-500 dark:text-slate-400">
                       {isExpired
                         ? 'QR បានផុតកំណត់ សូមបង្កើតការទូទាត់ថ្មី។'
                         : payment?.message || 'សូមព្យាយាមម្តងទៀត ឬបង្កើតការទូទាត់ថ្មី។'}
@@ -342,7 +342,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
               {/* Expiration Countdown Banner (Pending State) */}
               {status === 'PENDING' && secondsLeft != null && (
                 <div className="px-4 sm:px-6 pb-2 text-center">
-                  <p className={`text-xs font-semibold ${secondsLeft <= 60 ? 'text-rose-600 animate-pulse' : 'text-slate-500'}`}>
+                  <p className={`text-xs font-semibold ${secondsLeft <= 60 ? 'text-rose-600 dark:text-rose-400 animate-pulse' : 'text-slate-500 dark:text-slate-400'}`}>
                     QR ផុតកំណត់ក្នុង {formatCountdown(secondsLeft)}
                   </p>
                 </div>
@@ -350,9 +350,9 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
               {/* Bill Details Summary when not pending */}
               {status !== 'PENDING' && (
-                <div className="border-y border-slate-100 bg-slate-50/80 px-4 sm:px-6 py-2.5 sm:py-3 text-center">
-                  <p className="text-xs text-slate-500">ចំនួនទឹកប្រាក់សរុប</p>
-                  <p className="mt-0.5 text-lg sm:text-xl font-bold text-slate-900">
+                <div className="border-y border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 px-4 sm:px-6 py-2.5 sm:py-3 text-center">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">ចំនួនទឹកប្រាក់សរុប</p>
+                  <p className="mt-0.5 text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
                     {formatCurrency(paymentAmount, paymentCurrency)}
                   </p>
                 </div>
@@ -363,13 +363,13 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
         {/* Action Buttons Footer */}
         {!creating && !createError && !isSuccess && (
-          <div className="shrink-0 border-t border-slate-100 bg-white px-4 py-3 sm:px-6 sm:py-4">
+          <div className="shrink-0 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 sm:px-6 sm:py-4">
             {status === 'PENDING' ? (
               <>
                 {pollError ? (
-                  <p className="mb-2 text-center text-xs text-rose-600">{pollError}</p>
+                  <p className="mb-2 text-center text-xs text-rose-600 dark:text-rose-400">{pollError}</p>
                 ) : (
-                  <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 py-2 sm:py-2.5 text-xs font-medium text-emerald-800">
+                  <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 py-2 sm:py-2.5 text-xs font-medium text-emerald-800 dark:text-emerald-300">
                     <Loader2 size={14} className="animate-spin text-emerald-600 shrink-0" />
                     <span className="truncate">កំពុងរង់ចាំការទូទាត់...</span>
                   </div>
@@ -378,7 +378,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                 {payment?.deeplinkUrl && (
                   <a
                     href={payment.deeplinkUrl}
-                    className="mt-2 flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-slate-50 py-2 sm:py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                    className="mt-2 flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-2 sm:py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
                   >
                     <Smartphone size={14} />
                     បើកកម្មវិធី Bakong
@@ -388,7 +388,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                 <button
                   onClick={handleCancel}
                   disabled={canceling}
-                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/50 py-2 text-xs font-medium text-rose-700 hover:bg-rose-100/60 disabled:opacity-50 transition"
+                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/30 py-2 text-xs font-medium text-rose-700 dark:text-rose-400 hover:bg-rose-100/60 dark:hover:bg-rose-900/40 disabled:opacity-50 transition"
                 >
                   {canceling ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />}
                   បោះបង់ការទូទាត់
@@ -408,7 +408,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                 <button
                   onClick={handleCancel}
                   disabled={canceling}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition"
                 >
                   ត្រឡប់ក្រោយ (Close)
                 </button>

@@ -56,13 +56,13 @@ export default function WeeklyRevenueChart({ sales, loading }) {
   const areaPath = `${linePath} L ${points[6].x} ${HEIGHT - PAD_Y} L ${points[0].x} ${HEIGHT - PAD_Y} Z`;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-ink-900 p-4 sm:p-6 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-ink-900 p-4 sm:p-6 shadow-sm">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 font-semibold text-slate-900 text-sm sm:text-base">
-          <TrendingUp size={18} className="text-emerald-600" />
+        <h2 className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white text-sm sm:text-base">
+          <TrendingUp size={18} className="text-emerald-600 dark:text-emerald-400" />
           របាយការណ៍ប្រចាំសប្តាហ៍
         </h2>
-        <div className="flex rounded-lg border border-slate-200 p-0.5 text-xs font-medium">
+        <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-0.5 text-xs font-medium">
           {[
             { key: 'this', label: 'សប្តាហ៍នេះ' },
             { key: 'last', label: 'សប្តាហ៍មុន' },
@@ -70,7 +70,7 @@ export default function WeeklyRevenueChart({ sales, loading }) {
             <button
               key={opt.key}
               onClick={() => { setView(opt.key); setHover(null); }}
-              className={`rounded-md px-3 py-1.5 transition ${view === opt.key ? 'bg-emerald-600 text-white' : 'text-slate-500 hover:text-slate-900'}`}
+              className={`rounded-md px-3 py-1.5 transition ${view === opt.key ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
             >
               {opt.label}
             </button>
@@ -85,7 +85,7 @@ export default function WeeklyRevenueChart({ sales, loading }) {
           <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full" onMouseLeave={() => setHover(null)}>
             <defs>
               <linearGradient id="weeklyRevenueFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#059669" stopOpacity="0.25" />
+                <stop offset="0%" stopColor="#059669" stopOpacity="0.3" />
                 <stop offset="100%" stopColor="#059669" stopOpacity="0" />
               </linearGradient>
             </defs>
@@ -108,15 +108,15 @@ export default function WeeklyRevenueChart({ sales, loading }) {
 
           {hover != null && (
             <div
-              className="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-lg border border-slate-200 bg-ink-900 px-3 py-1.5 text-center text-xs shadow-lg shadow-black/10"
+              className="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-lg border border-slate-200 dark:border-slate-700 bg-ink-900 dark:bg-slate-800 px-3 py-1.5 text-center text-xs shadow-lg shadow-black/10 z-10"
               style={{ left: `${(points[hover].x / WIDTH) * 100}%`, top: `${(points[hover].y / HEIGHT) * 100}%` }}
             >
-              <p className="font-semibold text-slate-900">{formatCurrency(points[hover].total)}</p>
-              <p className="text-slate-500">{DAY_LABELS[hover]}</p>
+              <p className="font-semibold text-slate-900 dark:text-white">{formatCurrency(points[hover].total)}</p>
+              <p className="text-slate-500 dark:text-slate-400">{DAY_LABELS[hover]}</p>
             </div>
           )}
 
-          <div className="mt-2 flex justify-between text-[11px] text-slate-500">
+          <div className="mt-2 flex justify-between text-[11px] text-slate-500 dark:text-slate-400">
             {DAY_LABELS.map((label) => (
               <span key={label}>{label}</span>
             ))}

@@ -26,8 +26,8 @@ function NewCustomerModal({ onClose, onCreated }) {
   };
 
   const inputClass =
-    'w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs sm:text-sm text-slate-900 shadow-2xs ' +
-    'transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500';
+    'w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2 text-xs sm:text-sm text-slate-900 dark:text-white shadow-2xs ' +
+    'transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-emerald-500';
 
   return (
     <div
@@ -35,37 +35,37 @@ function NewCustomerModal({ onClose, onCreated }) {
       onClick={() => !saving && onClose()}
     >
       <div
-        className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl animate-scale-in"
+        className="w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-base font-bold text-slate-900">បន្ថែមអតិថិជនថ្មី</h3>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">បន្ថែមអតិថិជនថ្មី</h3>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-3.5 space-y-3">
           {error && (
-            <div className="rounded-xl border border-rose-500/30 bg-rose-50 p-2.5 text-xs text-rose-700">
+            <div className="rounded-xl border border-rose-500/30 bg-rose-50 dark:bg-rose-950/30 p-2.5 text-xs text-rose-700 dark:text-rose-400">
               {error}
             </div>
           )}
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-700">ឈ្មោះ *</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">ឈ្មោះ *</label>
             <input required value={form.name} onChange={set('name')} placeholder="ឈ្មោះអតិថិជន" className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-700">លេខទូរស័ព្ទ</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">លេខទូរស័ព្ទ</label>
             <input value={form.phone} onChange={set('phone')} placeholder="012 345 678" className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-700">អ៊ីមែល</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">អ៊ីមែល</label>
             <input type="email" value={form.email} onChange={set('email')} placeholder="example@mail.com" className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-700">អាសយដ្ឋាន</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">អាសយដ្ឋាន</label>
             <input value={form.address} onChange={set('address')} placeholder="រាជធានីភ្នំពេញ" className={inputClass} />
           </div>
 
@@ -122,10 +122,10 @@ export default function CustomerSelector({ selectedCustomer, onSelect }) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200/90 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-2xs hover:border-emerald-500/50 hover:bg-slate-50/50 transition active:scale-[0.99]"
+        className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs hover:border-emerald-500/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/80 transition active:scale-[0.99]"
       >
         <span className="flex min-w-0 items-center gap-2">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
             <User size={13} />
           </div>
           <span className="truncate">
@@ -134,7 +134,7 @@ export default function CustomerSelector({ selectedCustomer, onSelect }) {
         </span>
         <div className="flex items-center gap-1">
           {selectedCustomer?.phone && (
-            <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">
+            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-normal hidden sm:inline">
               {selectedCustomer.phone}
             </span>
           )}
@@ -145,8 +145,8 @@ export default function CustomerSelector({ selectedCustomer, onSelect }) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 right-0 z-20 mt-1.5 max-h-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 animate-scale-in">
-            <div className="border-b border-slate-100 p-2 bg-slate-50/70">
+          <div className="absolute left-0 right-0 z-20 mt-1.5 max-h-80 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-900/20 animate-scale-in">
+            <div className="border-b border-slate-100 dark:border-slate-800 p-2 bg-slate-50/70 dark:bg-slate-800/60">
               <div className="relative">
                 <Search size={13} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -154,12 +154,12 @@ export default function CustomerSelector({ selectedCustomer, onSelect }) {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="ស្វែងរកតាមឈ្មោះ ឬលេខទូរស័ព្ទ..."
-                  className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-8 pr-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-1.5 pl-8 pr-2.5 text-xs text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
             </div>
 
-            <div className="max-h-52 overflow-y-auto divide-y divide-slate-100">
+            <div className="max-h-52 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
               {filtered.map((c) => {
                 const isSelected = selectedCustomer?.id === c.id;
                 return (
@@ -170,14 +170,14 @@ export default function CustomerSelector({ selectedCustomer, onSelect }) {
                       setOpen(false);
                     }}
                     className={`flex w-full items-center justify-between px-3.5 py-2.5 text-left transition ${
-                      isSelected ? 'bg-emerald-50/80 text-emerald-800' : 'hover:bg-slate-50 text-slate-800'
+                      isSelected ? 'bg-emerald-50/80 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300' : 'hover:bg-slate-50 dark:hover:bg-slate-800/70 text-slate-800 dark:text-slate-200'
                     }`}
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold truncate">{c.name}</p>
                       {c.phone && <p className="text-[10px] text-slate-400 mt-0.5">{c.phone}</p>}
                     </div>
-                    {isSelected && <Check size={14} className="text-emerald-600 shrink-0 ml-2" />}
+                    {isSelected && <Check size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0 ml-2" />}
                   </button>
                 );
               })}
@@ -191,7 +191,7 @@ export default function CustomerSelector({ selectedCustomer, onSelect }) {
                 setOpen(false);
                 setShowNew(true);
               }}
-              className="flex w-full items-center justify-center gap-1.5 border-t border-slate-100 bg-slate-50/50 px-3.5 py-2.5 text-xs font-bold text-emerald-600 hover:bg-emerald-50 transition"
+              className="flex w-full items-center justify-center gap-1.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 px-3.5 py-2.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition"
             >
               <Plus size={14} />
               <span>បន្ថែមអតិថិជនថ្មី</span>

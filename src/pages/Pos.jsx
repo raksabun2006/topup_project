@@ -164,7 +164,7 @@ export default function Pos() {
   }, [isCheckoutFlow]);
 
   return (
-    <div className={`flex h-full min-h-0 flex-1 flex-col bg-slate-50/50 ${items.length > 0 ? 'pb-20 sm:pb-24' : 'pb-2 sm:pb-3'} lg:pb-0`}>
+    <div className={`flex h-full min-h-0 flex-1 flex-col bg-slate-50/50 dark:bg-ink-950 transition-colors duration-200 ${items.length > 0 ? 'pb-20 sm:pb-24' : 'pb-2 sm:pb-3'} lg:pb-0`}>
       <SEO
         title={pageTitle}
         description={pageDescription}
@@ -182,14 +182,14 @@ export default function Pos() {
       </header>
 
       {/* Category Pills Header on Mobile */}
-      <div className="shrink-0 sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-2.5 py-1.5 sm:px-4 sm:py-2 lg:hidden">
+      <div className="shrink-0 sticky top-0 z-30 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-2.5 py-1.5 sm:px-4 sm:py-2 lg:hidden">
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none">
           <button
             onClick={() => setCategory('')}
             className={`flex shrink-0 items-center gap-1 sm:gap-1.5 rounded-full px-2.5 py-1 sm:px-3.5 sm:py-1.5 text-xs font-semibold transition ${
               !category
                 ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <AllCategoriesIcon size={14} />
@@ -205,7 +205,7 @@ export default function Pos() {
                 className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 sm:px-3.5 sm:py-1.5 text-xs font-semibold transition ${
                   active
                     ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
                 <Icon size={14} />
@@ -219,7 +219,7 @@ export default function Pos() {
       {/* Main Content Area */}
       <div className="flex-1 min-h-0 p-2.5 sm:p-4 lg:grid lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_390px] lg:gap-4 lg:overflow-hidden">
         {/* Product Grid Container */}
-        <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 sm:p-4 shadow-xs">
+        <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4 shadow-xs">
           <ProductGrid
             category={category}
             onAdd={(product) => addItem(product, 1)}
@@ -256,14 +256,14 @@ export default function Pos() {
 
       {/* Desktop Bottom Category Bar */}
       <div className="shrink-0 hidden px-4 pb-4 lg:block">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none rounded-2xl border border-slate-200/80 bg-white p-2.5 shadow-2xs">
-          <span className="text-xs font-bold text-slate-500 pl-2 pr-1 shrink-0">ប្រភេទទំនិញ:</span>
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shadow-2xs">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 pl-2 pr-1 shrink-0">ប្រភេទទំនិញ:</span>
           <button
             onClick={() => setCategory('')}
             className={`flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition active:scale-95 ${
               !category
-                ? 'border-emerald-600 bg-emerald-50 text-emerald-700 shadow-2xs'
-                : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 shadow-2xs'
+                : 'border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <AllCategoriesIcon size={15} />
@@ -278,8 +278,8 @@ export default function Pos() {
                 onClick={() => setCategory(cat.name)}
                 className={`flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition active:scale-95 ${
                   active
-                    ? 'border-emerald-600 bg-emerald-50 text-emerald-700 shadow-2xs'
-                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 shadow-2xs'
+                    : 'border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <Icon size={15} />
@@ -292,13 +292,13 @@ export default function Pos() {
 
       {/* Floating Mobile Cart & Checkout Bar (Sticky Bottom on Mobile) */}
       {items.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/95 p-2.5 sm:p-3 shadow-2xl backdrop-blur-md lg:hidden animate-slide-up pb-[max(0.625rem,env(safe-area-inset-bottom))]">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-2.5 sm:p-3 shadow-2xl backdrop-blur-md lg:hidden animate-slide-up pb-[max(0.625rem,env(safe-area-inset-bottom))]">
           <div className="mx-auto flex max-w-md items-center justify-between gap-2 sm:gap-3">
             {/* View Cart / Items trigger button */}
             <button
               type="button"
               onClick={() => setMobileCartOpen(!mobileCartOpen)}
-              className="flex items-center gap-2 sm:gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-2.5 sm:px-3.5 py-2 text-left transition hover:bg-slate-100 active:scale-95"
+              className="flex items-center gap-2 sm:gap-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 sm:px-3.5 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95"
             >
               <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white shrink-0">
                 <ShoppingCart size={16} />
@@ -307,8 +307,8 @@ export default function Pos() {
                 </span>
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] text-slate-500 leading-tight truncate">{itemCount} ចំនួន</p>
-                <p className="text-xs font-bold text-slate-900 leading-tight">{formatCurrency(total)}</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight truncate">{itemCount} ចំនួន</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight">{formatCurrency(total)}</p>
               </div>
               {mobileCartOpen ? <ChevronDown size={14} className="text-slate-400 shrink-0" /> : <ChevronUp size={14} className="text-slate-400 shrink-0" />}
             </button>
@@ -333,16 +333,16 @@ export default function Pos() {
       {mobileCartOpen && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs lg:hidden animate-fade-in">
           <div className="fixed inset-0" onClick={() => setMobileCartOpen(false)} />
-          <div className="relative z-10 max-h-[90vh] w-full overflow-hidden rounded-t-3xl border-t border-slate-200 bg-white shadow-2xl flex flex-col animate-slide-up pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <div className="relative z-10 max-h-[90vh] w-full overflow-hidden rounded-t-3xl border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-slide-up pb-[max(0.5rem,env(safe-area-inset-bottom))]">
             {/* Sheet Handle & Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50/70">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50/70 dark:bg-slate-800/60">
               <div className="flex items-center gap-2">
-                <ShoppingCart size={18} className="text-emerald-600" />
-                <h3 className="text-sm font-bold text-slate-900">រទេះទំនិញរបស់អ្នក ({itemCount} ចំនួន)</h3>
+                <ShoppingCart size={18} className="text-emerald-600 dark:text-emerald-400" />
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">រទេះទំនិញរបស់អ្នក ({itemCount} ចំនួន)</h3>
               </div>
               <button
                 onClick={() => setMobileCartOpen(false)}
-                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200"
               >
                 <X size={18} />
               </button>

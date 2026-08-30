@@ -42,8 +42,8 @@ export default function CategoryManagerModal({ onClose }) {
   };
 
   const inputClass =
-    'w-full rounded-xl border border-slate-300 bg-ink-950 px-3.5 py-2 text-sm text-slate-900 shadow-sm ' +
-    'transition placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
+    'w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-sm text-slate-900 dark:text-white shadow-sm ' +
+    'transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
 
   return (
     <div
@@ -51,20 +51,20 @@ export default function CategoryManagerModal({ onClose }) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md max-h-[90dvh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 bg-white shadow-2xl animate-slide-up sm:animate-scale-in pb-safe sm:pb-0"
+        className="w-full max-w-md max-h-[90dvh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-slide-up sm:animate-scale-in pb-safe sm:pb-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3.5 sm:px-6 sm:py-4">
-          <h3 className="flex items-center gap-2 text-base sm:text-lg font-bold text-slate-900">
-            <Tags size={18} className="text-emerald-600" />
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 py-3.5 sm:px-6 sm:py-4">
+          <h3 className="flex items-center gap-2 text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+            <Tags size={18} className="text-emerald-600 dark:text-emerald-400" />
             គ្រប់គ្រងប្រភេទ
           </h3>
-          <button onClick={onClose} className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition">
+          <button onClick={onClose} className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition">
             <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleCreate} className="flex items-center gap-2 border-b border-slate-200 px-6 py-4">
+        <form onSubmit={handleCreate} className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 px-6 py-4">
           <input
             autoFocus
             value={name}
@@ -81,7 +81,7 @@ export default function CategoryManagerModal({ onClose }) {
           </button>
         </form>
         {formError && (
-          <p className="-mt-2 px-6 pb-2 text-xs text-rose-700">{formError}</p>
+          <p className="-mt-2 px-6 pb-2 text-xs text-rose-700 dark:text-rose-400">{formError}</p>
         )}
 
         <div className="max-h-80 overflow-y-auto px-3 py-2">
@@ -93,26 +93,26 @@ export default function CategoryManagerModal({ onClose }) {
 
           {!loading && error && (
             <div className="flex flex-col items-center gap-2 py-8 text-center">
-              <AlertCircle size={24} className="text-rose-700" />
-              <p className="text-sm text-rose-700">{error}</p>
+              <AlertCircle size={24} className="text-rose-700 dark:text-rose-400" />
+              <p className="text-sm text-rose-700 dark:text-rose-400">{error}</p>
             </div>
           )}
 
           {!loading && !error && categories.length === 0 && (
-            <p className="py-8 text-center text-sm text-slate-500">មិនទាន់មានប្រភេទនៅឡើយទេ</p>
+            <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">មិនទាន់មានប្រភេទនៅឡើយទេ</p>
           )}
 
           {!loading && !error && categories.map((category) => (
             <div
               key={category.id}
-              className="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-emerald-50/60"
+              className="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-emerald-50/60 dark:hover:bg-slate-800/60"
             >
               <span className="truncate">{category.name}</span>
               <button
                 onClick={() => handleDelete(category)}
                 disabled={deletingId === category.id}
                 title="លុប"
-                className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-700 disabled:opacity-50"
+                className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-700 dark:hover:text-rose-400 disabled:opacity-50"
               >
                 {deletingId === category.id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
               </button>

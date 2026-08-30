@@ -29,9 +29,9 @@ export default function UserDashboard() {
 
   return (
     <div className="mx-auto max-w-6xl px-3 sm:px-6 py-6 sm:py-10">
-      <div className="relative mb-6 sm:mb-10 overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-300 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 p-5 sm:p-8 shadow-xl shadow-emerald-200/50">
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">សួស្តី {user?.username}</h1>
-        <p className="mt-1.5 text-xs sm:text-sm text-slate-600">ចាប់ផ្តើមការលក់ថ្មីនៅចំណុចលក់</p>
+      <div className="relative mb-6 sm:mb-10 overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-300 dark:border-slate-800 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 p-5 sm:p-8 shadow-xl shadow-emerald-200/50 dark:shadow-none">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">សួស្តី {user?.username}</h1>
+        <p className="mt-1.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">ចាប់ផ្តើមការលក់ថ្មីនៅចំណុចលក់</p>
 
         <Link
           to="/pos"
@@ -48,12 +48,12 @@ export default function UserDashboard() {
         <StatCard icon={DollarSign} label="ចំណូល (ខ្ញុំ)" value={loading ? '—' : formatCurrency(stats.revenue)} accent="amber" />
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 sm:px-6 py-4 sm:py-5">
-          <h2 className="text-sm sm:text-base font-semibold text-slate-900">ការលក់ថ្មីៗរបស់ខ្ញុំ</h2>
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-ink-900 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-4 sm:py-5">
+          <h2 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">ការលក់ថ្មីៗរបស់ខ្ញុំ</h2>
           <Link
             to="/sales"
-            className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-emerald-600 transition hover:text-emerald-700"
+            className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 transition hover:text-emerald-700 dark:hover:text-emerald-300"
           >
             មើលទាំងអស់
           </Link>
@@ -69,11 +69,11 @@ export default function UserDashboard() {
 
         {!loading && error && (
           <div className="p-10 text-center">
-            <AlertCircle size={32} className="mx-auto mb-3 text-rose-700" />
-            <p className="mb-5 text-sm text-rose-700">{error}</p>
+            <AlertCircle size={32} className="mx-auto mb-3 text-rose-700 dark:text-rose-400" />
+            <p className="mb-5 text-sm text-rose-700 dark:text-rose-400">{error}</p>
             <button
               onClick={reload}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-ink-950 px-4 py-2 text-sm text-slate-600 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-ink-950 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900 dark:hover:text-white"
             >
               <RefreshCw size={14} />
               ព្យាយាមម្តងទៀត
@@ -83,8 +83,8 @@ export default function UserDashboard() {
 
         {!loading && !error && mySales.length === 0 && (
           <div className="p-14 text-center">
-            <Receipt size={40} className="mx-auto mb-4 text-slate-600" />
-            <p className="mb-6 text-slate-500">អ្នកមិនទាន់មានការលក់នៅឡើយទេ</p>
+            <Receipt size={40} className="mx-auto mb-4 text-slate-600 dark:text-slate-500" />
+            <p className="mb-6 text-slate-500 dark:text-slate-400">អ្នកមិនទាន់មានការលក់នៅឡើយទេ</p>
             <Link
               to="/pos"
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:from-emerald-500 hover:to-emerald-500"
@@ -95,20 +95,20 @@ export default function UserDashboard() {
         )}
 
         {!loading && !error && mySales.length > 0 && (
-          <div className="divide-y divide-slate-200">
+          <div className="divide-y divide-slate-200 dark:divide-slate-800">
             {mySales.slice(0, 5).map((sale) => (
               <Link
                 key={sale.id}
                 to={`/sales/${sale.id}`}
-                className="flex items-center justify-between gap-4 px-6 py-4 transition hover:bg-emerald-50"
+                className="flex items-center justify-between gap-4 px-6 py-4 transition hover:bg-emerald-50 dark:hover:bg-slate-800/60"
               >
                 <div className="min-w-0">
-                  <p className="truncate font-medium text-slate-700">{sale.invoiceNumber}</p>
-                  <p className="mt-1 text-xs text-slate-500">{formatDate(sale.createdAt)}</p>
+                  <p className="truncate font-medium text-slate-700 dark:text-slate-200">{sale.invoiceNumber}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{formatDate(sale.createdAt)}</p>
                 </div>
 
                 <div className="flex shrink-0 items-center gap-4">
-                  <span className="font-semibold text-slate-900">{formatCurrency(sale.total)}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white">{formatCurrency(sale.total)}</span>
                   <SaleStatusBadge status={sale.status} />
                 </div>
               </Link>
