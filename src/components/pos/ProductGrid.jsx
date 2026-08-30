@@ -6,17 +6,6 @@ import { useProducts } from '../../hooks/useProducts';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 
-/**
- * Backend /api/v1/products មិនមាន query param ស្វែងរកទេ (មានតែ category+pageable) -
- * ដូច្នេះការស្វែងរកតាមឈ្មោះ/SKU ធ្វើតែលើទំព័រដែលបានទាញយកស្រាប់ប៉ុណ្ណោះ។
- *
- * category ជា controlled prop ព្រោះ tab ជ្រើសរើសប្រភេទផ្លាស់ទីទៅជា
- * action bar ខាងក្រោមទំព័រ (រួមជាមួយ Cancel/Hold Order) - មើល Pos.jsx។
- *
- * reloadSignal ធ្វើឲ្យទាញយកទំនិញឡើងវិញស្ងាត់ៗពេលលក់ជោគជ័យ ដើម្បីស្តុក
- * ត្រូវបានធ្វើបច្ចុប្បន្នភាពភ្លាមៗ (មិនចាំបាច់ប្តូរទំព័រ/refresh ដោយដៃ)។
- * cart items ដកចេញពីស្តុកបង្ហាញផងដែរ ដើម្បីកុំឲ្យលក់លើសស្តុកមុននឹងគិតលុយ។
- */
 export default function ProductGrid({ category, onAdd, reloadSignal }) {
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
@@ -52,7 +41,7 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
         {isAdmin && (
           <button
             onClick={() => setShowCreate(true)}
-            className="flex shrink-0 items-center gap-1.5 text-sm font-bold tracking-wide text-emerald-600 transition hover:text-emerald-700"
+            className="flex shrink-0 items-center gap-1.5 text-xs sm:text-sm font-bold tracking-wide text-emerald-600 transition hover:text-emerald-700 active:scale-95"
           >
             <Plus size={18} />
             ផលិតផលថ្មី
@@ -73,21 +62,22 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
         </div>
       </div>
 
-      {/* មាតិកា */}
+      {/* មាតិកាទំនិញ */}
       <div className="mt-3 flex-1 overflow-y-auto">
         {loading && (
-          <div className="flex flex-col items-center justify-center py-16 text-emerald-600">
-            <Loader2 size={30} className="animate-spin" />
+          <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
+            <Loader2 size={32} className="animate-spin text-emerald-600 mb-2.5" />
+            <p className="text-sm font-medium text-slate-500">កំពុងទាញយកទំនិញ...</p>
           </div>
         )}
 
         {!loading && error && (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-8 text-center">
-            <AlertCircle size={28} className="text-rose-700" />
-            <p className="text-sm text-rose-700">{error}</p>
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center animate-fade-in">
+            <AlertCircle size={28} className="text-rose-600" />
+            <p className="text-sm font-medium text-rose-700">មិនអាចទាញយកទំនិញបានទេ។ សូមព្យាយាមម្តងទៀត។</p>
             <button
               onClick={reload}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900"
+              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 active:scale-95"
             >
               ព្យាយាមម្តងទៀត
             </button>
@@ -95,9 +85,11 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
         )}
 
         {!loading && !error && filtered.length === 0 && (
-          <div className="flex flex-col items-center gap-2 py-16 text-center">
-            <PackageX size={32} className="text-slate-400" />
-            <p className="text-sm text-slate-500">មិនមានទំនិញត្រូវនឹងលក្ខខណ្ឌនេះទេ</p>
+          <div className="flex flex-col items-center gap-2.5 py-20 text-center animate-fade-in">
+            <PackageX size={36} className="text-slate-300" />
+            <p className="text-sm font-medium text-slate-500">
+              {search ? 'មិនមានទំនិញត្រូវនឹងលក្ខខណ្ឌស្វែងរកនេះទេ' : 'មិនទាន់មានទំនិញ'}
+            </p>
           </div>
         )}
 
@@ -115,7 +107,7 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
         )}
       </div>
 
-      {/* ទំព័រ */}
+      {/* ទំព័រ Pagination */}
       {!loading && !error && totalPages > 1 && (
         <div className="mt-2.5 flex items-center justify-center gap-2.5 border-t border-slate-200 pt-2.5">
           <button

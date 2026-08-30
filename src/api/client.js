@@ -8,7 +8,7 @@ export const apiClient = axios.create({
   timeout: 20000,
 });
 
-// Outbound Interceptor: Normalizes URL and attaches JWT token
+// Outbound Interceptor: Normalizes URL and attaches JWT token for protected requests
 apiClient.interceptors.request.use(async (config) => {
   try {
     // Prevent duplicate /api/v1 prefix if URL already includes it
@@ -31,24 +31,17 @@ apiClient.interceptors.request.use(async (config) => {
       config.headers.Authorization = `Bearer ${token}`;
     }
   } catch (err) {
-    console.warn('Failed to get token before request:', err);
-    const storedToken =
-      authClient.getAccessToken() ||
-      localStorage.getItem('access_token') ||
-      localStorage.getItem('pos_access_token');
-    if (storedToken) {
-      config.headers.Authorization = `Bearer ${storedToken}`;
-    }
+    console.warn('Token check notice:', err);
   }
   return config;
 });
 
-// Inbound Interceptor: Handles 401 responses
+// Inbound Interceptor: Handles 401 responses gracefully
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Clear token & auth state
+      // Clear token only if one was previously stored (silent session cleanup)
       authClient.triggerSessionExpired();
     }
     return Promise.reject(error);
@@ -84,38 +77,51 @@ export function getErrorMessage(error) {
       .join(' · ');
   }
 
-  // 401: Unauthorized / Login required
+  // Network error (no response)
+  if (!error?.response) {
+    if (error?.code === 'ECONNABORTED') {
+      return 'សំណើលើសពេលកំណត់។ សូមព្យាយាមម្តងទៀត។ (Request timed out. Please try again.)';
+    }
+    return 'មិនអាចភ្ជាប់ទៅ Server បានទេ។ សូមពិនិត្យ Internet របស់អ្នក។ (Cannot connect to server. Please check your internet connection.)';
+  }
+
+  // 401: Unauthorized
   if (status === 401) {
-    return 'ឈ្មោះអ្នកប្រើ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ ឬតម្រូវឱ្យចូលគណនីឡើងវិញ (Authentication required)';
+    return 'សូមចូលគណនីឡើងវិញ (Authentication required)';
   }
 
-  // 403: Forbidden / Permission denied
+  // 403: Forbidden
   if (status === 403) {
-    return 'អ្នកមិនមានសិទ្ធិអនុវត្តសកម្មភាពនេះទេ (Permission denied)';
+    return 'អ្នកមិនមានសិទ្ធិប្រើប្រាស់មុខងារនេះទេ (Permission denied)';
   }
 
-  // 404: Not Found (Payment / Order not found)
+  // 404: Not Found
   if (status === 404) {
-    return 'មិនស្វែងរកឃើញទិន្នន័យការទូទាត់ ឬការលក់នេះទេ (Payment or order not found)';
+    return 'រកមិនឃើញទិន្នន័យ (Resource or order not found)';
   }
 
-  // 409: Conflict (Duplicate / Payment already processed)
+  // 409: Conflict
   if (status === 409) {
     return data?.message && !looksLikeRawException(data.message)
       ? data.message
-      : 'ការទូទាត់ត្រូវបានដំណើរការរួចហើយ ឬទិន្នន័យជាន់គ្នា (Payment already processed or conflict)';
+      : 'ទិន្នន័យជាន់គ្នា ឬការទូទាត់ត្រូវបានដំណើរការរួចហើយ (Conflict / Already processed)';
   }
 
-  // 422: Unprocessable Entity (Invalid payment data)
+  // 422: Unprocessable Entity
   if (status === 422) {
     return data?.message && !looksLikeRawException(data.message)
       ? data.message
-      : 'ទិន្នន័យការទូទាត់មិនត្រឹមត្រូវទេ (Invalid payment data)';
+      : 'ទិន្នន័យមិនត្រឹមត្រូវទេ (Unprocessable entity)';
   }
 
-  // 503: Service Unavailable (Bakong / payment provider down)
-  if (status === 503) {
-    return 'សេវាទូទាត់ Bakong KHQR មិនដំណើរការបណ្តោះអាសន្ន (Payment provider unavailable)';
+  // 429: Too Many Requests
+  if (status === 429) {
+    return 'សំណើច្រើនពេកក្នុងពេលតែមួយ។ សូមរង់ចាំបន្តិច។ (Too many requests. Please wait a moment.)';
+  }
+
+  // 500, 502, 503: Server Error / Provider Error / Unavailable
+  if (status === 500 || status === 502 || status === 503) {
+    return 'Server កំពុងមានបញ្ហា ឬសេវា Bakong រវល់បណ្តោះអាសន្ន។ សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ។ (Server / Payment service temporarily unavailable)';
   }
 
   // Use clean backend message if not a raw stack trace
@@ -123,16 +129,5 @@ export function getErrorMessage(error) {
     return data.message;
   }
 
-  // 500: Internal Server Error
-  if (status === 500) {
-    return 'មានបញ្ហាកើតឡើងនៅម៉ាស៊ីនមេ។ សូមព្យាយាមម្តងទៀត។ (Server error. Please try again later)';
-  }
-
-  if (error?.code === 'ECONNABORTED') {
-    return 'សំណើលើសពេលកំណត់។ សូមព្យាយាមម្តងទៀត។';
-  }
-  if (!error?.response) {
-    return 'មិនអាចភ្ជាប់ទៅ server បានទេ។ សូមពិនិត្យអ៊ីនធឺណិត។';
-  }
-  return 'មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។';
+  return 'មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។ (An unexpected error occurred)';
 }

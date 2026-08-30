@@ -8,7 +8,6 @@ import { useSalePaymentPolling } from '../../hooks/useSalePaymentPolling';
 import { saleApi } from '../../api/saleApi';
 import { getErrorMessage } from '../../api/client';
 import { formatCurrency, parseBackendDate, formatCountdown } from '../../utils/format';
-import { env } from '../../config/env';
 
 export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const [creating, setCreating] = useState(true);
@@ -31,7 +30,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const finalizedRef = useRef(false);
   const isRegeneratingRef = useRef(false);
 
-  // Initial QR creation
+  // Initial QR creation (POST /sales/{saleId}/payment)
   useEffect(() => {
     if (initRef.current) return;
     initRef.current = true;
@@ -49,6 +48,13 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
       }
     })();
   }, [sale.id, setPayment]);
+
+  // Clean up polling timer when component unmounts
+  useEffect(() => {
+    return () => {
+      stopPolling();
+    };
+  }, [stopPolling]);
 
   // Regenerate / Retry QR
   const regenerateQr = useCallback(async () => {
@@ -152,6 +158,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const billNo = payment?.billNumber || sale.invoiceNumber || 'INV';
   const paymentAmount = payment?.amount ?? sale.total;
   const paymentCurrency = payment?.currency || 'USD';
+  const merchantDisplayName = payment?.merchantName || 'Bun Raksa';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in">
@@ -176,7 +183,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         {creating && (
           <div className="flex flex-col items-center justify-center gap-3 py-16">
             <Loader2 size={32} className="animate-spin text-emerald-600" />
-            <p className="text-sm text-slate-500">កំពុងបង្កើត Bakong KHQR...</p>
+            <p className="text-sm font-medium text-slate-600">កំពុងបង្កើត Bakong KHQR...</p>
           </div>
         )}
 
@@ -216,7 +223,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
             ) : finishError ? (
               <>
                 <AlertCircle size={36} className="text-amber-600" />
-                <p className="text-base font-bold text-slate-900">បង់ប្រាក់ជោគជ័យ</p>
+                <p className="text-base font-bold text-slate-900">បង់ប្រាក់ជោគជ័យ 🎉</p>
                 <p className="text-xs text-slate-500">{finishError}</p>
               </>
             ) : (
@@ -224,9 +231,15 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                   <CheckCircle size={38} />
                 </div>
-                <h4 className="text-xl font-black text-slate-900">ការទូទាត់បានជោគជ័យ!</h4>
-                <p className="text-xs text-slate-500">
-                  វិក្កយបត្រ #{billNo} · {formatCurrency(paymentAmount, paymentCurrency)}
+                <h4 className="text-xl font-black text-slate-900">ការទូទាត់បានជោគជ័យ 🎉</h4>
+                <p className="text-sm font-bold text-slate-700">
+                  Invoice: {billNo}
+                </p>
+                <p className="text-xs text-emerald-700 font-medium">
+                  {formatCurrency(paymentAmount, paymentCurrency)} · បានទូទាត់រួចរាល់
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  សូមអរគុណសម្រាប់ការទិញទំនិញ។
                 </p>
               </>
             )}
@@ -252,8 +265,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
                       {/* Merchant & Amount Details */}
                       <div className="px-5 pt-3 pb-2 text-left">
-                        <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                          {env.appName || 'MERCHANT'}
+                        <p className="truncate text-[11px] font-bold uppercase tracking-wide text-slate-600">
+                          {merchantDisplayName}
                         </p>
                         <p className="mt-0.5 text-2xl font-black text-slate-900">
                           {formatCurrency(paymentAmount, paymentCurrency)}
@@ -309,15 +322,15 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                   )}
                   <h4 className="text-base font-bold text-slate-900">
                     {isExpired
-                      ? 'QR Code បានផុតកំណត់ (QR Code Expired)'
+                      ? 'QR ទូទាត់បានផុតកំណត់'
                       : isCancelled
                       ? 'ការទូទាត់ត្រូវបានបោះបង់ (Payment Cancelled)'
-                      : 'ការបង់ប្រាក់បរាជ័យ (Payment Failed)'}
+                      : 'ការទូទាត់មិនបានជោគជ័យ'}
                   </h4>
                   <p className="max-w-[240px] text-xs text-slate-500">
                     {isExpired
-                      ? 'QR នេះមានអាយុកាល ១៥ នាទី និងបានផុតកំណត់ហើយ។ សូមចុចប៊ូតុងខាងក្រោមដើម្បីបង្កើត QR ថ្មី។'
-                      : payment?.message || 'សូមព្យាយាមម្តងទៀត ឬជ្រើសរើសវិធីបង់ប្រាក់ផ្សេង។'}
+                      ? 'QR បានផុតកំណត់ សូមបង្កើតការទូទាត់ថ្មី។'
+                      : payment?.message || 'សូមព្យាយាមម្តងទៀត ឬបង្កើត QR ថ្មីសម្រាប់ការទូទាត់។'}
                   </p>
                 </div>
               )}
@@ -327,7 +340,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
             {status === 'PENDING' && secondsLeft != null && (
               <div className="px-6 pb-2 text-center">
                 <p className={`text-xs font-semibold ${secondsLeft <= 60 ? 'text-rose-600 animate-pulse' : 'text-slate-500'}`}>
-                  QR ផុតកំណត់ក្នុង៖ {formatCountdown(secondsLeft)}
+                  QR ផុតកំណត់ក្នុង {formatCountdown(secondsLeft)}
                 </p>
               </div>
             )}
