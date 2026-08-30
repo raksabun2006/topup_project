@@ -5,6 +5,7 @@ import { useSales } from '../hooks/useSales';
 import { useCustomers } from '../hooks/useCustomers';
 import { formatCurrency, formatDate } from '../utils/format';
 import { SaleStatusBadge, PaymentStatusBadge } from '../components/ui/SaleStatusBadge';
+import SEO from '../components/SEO';
 
 export default function Sales() {
   const { sales, loading, error, reload } = useSales();
@@ -44,6 +45,10 @@ export default function Sales() {
 
   return (
     <div className="mx-auto max-w-6xl px-3 sm:px-6 py-6 sm:py-10">
+      <SEO
+        title="ប្រវត្តិការលក់ (Sales) | Mart System"
+        robots="noindex, nofollow"
+      />
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wide text-slate-900">ប្រវត្តិការលក់</h1>
         

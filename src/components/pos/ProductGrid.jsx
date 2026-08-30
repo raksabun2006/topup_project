@@ -34,8 +34,40 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
     );
   }, [products, search]);
 
+  const productJsonLd = useMemo(() => {
+    if (!products || products.length === 0) return null;
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement: products.slice(0, 20).map((product, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'Product',
+          name: product.name,
+          description: product.description || `${product.name} - Mart System`,
+          ...(product.imageUrl ? { image: product.imageUrl } : {}),
+          ...(product.sku ? { sku: product.sku } : {}),
+          offers: {
+            '@type': 'Offer',
+            price: String(product.price ?? 0),
+            priceCurrency: 'USD',
+            availability: (product.stockQuantity ?? 0) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            url: 'https://topup-project.vercel.app/products',
+          },
+        },
+      })),
+    };
+  }, [products]);
+
   return (
     <div className="flex h-full min-h-0 flex-col">
+      {productJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        />
+      )}
       {/* ស្វែងរក + បន្ថែមផលិតផលថ្មី */}
       <div className="flex shrink-0 items-center justify-between gap-2 sm:gap-3">
         {isAdmin && (

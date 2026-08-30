@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /sales
+Disallow: /customers
+Disallow: /profile
+Disallow: /login
+Disallow: /register
+Disallow: /cart
+Disallow: /checkout
+Disallow: /payment
+
+Sitemap: https://topup-project.vercel.app/sitemap.xml

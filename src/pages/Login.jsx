@@ -4,6 +4,7 @@ import { Loader2, AlertCircle, Store, Eye, EyeOff, Lock, User, ArrowLeft, Shield
 import { useAuth } from '../context/AuthContext';
 import { getErrorMessage } from '../api/client';
 import { env } from '../config/env';
+import SEO from '../components/SEO';
 
 export default function Login() {
   const { login } = useAuth();
@@ -50,6 +51,10 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50/80 px-4 py-10">
+      <SEO
+        title="ចូលប្រើប្រាស់ (Login) | Mart System"
+        robots="noindex, nofollow"
+      />
       <div className="w-full max-w-md animate-fade-in">
         {/* Back to store navigation */}
         <Link

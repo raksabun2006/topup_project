@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext';
 import UserDashboard from '../components/dashboard/UserDashboard';
 import AdminDashboard from '../components/dashboard/AdminDashboard';
+import SEO from '../components/SEO';
 
 /**
  * Route តែមួយ ផ្ទាំងពីរ។
@@ -12,5 +13,13 @@ import AdminDashboard from '../components/dashboard/AdminDashboard';
  */
 export default function Dashboard() {
   const { isAdmin } = useAuth();
-  return isAdmin ? <AdminDashboard /> : <UserDashboard />;
+  return (
+    <>
+      <SEO
+        title="ផ្ទាំងគ្រប់គ្រង (Dashboard) | Mart System"
+        robots="noindex, nofollow"
+      />
+      {isAdmin ? <AdminDashboard /> : <UserDashboard />}
+    </>
+  );
 }

@@ -3,6 +3,7 @@ import { User, Loader2, Check, AlertCircle, ImageOff } from 'lucide-react';
 import { usersApi } from '../api/userApi';
 import { getErrorMessage } from '../api/client';
 import { formatDate } from '../utils/format';
+import SEO from '../components/SEO';
 
 export default function Profile() {
   const [profile, setProfile] = useState(null);
@@ -67,6 +68,10 @@ export default function Profile() {
 
   return (
     <div className="mx-auto max-w-2xl px-3 sm:px-6 py-6 sm:py-10">
+      <SEO
+        title="ព័ត៌មានផ្ទាល់ខ្លួន (Profile) | Mart System"
+        robots="noindex, nofollow"
+      />
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wide text-slate-900">ព័ត៌មានផ្ទាល់ខ្លួន</h1>
         <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-500">គ្រប់គ្រងព័ត៌មានគណនីរបស់អ្នក</p>

@@ -8,6 +8,7 @@ import { getErrorMessage } from '../api/client';
 import { formatCurrency } from '../utils/format';
 import ProductFormModal from '../components/admin/ProductFormModal';
 import CategoryManagerModal from '../components/admin/CategoryManagerModal';
+import SEO from '../components/SEO';
 
 const STATUS_STYLES = {
   ACTIVE: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -78,8 +79,12 @@ export default function Products() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-3 sm:px-6 py-6 sm:py-10">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6 animate-fade-in">
+      <SEO
+        title="គ្រប់គ្រងផលិតផល (Products Management) | Mart System"
+        robots="noindex, nofollow"
+      />
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wide text-slate-900">គ្រប់គ្រងផលិតផល</h1>
         
         <div className="flex items-center gap-2.5">

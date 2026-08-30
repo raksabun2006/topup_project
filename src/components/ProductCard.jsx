@@ -39,7 +39,9 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
         {product.imageUrl && !imageBroken ? (
           <img
             src={product.imageUrl}
-            alt={product.name}
+            alt={`${product.name} - Mart System`}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-contain transition-transform duration-200 group-hover:scale-105"
             onError={() => setImageBroken(true)}
           />

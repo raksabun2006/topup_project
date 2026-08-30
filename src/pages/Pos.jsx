@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ShoppingCart, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -8,6 +9,7 @@ import ProductGrid from '../components/pos/ProductGrid';
 import CartPanel from '../components/pos/CartPanel';
 import CheckoutModal from '../components/pos/CheckoutModal';
 import SaleSuccessModal from '../components/pos/SaleSuccessModal';
+import SEO from '../components/SEO';
 import { formatCurrency } from '../utils/format';
 
 const HELD_ORDERS_KEY = 'pos_held_orders';
@@ -21,6 +23,7 @@ function loadHeldOrders() {
 }
 
 export default function Pos() {
+  const { pathname } = useLocation();
   const { isAuthenticated } = useAuth();
   const { items, addItem, setQuantity, removeItem, subtotal, clear, itemCount } = useCart();
   const { categories } = useCategories();
@@ -102,12 +105,78 @@ export default function Pos() {
     setStockReloadSignal((n) => n + 1);
   };
 
-  const handleNewSale = () => {
-    setCompletedSale(null);
-  };
+  const isProductsPage = pathname === '/products';
+  const isPosPage = pathname === '/pos';
+  const isCheckoutFlow = pathname === '/cart' || pathname === '/checkout' || pathname.startsWith('/payment');
+
+  let pageTitle = 'Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS';
+  let pageDescription = 'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់គ្រប់គ្រងការលក់ ទំនិញ ស្តុក ការបញ្ជាទិញ និងអាជីវកម្មបានយ៉ាងងាយស្រួល។';
+  let pageCanonical = '/';
+  let pageRobots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+
+  if (isProductsPage) {
+    pageTitle = 'Products | Mart System';
+    pageDescription = 'ស្វែងរក និងគ្រប់គ្រងទំនិញសម្រាប់អាជីវកម្មរបស់អ្នកជាមួយ Mart System។';
+    pageCanonical = '/products';
+  } else if (isPosPage) {
+    pageTitle = 'ចំណុចលក់ (POS) | Mart System';
+    pageDescription = 'ប្រព័ន្ធចំណុចលក់ (POS) ទំនើប ងាយស្រួលប្រើប្រាស់ គិតលុយរហ័ស គាំទ្រការទូទាត់តាម KHQR សម្រាប់ Mart System។';
+    pageCanonical = '/pos';
+  } else if (isCheckoutFlow) {
+    pageTitle = 'ទូទាត់ប្រាក់ (Checkout) | Mart System';
+    pageRobots = 'noindex, nofollow';
+    pageCanonical = pathname;
+  }
+
+  const homepageSchema = useMemo(() => {
+    if (isCheckoutFlow) return null;
+    return {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebSite',
+          '@id': 'https://topup-project.vercel.app/#website',
+          'url': 'https://topup-project.vercel.app/',
+          'name': 'Mart System',
+          'alternateName': 'ប្រព័ន្ធគ្រប់គ្រងហាង Mart System',
+          'description': 'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់គ្រប់គ្រងការលក់ ទំនិញ ស្តុក ការបញ្ជាទិញ និងអាជីវកម្មបានយ៉ាងងាយស្រួល។',
+          'inLanguage': 'km-KH',
+        },
+        {
+          '@type': 'SoftwareApplication',
+          '@id': 'https://topup-project.vercel.app/#pos-app',
+          'name': 'Mart System POS',
+          'applicationCategory': 'BusinessApplication',
+          'operatingSystem': 'Web',
+          'description': 'ប្រព័ន្ធគ្រប់គ្រងការលក់ និង POS សម្រាប់អាជីវកម្មខ្នាតតូច និងមធ្យមនៅកម្ពុជា។',
+          'offers': {
+            '@type': 'Offer',
+            'price': '0',
+            'priceCurrency': 'USD',
+          },
+        },
+      ],
+    };
+  }, [isCheckoutFlow]);
 
   return (
     <div className={`flex h-full min-h-0 flex-1 flex-col bg-slate-50/50 ${items.length > 0 ? 'pb-20 sm:pb-24' : 'pb-2 sm:pb-3'} lg:pb-0`}>
+      <SEO
+        title={pageTitle}
+        description={pageDescription}
+        canonical={pageCanonical}
+        robots={pageRobots}
+        jsonLd={homepageSchema}
+      />
+
+      {/* Accessible semantic heading structure for SEO and screen readers */}
+      <header className="sr-only">
+        <h1>Mart System — ប្រព័ន្ធគ្រប់គ្រងហាង និង POS</h1>
+        <h2>គ្រប់គ្រងការលក់បានងាយស្រួល</h2>
+        <h2>គ្រប់គ្រងទំនិញ និងស្តុក</h2>
+        <h2>ប្រព័ន្ធគ្រប់គ្រងសម្រាប់អាជីវកម្ម</h2>
+      </header>
+
       {/* Category Pills Header on Mobile */}
       <div className="shrink-0 sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-2.5 py-1.5 sm:px-4 sm:py-2 lg:hidden">
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none">

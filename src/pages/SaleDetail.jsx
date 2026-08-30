@@ -7,6 +7,7 @@ import { saleApi } from '../api/saleApi';
 import { getErrorMessage } from '../api/client';
 import Receipt from '../components/pos/Receipt';
 import { SaleStatusBadge, PaymentStatusBadge } from '../components/ui/SaleStatusBadge';
+import SEO from '../components/SEO';
 
 export default function SaleDetail() {
   const { id } = useParams();
@@ -68,6 +69,10 @@ export default function SaleDetail() {
 
   return (
     <div className="mx-auto max-w-3xl px-3 sm:px-6 py-6 sm:py-10">
+      <SEO
+        title={sale?.invoiceNumber ? `វិក្កយបត្រ ${sale.invoiceNumber} | Mart System` : 'ព័ត៌មានលម្អិតការលក់ | Mart System'}
+        robots="noindex, nofollow"
+      />
       <Link
         to="/sales"
         className="mb-4 sm:mb-6 inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 transition hover:text-slate-900"
