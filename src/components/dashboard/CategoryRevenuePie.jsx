@@ -99,41 +99,41 @@ export default function CategoryRevenuePie({ sales, loading }) {
   const busy = loading || productsLoading;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-        <h2 className="flex items-center gap-2 font-semibold text-slate-900">
+    <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between border-b border-slate-200 px-4 sm:px-6 py-4 sm:py-5">
+        <h2 className="flex items-center gap-2 font-semibold text-slate-900 text-sm sm:text-base">
           <PieChart size={18} className="text-emerald-600" />
           ចំណូលតាមប្រភេទ
         </h2>
       </div>
 
       {busy && (
-        <div className="flex items-center justify-center p-10">
+        <div className="flex items-center justify-center p-8 sm:p-10">
           <div className="h-40 w-40 animate-pulse rounded-full bg-ink-800" />
         </div>
       )}
 
       {!busy && productsError && (
-        <p className="p-10 text-center text-sm text-rose-700">មិនអាចទាញយកទិន្នន័យប្រភេទបានទេ</p>
+        <p className="p-8 sm:p-10 text-center text-sm text-rose-700">មិនអាចទាញយកទិន្នន័យប្រភេទបានទេ</p>
       )}
 
       {!busy && !productsError && slices.length === 0 && (
-        <p className="p-10 text-center text-sm text-slate-500">មិនទាន់មានទិន្នន័យលក់គ្រប់គ្រាន់សម្រាប់វិភាគទេ</p>
+        <p className="p-8 sm:p-10 text-center text-sm text-slate-500">មិនទាន់មានទិន្នន័យលក់គ្រប់គ្រាន់សម្រាប់វិភាគទេ</p>
       )}
 
       {/* ប្រភេទតែមួយ = 100% - pie មិនចាំបាច់ទេ (ដូចលេខតែមួយមិនត្រូវការ chart) */}
       {!busy && !productsError && slices.length === 1 && (
-        <div className="flex items-center gap-4 p-6">
+        <div className="flex items-center gap-4 p-4 sm:p-6">
           <span className="h-4 w-4 shrink-0 rounded-full" style={{ backgroundColor: slices[0].color }} />
-          <p className="text-sm text-slate-700">
+          <p className="text-xs sm:text-sm text-slate-700">
             ចំណូលទាំងអស់ ({formatCurrency(slices[0].value)}) មកពីប្រភេទ <strong>{slices[0].name}</strong> តែមួយ
           </p>
         </div>
       )}
 
       {!busy && !productsError && slices.length > 1 && (
-        <div className="flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-center sm:justify-around">
-          <div className="relative w-60 max-w-full shrink-0">
+        <div className="flex flex-col items-center gap-6 p-4 sm:p-6 sm:flex-row sm:items-center sm:justify-around">
+          <div className="relative w-48 sm:w-60 max-w-full shrink-0">
             <svg
               viewBox={`0 0 ${SIZE} ${SIZE}`}
               className="h-auto w-full"

@@ -130,50 +130,67 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* ---------- Mobile ---------- */}
+      {/* ---------- Mobile Menu Overlay & Drawer ---------- */}
       {mobileOpen && (
-        <div className="border-t border-emerald-500/50 bg-emerald-600 px-4 py-4 md:hidden">
+        <div className="border-t border-emerald-500/40 bg-emerald-600 px-4 py-4 md:hidden animate-slide-down shadow-xl">
           <div className="flex flex-col gap-1">
             {isAuthenticated ? (
               <>
+                {/* Mobile User Profile Header */}
+                <div className="mb-3 flex items-center gap-3 rounded-2xl bg-white/10 p-3 text-white">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-base font-bold text-emerald-700 shadow-xs">
+                    {initial}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-white">{user?.username}</p>
+                    <p className="text-xs text-emerald-100 font-medium">
+                      {isAdmin ? 'អ្នកគ្រប់គ្រង (Admin)' : 'បុគ្គលិក (Staff)'}
+                    </p>
+                  </div>
+                </div>
+
                 {[
-                  { to: '/pos', label: 'ចំណុចលក់', icon: ShoppingCart },
-                  { to: '/sales', label: 'ការលក់', icon: Receipt },
-                  ...(isAdmin ? [{ to: '/products', label: 'ផលិតផល', icon: Package }] : []),
-                  ...(isAdmin ? [{ to: '/customers', label: 'អតិថិជន', icon: Users }] : []),
-                  { to: '/dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: LayoutDashboard },
-                  { to: '/profile', label: 'ព័ត៌មានផ្ទាល់ខ្លួន', icon: User },
+                  { to: '/pos', label: 'ចំណុចលក់ (POS)', icon: ShoppingCart },
+                  { to: '/sales', label: 'ការលក់ (Sales)', icon: Receipt },
+                  ...(isAdmin ? [{ to: '/products', label: 'ផលិតផល (Products)', icon: Package }] : []),
+                  ...(isAdmin ? [{ to: '/customers', label: 'អតិថិជន (Customers)', icon: Users }] : []),
+                  { to: '/dashboard', label: 'ផ្ទាំងគ្រប់គ្រង (Dashboard)', icon: LayoutDashboard },
+                  { to: '/profile', label: 'ព័ត៌មានផ្ទាល់ខ្លួន (Profile)', icon: User },
                 ].map(({ to, label, icon: Icon }) => (
                   <NavLink
                     key={to}
                     to={to}
                     onClick={() => setMobileOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium ${
-                        isActive ? 'bg-white text-emerald-700' : 'text-white/90 hover:bg-white/10'
+                      `flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition active:scale-[0.98] ${
+                        isActive
+                          ? 'bg-white text-emerald-700 shadow-xs'
+                          : 'text-white/95 hover:bg-white/15'
                       }`
                     }
                   >
-                    <Icon size={16} />
-                    {label}
+                    <Icon size={18} />
+                    <span>{label}</span>
                   </NavLink>
                 ))}
+
                 <button
                   onClick={handleLogout}
-                  className="mt-2 rounded-xl border border-white/30 px-3 py-3 text-left text-sm font-medium text-white"
+                  className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-rose-500/20 px-3.5 py-3 text-sm font-bold text-white transition hover:bg-rose-600/30 active:scale-[0.98]"
                 >
-                  ចាកចេញ
+                  <LogOut size={16} />
+                  <span>ចាកចេញ (Sign Out)</span>
                 </button>
               </>
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 pt-1">
                 <Link
                   to="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-3 text-center text-sm font-bold text-emerald-700 shadow-sm"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-center text-sm font-bold text-emerald-700 shadow-md transition hover:bg-emerald-50 active:scale-95"
                 >
-                  <LogIn size={17} />
-                  ចូលគណនី (Login)
+                  <LogIn size={18} />
+                  <span>ចូលគណនី (Login)</span>
                 </Link>
               </div>
             )}

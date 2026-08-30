@@ -19,9 +19,9 @@ export default function MainLayout() {
   const isFullScreen = isPos || isAdminDashboard;
 
   return (
-    <div className={`flex flex-col bg-ink-950 text-slate-700 selection:bg-emerald-500 selection:text-white ${isFullScreen ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
+    <div className={`flex flex-col bg-ink-950 text-slate-700 selection:bg-emerald-500 selection:text-white ${isFullScreen ? 'h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-[100dvh]'}`}>
       {!isAdminDashboard && <Navbar />}
-      <main className={isFullScreen ? 'min-h-0 flex-1 flex flex-col' : 'flex-1'}>
+      <main className={isFullScreen ? 'min-h-0 flex-1 flex flex-col overflow-hidden' : 'flex-1'}>
         <Outlet />
       </main>
       {!isPos && !isAdminDashboard && <Footer />}

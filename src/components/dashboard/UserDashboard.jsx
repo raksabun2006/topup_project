@@ -28,32 +28,32 @@ export default function UserDashboard() {
   }, [mySales]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <div className="relative mb-10 overflow-hidden rounded-3xl border border-slate-300 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 p-8 shadow-2xl shadow-emerald-200/60">
-        <h1 className="text-2xl font-bold text-slate-900">សួស្តី {user?.username}</h1>
-        <p className="mt-2 text-slate-600">ចាប់ផ្តើមការលក់ថ្មីនៅចំណុចលក់</p>
+    <div className="mx-auto max-w-6xl px-3 sm:px-6 py-6 sm:py-10">
+      <div className="relative mb-6 sm:mb-10 overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-300 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 p-5 sm:p-8 shadow-xl shadow-emerald-200/50">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">សួស្តី {user?.username}</h1>
+        <p className="mt-1.5 text-xs sm:text-sm text-slate-600">ចាប់ផ្តើមការលក់ថ្មីនៅចំណុចលក់</p>
 
         <Link
           to="/pos"
-          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-600 px-5 py-3 font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:scale-105 hover:from-emerald-500 hover:to-emerald-500"
+          className="mt-5 sm:mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-600 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:scale-105 hover:from-emerald-500 hover:to-emerald-500 active:scale-95"
         >
-          <ShoppingCart size={18} />
-          បើកចំណុចលក់
+          <ShoppingCart size={17} />
+          បើកចំណុចលក់ (POS)
         </Link>
       </div>
 
-      <div className="mb-10 grid gap-5 sm:grid-cols-3">
+      <div className="mb-6 sm:mb-10 grid gap-3.5 sm:gap-5 grid-cols-1 sm:grid-cols-3">
         <StatCard icon={Receipt} label="ការលក់សរុប (ខ្ញុំ)" value={loading ? '—' : stats.total} />
         <StatCard icon={CheckCircle} label="បញ្ចប់រួច" value={loading ? '—' : stats.completed} accent="emerald" />
         <StatCard icon={DollarSign} label="ចំណូល (ខ្ញុំ)" value={loading ? '—' : formatCurrency(stats.revenue)} accent="amber" />
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-          <h2 className="font-semibold text-slate-900">ការលក់ថ្មីៗរបស់ខ្ញុំ</h2>
+      <div className="rounded-2xl border border-slate-200 bg-ink-900 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 sm:px-6 py-4 sm:py-5">
+          <h2 className="text-sm sm:text-base font-semibold text-slate-900">ការលក់ថ្មីៗរបស់ខ្ញុំ</h2>
           <Link
             to="/sales"
-            className="inline-flex items-center gap-1 text-sm font-bold text-emerald-600 transition hover:text-emerald-700"
+            className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-emerald-600 transition hover:text-emerald-700"
           >
             មើលទាំងអស់
           </Link>

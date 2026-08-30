@@ -47,19 +47,19 @@ export default function CategoryManagerModal({ onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-300 bg-ink-900 shadow-2xl animate-scale-in"
+        className="w-full max-w-md max-h-[90dvh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 bg-white shadow-2xl animate-slide-up sm:animate-scale-in pb-safe sm:pb-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3.5 sm:px-6 sm:py-4">
+          <h3 className="flex items-center gap-2 text-base sm:text-lg font-bold text-slate-900">
             <Tags size={18} className="text-emerald-600" />
             គ្រប់គ្រងប្រភេទ
           </h3>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-500 hover:bg-emerald-50 hover:text-slate-900">
+          <button onClick={onClose} className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition">
             <X size={18} />
           </button>
         </div>

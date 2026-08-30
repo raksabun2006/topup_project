@@ -61,23 +61,23 @@ export default function CustomerFormModal({ customer, onClose, onSaved }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4 backdrop-blur-sm animate-fade-in"
       onClick={() => !saving && onClose()}
     >
       <div
-        className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-300 bg-ink-900 shadow-2xl animate-scale-in"
+        className="w-full max-w-md max-h-[92dvh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 bg-white shadow-2xl animate-slide-up sm:animate-scale-in pb-safe sm:pb-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h3 className="text-lg font-bold text-slate-900">{isEdit ? 'កែប្រែអតិថិជន' : 'អតិថិជនថ្មី'}</h3>
-          <button onClick={onClose} disabled={saving} className="rounded-lg p-1.5 text-slate-500 hover:bg-emerald-50 hover:text-slate-900">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3.5 sm:px-6 sm:py-4">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900">{isEdit ? 'កែប្រែអតិថិជន' : 'អតិថិជនថ្មី'}</h3>
+          <button onClick={onClose} disabled={saving} className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition">
             <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="max-h-[70vh] overflow-y-auto px-6 py-5">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
           {error && (
-            <div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-700">
+            <div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-50 p-3 text-xs sm:text-sm text-rose-700">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
               {error}
             </div>

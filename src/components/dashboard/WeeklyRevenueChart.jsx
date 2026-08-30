@@ -56,9 +56,9 @@ export default function WeeklyRevenueChart({ sales, loading }) {
   const areaPath = `${linePath} L ${points[6].x} ${HEIGHT - PAD_Y} L ${points[0].x} ${HEIGHT - PAD_Y} Z`;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-ink-900 p-6 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-ink-900 p-4 sm:p-6 shadow-sm">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 font-semibold text-slate-900">
+        <h2 className="flex items-center gap-2 font-semibold text-slate-900 text-sm sm:text-base">
           <TrendingUp size={18} className="text-emerald-600" />
           របាយការណ៍ប្រចាំសប្តាហ៍
         </h2>

@@ -66,37 +66,36 @@ export default function Profile() {
     'transition placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl font-black uppercase tracking-wide text-slate-900">ព័ត៌មានផ្ទាល់ខ្លួន</h1>
-        <p className="mt-2 text-slate-500">គ្រប់គ្រងព័ត៌មានគណនីរបស់អ្នក</p>
+    <div className="mx-auto max-w-2xl px-3 sm:px-6 py-6 sm:py-10">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wide text-slate-900">ព័ត៌មានផ្ទាល់ខ្លួន</h1>
+        <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-500">គ្រប់គ្រងព័ត៌មានគណនីរបស់អ្នក</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-ink-900 p-8 shadow-sm">
+      <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-ink-900 p-5 sm:p-8 shadow-sm">
 
         {error && (
-          <div className="mb-6 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-950/30 p-3 text-sm text-rose-700">
+          <div className="mb-5 sm:mb-6 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-950/30 p-3 text-xs sm:text-sm text-rose-700">
             <AlertCircle size={16} className="mt-0.5 shrink-0" />
             {error}
           </div>
         )}
 
         {saved && (
-          <div className="mb-6 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-950/30 p-3 text-sm text-emerald-700">
+          <div className="mb-5 sm:mb-6 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-950/30 p-3 text-xs sm:text-sm text-emerald-700">
             <Check size={16} />
             រក្សាទុករួចរាល់
           </div>
         )}
 
         {/* ---------- រូបភាព ---------- */}
-        <div className="mb-8 flex items-center gap-5 border-b border-slate-200 pb-8">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ink-950">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5 border-b border-slate-200 pb-6 sm:pb-8 text-center sm:text-left">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ink-950 border border-slate-200 shadow-2xs">
             {form.avatarUrl && !imageBroken ? (
               <img
                 src={form.avatarUrl}
                 alt=""
                 className="h-full w-full object-cover"
-                // តំណភ្ជាប់ខូចជារឿងធម្មតា - យើងមិនកាន់រូបភាពទេ។
                 onError={() => setImageBroken(true)}
               />
             ) : imageBroken ? (
@@ -106,8 +105,8 @@ export default function Profile() {
             )}
           </div>
 
-          <div className="min-w-0 flex-1">
-            <label className="mb-1 block text-sm font-medium text-slate-600">
+          <div className="min-w-0 w-full flex-1">
+            <label className="mb-1 block text-xs sm:text-sm font-medium text-slate-600 text-left">
               តំណភ្ជាប់រូបភាព
             </label>
             <input
@@ -117,12 +116,12 @@ export default function Profile() {
               placeholder="https://example.com/avatar.png"
               className={inputClass}
             />
-            <p className="mt-1.5 text-xs text-slate-500">
+            <p className="mt-1.5 text-[11px] sm:text-xs text-slate-500 text-left">
               ត្រូវជា https។ រូបភាពរក្សាទុកនៅ server ដើម - បើវាដួល
               រូបភាពនឹងបាត់។
             </p>
             {imageBroken && (
-              <p className="mt-1 text-xs text-amber-700">
+              <p className="mt-1 text-xs text-amber-700 text-left">
                 មិនអាចផ្ទុករូបភាពពីតំណភ្ជាប់នេះទេ
               </p>
             )}

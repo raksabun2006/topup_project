@@ -192,25 +192,27 @@ export default function AdminDashboard() {
 
       {/* ------- Content ------- */}
       <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-slate-200 bg-ink-900 px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
+        {/* ------- Header ------- */}
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200 bg-ink-900 px-3 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => setMobileNavOpen(true)}
-              className="rounded-lg p-1.5 text-slate-600 hover:bg-emerald-50 lg:hidden"
+              className="rounded-lg p-2 text-slate-600 hover:bg-emerald-50 lg:hidden"
+              aria-label="បើកម៉ឺនុយ"
             >
               <Menu size={20} />
             </button>
-            <h1 className="text-lg font-bold text-slate-900 sm:text-xl">Dashboard</h1>
+            <h1 className="text-base font-bold text-slate-900 sm:text-xl">Dashboard</h1>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="relative hidden sm:block">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="relative hidden md:block">
               <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="ស្វែងរកលេខវិក្កយបត្រ ឬអតិថិជន..."
-                className="w-56 rounded-xl border border-slate-300 bg-ink-950 py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-emerald-500/40 focus:outline-none"
+                className="w-48 lg:w-56 rounded-xl border border-slate-300 bg-ink-950 py-2 pl-9 pr-3 text-xs sm:text-sm text-slate-700 placeholder:text-slate-400 focus:border-emerald-500/40 focus:outline-none"
               />
             </div>
 
@@ -223,79 +225,90 @@ export default function AdminDashboard() {
               )}
             </button>
 
-            <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/10 text-sm font-bold text-emerald-700">
+            <div className="flex items-center gap-2 border-l border-slate-200 pl-2.5 sm:pl-3">
+              <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-emerald-500/10 text-xs sm:text-sm font-bold text-emerald-700">
                 {initial}
               </span>
               <div className="hidden sm:block">
-                <p className="text-sm font-semibold text-slate-900">{user?.username}</p>
-                <p className="text-xs text-slate-500">អ្នកគ្រប់គ្រង</p>
+                <p className="text-xs sm:text-sm font-semibold text-slate-900 truncate max-w-[120px]">{user?.username}</p>
+                <p className="text-[10px] sm:text-xs text-slate-500">អ្នកគ្រប់គ្រង</p>
               </div>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 space-y-6 p-4 sm:p-6">
+        <main className="flex-1 space-y-4 sm:space-y-6 p-3 sm:p-6">
+          {/* Mobile Search input when on mobile */}
+          <div className="relative md:hidden">
+            <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="ស្វែងរកលេខវិក្កយបត្រ ឬអតិថិជន..."
+              className="w-full rounded-xl border border-slate-300 bg-ink-900 py-2 pl-9 pr-3 text-xs text-slate-700 placeholder:text-slate-400 focus:border-emerald-500/40 focus:outline-none shadow-2xs"
+            />
+          </div>
+
           {error && (
-            <div className="flex items-center justify-between gap-4 rounded-2xl border border-rose-500/30 bg-rose-500/5 px-5 py-4 text-sm text-rose-700">
-              <span className="flex items-center gap-2"><AlertCircle size={16} /> {error}</span>
-              <button onClick={reload} className="flex items-center gap-1.5 font-semibold hover:underline">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4 sm:px-5 sm:py-4 text-xs sm:text-sm text-rose-700">
+              <span className="flex items-center gap-2"><AlertCircle size={16} className="shrink-0" /> {error}</span>
+              <button onClick={reload} className="flex items-center gap-1.5 font-semibold hover:underline shrink-0">
                 <RefreshCw size={14} /> ព្យាយាមម្តងទៀត
               </button>
             </div>
           )}
 
           {/* ------- Stat cards ------- */}
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200 bg-ink-900 p-6 shadow-sm">
+          <div className="grid gap-3.5 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-2xl border border-slate-200 bg-ink-900 p-4 sm:p-6 shadow-2xs">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-slate-500">ចំណូលសរុប</p>
-                  <p className="mt-2 text-3xl font-bold text-slate-900">{loading ? '—' : formatCurrency(stats.revenue)}</p>
+                  <p className="text-xs sm:text-sm text-slate-500">ចំណូលសរុប</p>
+                  <p className="mt-1.5 text-2xl sm:text-3xl font-bold text-slate-900">{loading ? '—' : formatCurrency(stats.revenue)}</p>
                   {weekly.revenueChange != null && (
-                    <p className={`mt-1 text-xs font-medium ${weekly.revenueChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    <p className={`mt-1 text-[11px] sm:text-xs font-medium ${weekly.revenueChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {weekly.revenueChange >= 0 ? '↑' : '↓'} {Math.abs(weekly.revenueChange).toFixed(1)}% ធៀបនឹងសប្តាហ៍មុន
                     </p>
                   )}
                 </div>
-                <div className="rounded-xl bg-emerald-500/10 p-3 text-emerald-700">
-                  <DollarSign size={22} />
+                <div className="rounded-xl bg-emerald-500/10 p-2.5 sm:p-3 text-emerald-700">
+                  <DollarSign size={20} className="sm:w-[22px] sm:h-[22px]" />
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-ink-900 p-6 shadow-sm">
+            <div className="rounded-2xl border border-slate-200 bg-ink-900 p-4 sm:p-6 shadow-2xs">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-slate-500">ការបញ្ជាទិញសរុប</p>
-                  <p className="mt-2 text-3xl font-bold text-slate-900">{loading ? '—' : stats.total}</p>
+                  <p className="text-xs sm:text-sm text-slate-500">ការបញ្ជាទិញសរុប</p>
+                  <p className="mt-1.5 text-2xl sm:text-3xl font-bold text-slate-900">{loading ? '—' : stats.total}</p>
                   {weekly.ordersChange != null && (
-                    <p className={`mt-1 text-xs font-medium ${weekly.ordersChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    <p className={`mt-1 text-[11px] sm:text-xs font-medium ${weekly.ordersChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {weekly.ordersChange >= 0 ? '↑' : '↓'} {Math.abs(weekly.ordersChange).toFixed(1)}% ធៀបនឹងសប្តាហ៍មុន
                     </p>
                   )}
                 </div>
-                <div className="rounded-xl bg-sky-500/10 p-3 text-sky-700">
-                  <ReceiptIcon size={22} />
+                <div className="rounded-xl bg-sky-500/10 p-2.5 sm:p-3 text-sky-700">
+                  <ReceiptIcon size={20} className="sm:w-[22px] sm:h-[22px]" />
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-ink-900 p-6 shadow-sm sm:col-span-2 lg:col-span-1">
-              <p className="mb-3 text-sm text-slate-500">កំពុងរង់ចាំ & បោះបង់</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="rounded-xl bg-amber-500/10 p-2.5 text-amber-700"><Clock size={18} /></div>
+            <div className="rounded-2xl border border-slate-200 bg-ink-900 p-4 sm:p-6 shadow-2xs sm:col-span-2 lg:col-span-1">
+              <p className="mb-2 sm:mb-3 text-xs sm:text-sm text-slate-500">កំពុងរង់ចាំ & បោះបង់</p>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="flex items-center gap-2 sm:gap-2.5">
+                  <div className="rounded-xl bg-amber-500/10 p-2 sm:p-2.5 text-amber-700"><Clock size={16} /></div>
                   <div>
-                    <p className="text-xl font-bold text-slate-900">{loading ? '—' : stats.pending}</p>
-                    <p className="text-xs text-slate-500">កំពុងរង់ចាំ</p>
+                    <p className="text-lg sm:text-xl font-bold text-slate-900">{loading ? '—' : stats.pending}</p>
+                    <p className="text-[11px] sm:text-xs text-slate-500">កំពុងរង់ចាំ</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2.5 border-l border-slate-200 pl-4">
-                  <div className="rounded-xl bg-rose-500/10 p-2.5 text-rose-700"><XCircle size={18} /></div>
+                <div className="flex items-center gap-2 sm:gap-2.5 border-l border-slate-200 pl-3 sm:pl-4">
+                  <div className="rounded-xl bg-rose-500/10 p-2 sm:p-2.5 text-rose-700"><XCircle size={16} /></div>
                   <div>
-                    <p className="text-xl font-bold text-slate-900">{loading ? '—' : stats.cancelled}</p>
-                    <p className="text-xs text-slate-500">បោះបង់</p>
+                    <p className="text-lg sm:text-xl font-bold text-slate-900">{loading ? '—' : stats.cancelled}</p>
+                    <p className="text-[11px] sm:text-xs text-slate-500">បោះបង់</p>
                   </div>
                 </div>
               </div>

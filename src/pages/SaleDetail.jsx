@@ -67,28 +67,28 @@ export default function SaleDetail() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
+    <div className="mx-auto max-w-3xl px-3 sm:px-6 py-6 sm:py-10">
       <Link
         to="/sales"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-slate-500 transition hover:text-slate-900"
+        className="mb-4 sm:mb-6 inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 transition hover:text-slate-900"
       >
         <ArrowLeft size={16} />
         ត្រឡប់ក្រោយ
       </Link>
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">{sale.invoiceNumber}</h1>
-          <div className="mt-2 flex items-center gap-2">
+          <h1 className="text-lg sm:text-xl font-bold text-slate-900">{sale.invoiceNumber}</h1>
+          <div className="mt-1.5 sm:mt-2 flex items-center gap-2">
             <SaleStatusBadge status={sale.status} />
             <PaymentStatusBadge status={sale.paymentStatus} />
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 rounded-xl border border-slate-300 bg-ink-900 px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-ink-900 px-4 py-2 text-xs sm:text-sm font-medium text-slate-600 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900"
           >
             <Printer size={15} />
             បោះពុម្ព
