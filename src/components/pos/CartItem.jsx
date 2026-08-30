@@ -11,16 +11,19 @@ export default function CartItem({ item, onSetQuantity, onRemove }) {
   useEffect(() => setImageBroken(false), [product.imageUrl]);
 
   return (
-    <div className="flex items-center gap-2.5 py-2.5">
+    <div className="flex items-center gap-2.5 py-3 border-b border-slate-100 last:border-0">
+      {/* Delete button */}
       <button
+        type="button"
         onClick={() => onRemove(product.id)}
-        className="shrink-0 text-slate-300 transition hover:text-rose-600"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-300 transition hover:bg-rose-50 hover:text-rose-600 active:scale-95"
         title="លុបចេញ"
       >
-        <Trash2 size={15} />
+        <Trash2 size={16} />
       </button>
 
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-slate-50 p-1">
+      {/* Product thumbnail */}
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50 p-1">
         {product.imageUrl && !imageBroken ? (
           <img
             src={product.imageUrl}
@@ -29,38 +32,45 @@ export default function CartItem({ item, onSetQuantity, onRemove }) {
             onError={() => setImageBroken(true)}
           />
         ) : (
-          <Package size={18} className="text-slate-300" />
+          <Package size={20} className="text-slate-300" />
         )}
       </div>
 
+      {/* Product info */}
       <div className="min-w-0 flex-1">
-        <p className="truncate text-xs font-medium text-slate-800" title={product.name}>
+        <p className="truncate text-xs font-semibold text-slate-900" title={product.name}>
           {product.name}
         </p>
-        <p className="text-[11px] text-slate-400">
+        <p className="text-[11px] font-medium text-slate-500">
           {formatCurrency(product.price)}
         </p>
       </div>
 
-      <div className="flex shrink-0 items-center gap-1.5">
+      {/* Touch-friendly Quantity selector */}
+      <div className="flex shrink-0 items-center gap-1.5 bg-slate-50 rounded-full p-0.5 border border-slate-200">
         <button
+          type="button"
           onClick={() => onSetQuantity(product.id, quantity - 1)}
-          className="flex h-6 w-6 items-center justify-center rounded-full border border-emerald-600 text-emerald-600 transition hover:bg-emerald-50"
+          className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-slate-700 shadow-xs transition hover:bg-slate-100 active:scale-90"
+          aria-label="Decrease quantity"
         >
-          <Minus size={11} />
+          <Minus size={13} />
         </button>
-        <span className="w-5 text-center text-xs font-bold text-slate-800">{quantity}</span>
+        <span className="w-6 text-center text-xs font-bold text-slate-900">{quantity}</span>
         <button
+          type="button"
           onClick={() => onSetQuantity(product.id, quantity + 1)}
           disabled={atMaxStock}
           title={atMaxStock ? 'លើសស្តុកដែលមាន' : undefined}
-          className="flex h-6 w-6 items-center justify-center rounded-full border border-emerald-600 text-emerald-600 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-300"
+          className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-slate-700 shadow-xs transition hover:bg-slate-100 active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
+          aria-label="Increase quantity"
         >
-          <Plus size={11} />
+          <Plus size={13} />
         </button>
       </div>
 
-      <span className="w-14 shrink-0 text-right text-xs font-bold text-slate-800">
+      {/* Line Total */}
+      <span className="w-16 shrink-0 text-right text-xs font-bold text-emerald-600">
         {formatCurrency(lineTotal)}
       </span>
     </div>
