@@ -6,18 +6,10 @@ import { getErrorMessage } from '../../api/client';
 import BakongPaymentModal from './BakongPaymentModal';
 
 /**
- * បញ្ចុះតម្លៃ/ពន្ធ ត្រូវបានគណនារួចហើយនៅ CartPanel (ដកចេញ % ត្រង់នោះ) -
- * modal នេះទទួលបានតែចំនួនទឹកប្រាក់ចុងក្រោយ ដើម្បីជ្រើសរើសវិធីបង់ប្រាក់
- * ប៉ុណ្ណោះ។ cashier/paymentStatus/unitPrice មិនត្រូវផ្ញើក្នុង create()
- * ទេ - backend កំណត់ cashier ពី JWT ខ្លួនឯង, Sale ថ្មីតែងចាប់ផ្តើម
- * PENDING/PENDING ជានិច្ច, ហើយតម្លៃអានពី Product ក្នុង database វិញ
- * (សុវត្ថិភាព - client មិនត្រូវកំណត់តម្លៃ/អ្នកគិតលុយខ្លួនឯងបានទេ)។
- * method (PAID/BAKONG/UNPAID) សម្រេចតែជំហានក្រោយ create(): PAID ហៅ
- * markPaid() ភ្លាមៗ, BAKONG បើក QR modal (markPaid() នៅទីនោះវិញ ពេល
- * polling បញ្ជាក់ថាបានបង់), UNPAID មិនធ្វើអ្វីបន្ថែម (Sale នៅ PENDING)។
+ * ដំណើរការ Checkout សម្រាប់ទាំង Guest Customer និង Logged-in Staff
  */
 export default function CheckoutModal({ items, customer, subtotal, discountAmount, taxAmount, total, onClose, onSuccess }) {
-  const [method, setMethod] = useState('PAID');
+  const [method, setMethod] = useState('BAKONG'); // Default to Bakong QR for quick customer payments
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [pendingSale, setPendingSale] = useState(null);
@@ -27,7 +19,7 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
     setError('');
     try {
       const sale = await saleApi.create({
-        customer: customer?.id,
+        customer: customer?.id || null,
         discount: discountAmount,
         tax: taxAmount,
         items: items.map((item) => ({
@@ -40,10 +32,6 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
       if (method === 'BAKONG') {
         setPendingSale(sale);
       } else {
-        // សាច់ប្រាក់ - អ្នកគិតលុយទទួលលុយនៅដៃរួចហើយ ដូច្នេះកត់ត្រា "បានបង់"
-        // ភ្លាមៗ (ហៅ /paid ដាច់ដោយឡែក ព្រោះ Telegram notification ជំរុញ
-        // ពី endpoint នេះផ្ទាល់ - មើលកំណត់ចំណាំនៅ saleApi.markPaid)។
-        // "បង់ក្រោយ" (UNPAID) មិនហៅ - Sale នៅតែមិនទាន់បង់ប្រាក់។
         if (method === 'PAID') {
           await saleApi.markPaid(sale.id);
         }
@@ -72,15 +60,15 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
       onClick={() => !submitting && onClose()}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-slate-300 bg-ink-900 shadow-2xl animate-scale-in"
+        className="w-full max-w-md rounded-2xl border border-slate-300 bg-white shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h3 className="text-lg font-bold text-slate-900">សង្ខេបការគិតលុយ</h3>
+          <h3 className="text-lg font-bold text-slate-900">សង្ខេបការគិតលុយ (Checkout)</h3>
           <button
             onClick={onClose}
             disabled={submitting}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-emerald-50 hover:text-slate-900"
+            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
           >
             <X size={18} />
           </button>
@@ -88,7 +76,7 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
 
         <div className="max-h-[60vh] overflow-y-auto px-6 py-5">
           {error && (
-            <div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-700">
+            <div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-50 p-3 text-sm text-rose-700">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
               {error}
             </div>
@@ -96,35 +84,23 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-slate-500">អតិថិជន</span>
-            <span className="font-medium text-slate-900">{customer?.name ?? '—'}</span>
+            <span className="font-medium text-slate-900">{customer?.name ?? 'អតិថិជនទូទៅ (Walk-in Customer)'}</span>
           </div>
           <div className="mt-1 flex items-center justify-between text-sm">
             <span className="text-slate-500">ចំនួនទំនិញ</span>
-            <span className="font-medium text-slate-900">{items.length}</span>
+            <span className="font-medium text-slate-900">{items.length} មុខ</span>
           </div>
 
           <div className="mt-5">
-            <label className="mb-2 block text-xs font-medium text-slate-600">វិធីបង់ប្រាក់</label>
+            <label className="mb-2 block text-xs font-medium text-slate-600">វិធីបង់ប្រាក់ (Payment Method)</label>
             <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setMethod('PAID')}
-                className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border py-3 text-xs font-semibold transition ${
-                  method === 'PAID'
-                    ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-700'
-                    : 'border-slate-300 bg-ink-950 text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                <Banknote size={16} />
-                សាច់ប្រាក់
-              </button>
               <button
                 type="button"
                 onClick={() => setMethod('BAKONG')}
                 className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border py-3 text-xs font-semibold transition ${
                   method === 'BAKONG'
-                    ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-700'
-                    : 'border-slate-300 bg-ink-950 text-slate-500 hover:text-slate-900'
+                    ? 'border-emerald-500/50 bg-emerald-50 text-emerald-700 shadow-xs'
+                    : 'border-slate-200 bg-slate-50/50 text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <QrCode size={16} />
@@ -132,11 +108,23 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
               </button>
               <button
                 type="button"
+                onClick={() => setMethod('PAID')}
+                className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border py-3 text-xs font-semibold transition ${
+                  method === 'PAID'
+                    ? 'border-emerald-500/50 bg-emerald-50 text-emerald-700 shadow-xs'
+                    : 'border-slate-200 bg-slate-50/50 text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Banknote size={16} />
+                សាច់ប្រាក់
+              </button>
+              <button
+                type="button"
                 onClick={() => setMethod('UNPAID')}
                 className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border py-3 text-xs font-semibold transition ${
                   method === 'UNPAID'
-                    ? 'border-amber-500/50 bg-amber-500/10 text-amber-700'
-                    : 'border-slate-300 bg-ink-950 text-slate-500 hover:text-slate-900'
+                    ? 'border-amber-500/50 bg-amber-50 text-amber-700 shadow-xs'
+                    : 'border-slate-200 bg-slate-50/50 text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <Clock size={16} />
@@ -145,19 +133,23 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
             </div>
           </div>
 
-          <div className="mt-5 space-y-1.5 rounded-xl bg-ink-950 p-4 text-sm">
+          <div className="mt-5 space-y-1.5 rounded-xl bg-slate-50 p-4 text-sm">
             <div className="flex justify-between text-slate-500">
               <span>សរុបរង</span>
               <span>{formatCurrency(subtotal)}</span>
             </div>
-            <div className="flex justify-between text-slate-500">
-              <span>បញ្ចុះតម្លៃ</span>
-              <span>-{formatCurrencyPrecise(discountAmount)}</span>
-            </div>
-            <div className="flex justify-between text-slate-500">
-              <span>ពន្ធ</span>
-              <span>{formatCurrencyPrecise(taxAmount)}</span>
-            </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-slate-500">
+                <span>បញ្ចុះតម្លៃ</span>
+                <span>-{formatCurrencyPrecise(discountAmount)}</span>
+              </div>
+            )}
+            {taxAmount > 0 && (
+              <div className="flex justify-between text-slate-500">
+                <span>ពន្ធ</span>
+                <span>{formatCurrencyPrecise(taxAmount)}</span>
+              </div>
+            )}
             <div className="flex justify-between border-t border-slate-200 pt-1.5 text-base font-bold text-slate-900">
               <span>សរុប</span>
               <span>{formatCurrency(total)}</span>
@@ -166,18 +158,13 @@ export default function CheckoutModal({ items, customer, subtotal, discountAmoun
         </div>
 
         <div className="border-t border-slate-200 px-6 py-4">
-          {!customer && (
-            <p className="mb-2 text-center text-xs text-amber-700">
-              កំពុងទាញយកអតិថិជនលំនាំដើម... បើមិនទាន់ចប់ សូមជ្រើសរើសអតិថិជនដោយដៃ
-            </p>
-          )}
           <button
             onClick={handleConfirm}
-            disabled={submitting || !customer}
+            disabled={submitting || items.length === 0}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting && <Loader2 size={16} className="animate-spin" />}
-            {method === 'BAKONG' ? 'បន្តទៅការទូទាត់ QR' : 'បញ្ជាក់ការលក់'}
+            {method === 'BAKONG' ? 'បន្តទៅការទូទាត់ Bakong KHQR' : 'បញ្ជាក់ការលក់'}
           </button>
         </div>
       </div>

@@ -1,14 +1,37 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
+
+const CART_STORAGE_KEY = 'pos_cart';
 
 const CartContext = createContext(null);
 
+function loadInitialCart() {
+  try {
+    const saved = localStorage.getItem(CART_STORAGE_KEY) || localStorage.getItem('cart');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {
+    console.warn('Failed to load saved cart:', e);
+  }
+  return [];
+}
+
 /**
- * រទេះទំនិញ POS - state ស្ថិតនៅ client រហូតដល់ checkout ជោគជ័យ។
- * តម្លៃដែលបង្ហាញនៅទីនេះសម្រាប់មើលជាមុនប៉ុណ្ណោះ - SaleResponseDto
- * ដែល backend ត្រឡប់មកវិញទើបជាតម្លៃពិត (មើល client.md #18)។
+ * រទេះទំនិញ POS - state ស្ថិតនៅ client (localStorage) រហូតដល់ checkout ជោគជ័យ។
+ * គាំទ្រ guest customers ដោយមិនចាំបាច់ login។
  */
 export function CartProvider({ children }) {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(loadInitialCart);
+
+  // រក្សាទុកក្នុង localStorage រាល់ពេលទំនិញក្នុងរទេះផ្លាស់ប្តូរ
+  useEffect(() => {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch (e) {
+      console.warn('Failed to persist cart to localStorage:', e);
+    }
+  }, [items]);
 
   const addItem = useCallback((product, quantity = 1) => {
     setItems((prev) => {
@@ -43,7 +66,15 @@ export function CartProvider({ children }) {
     setItems((prev) => prev.filter((i) => i.product.id !== productId));
   }, []);
 
-  const clear = useCallback(() => setItems([]), []);
+  const clear = useCallback(() => {
+    setItems([]);
+    try {
+      localStorage.removeItem(CART_STORAGE_KEY);
+      localStorage.removeItem('cart');
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const subtotal = useMemo(
     () => items.reduce((sum, i) => sum + i.product.price * i.quantity - (i.discount || 0), 0),
