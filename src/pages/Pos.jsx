@@ -10,6 +10,7 @@ import CartPanel from '../components/pos/CartPanel';
 import CheckoutModal from '../components/pos/CheckoutModal';
 import SaleSuccessModal from '../components/pos/SaleSuccessModal';
 import SEO from '../components/SEO';
+import { env } from '../config/env';
 import { formatCurrency } from '../utils/format';
 
 const HELD_ORDERS_KEY = 'pos_held_orders';
@@ -139,8 +140,8 @@ export default function Pos() {
       '@graph': [
         {
           '@type': 'WebSite',
-          '@id': 'https://topup-project.vercel.app/#website',
-          'url': 'https://topup-project.vercel.app/',
+          '@id': `${env.siteUrl}/#website`,
+          'url': `${env.siteUrl}/`,
           'name': 'Mart System',
           'alternateName': 'ប្រព័ន្ធគ្រប់គ្រងហាង Mart System',
           'description': 'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់គ្រប់គ្រងការលក់ ទំនិញ ស្តុក ការបញ្ជាទិញ និងអាជីវកម្មបានយ៉ាងងាយស្រួល។',
@@ -148,7 +149,7 @@ export default function Pos() {
         },
         {
           '@type': 'SoftwareApplication',
-          '@id': 'https://topup-project.vercel.app/#pos-app',
+          '@id': `${env.siteUrl}/#pos-app`,
           'name': 'Mart System POS',
           'applicationCategory': 'BusinessApplication',
           'operatingSystem': 'Web',

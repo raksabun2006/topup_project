@@ -15,7 +15,7 @@ export const env = {
   appName: import.meta.env.VITE_APP_NAME ?? 'Mart System',
 
   // Official production URL for SEO & Canonical links
-  siteUrl: (import.meta.env.VITE_SITE_URL || 'https://topup-project.vercel.app').replace(/\/+$/, ''),
+  siteUrl: (import.meta.env.VITE_SITE_URL || 'https://www.martsystemkh.software').replace(/\/+$/, ''),
 
   // Bakong QR polling ក្នុង POS checkout: 3s មួយដង
   paymentPollIntervalMs: Number(

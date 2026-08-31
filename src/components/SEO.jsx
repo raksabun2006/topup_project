@@ -22,7 +22,7 @@ export default function SEO({
   robots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
   jsonLd,
 }) {
-  const baseSiteUrl = (env.siteUrl || 'https://topup-project.vercel.app').replace(/\/+$/, '');
+  const baseSiteUrl = (env.siteUrl || 'https://www.martsystemkh.software').replace(/\/+$/, '');
 
   // Compute canonical URL strictly using production domain
   let cleanCanonical = canonical;

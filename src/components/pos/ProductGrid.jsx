@@ -5,6 +5,7 @@ import ProductFormModal from '../admin/ProductFormModal';
 import { useProducts } from '../../hooks/useProducts';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { env } from '../../config/env';
 
 export default function ProductGrid({ category, onAdd, reloadSignal }) {
   const [search, setSearch] = useState('');
@@ -53,7 +54,7 @@ export default function ProductGrid({ category, onAdd, reloadSignal }) {
             price: String(product.price ?? 0),
             priceCurrency: 'USD',
             availability: (product.stockQuantity ?? 0) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-            url: 'https://topup-project.vercel.app/products',
+            url: `${env.siteUrl}/products`,
           },
         },
       })),
