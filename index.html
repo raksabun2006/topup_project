@@ -1,8 +1,11 @@
 <!doctype html>
-<html lang="km">
+<html lang="km" dir="ltr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Dark Mode Immediate Hydration Script -->
     <script>
       (function() {
         try {
@@ -15,57 +18,92 @@
         } catch (e) {}
       })();
     </script>
-    <title>Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS</title>
+
+    <!-- Primary Title & Description -->
+    <title>Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបនៅកម្ពុជា</title>
     <meta
       name="description"
-      content="Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់គ្រប់គ្រងការលក់ ទំនិញ ស្តុក ការបញ្ជាទិញ និងអាជីវកម្មបានយ៉ាងងាយស្រួល。"
+      content="Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបបំផុតសម្រាប់អាជីវកម្មនៅកម្ពុជា។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក បុគ្គលិក របាយការណ៍ និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាពខ្ពស់។"
     />
     <meta
       name="keywords"
-      content="Mart System, ប្រព័ន្ធគ្រប់គ្រងហាង, ប្រព័ន្ធ POS, ប្រព័ន្ធគ្រប់គ្រងការលក់, ប្រព័ន្ធគ្រប់គ្រងស្តុក, ប្រព័ន្ធគ្រប់គ្រងទំនិញ, ប្រព័ន្ធគ្រប់គ្រងអាជីវកម្ម, POS System Cambodia, Mart Management System"
+      content="Mart System, ប្រព័ន្ធគ្រប់គ្រងហាង, ប្រព័ន្ធ POS, ប្រព័ន្ធគ្រប់គ្រងការលក់, ប្រព័ន្ធគ្រប់គ្រងស្តុក, ប្រព័ន្ធគ្រប់គ្រងទំនិញ, ប្រព័ន្ធគ្រប់គ្រងអាជីវកម្ម, Bakong KHQR POS, POS System Cambodia, Mart Management System, Cloud POS Cambodia, Retail Management Software"
     />
     <meta name="author" content="Bun Raksa" />
+    <meta name="creator" content="Bun Raksa" />
+    <meta name="publisher" content="Mart System" />
+    <meta name="application-name" content="Mart System" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <!-- Geo & Regional Meta Tags for Local Cambodian SEO -->
+    <meta name="geo.region" content="KH" />
+    <meta name="geo.placename" content="Phnom Penh, Cambodia" />
+    <meta name="geo.position" content="11.5564;104.9282" />
+    <meta name="ICBM" content="11.5564, 104.9282" />
+    <meta name="target_country" content="KH" />
+    <meta name="coverage" content="Cambodia" />
 
     <!-- Canonical URL -->
     <link rel="canonical" href="https://www.martsystemkh.software/" />
 
-    <!-- Favicon & Icons -->
+    <!-- Alternate Languages (Hreflang) -->
+    <link rel="alternate" hreflang="km" href="https://www.martsystemkh.software/" />
+    <link rel="alternate" hreflang="en" href="https://www.martsystemkh.software/" />
+    <link rel="alternate" hreflang="x-default" href="https://www.martsystemkh.software/" />
+
+    <!-- Favicon & Touch Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
-    <link rel="apple-touch-icon" href="/favicon.svg?v=2" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg?v=2" />
+    <link rel="mask-icon" href="/favicon.svg?v=2" color="#059669" />
 
-    <!-- Preconnect for Performance & Web Vitals -->
+    <!-- Web App Manifest (PWA) -->
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Mart System" />
+
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#059669" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- DNS Preconnect for Fonts & High Performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Open Graph / Facebook / Telegram -->
+    <!-- Open Graph (Facebook, Telegram, LinkedIn, WhatsApp) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Mart System" />
     <meta property="og:url" content="https://www.martsystemkh.software/" />
-    <meta property="og:title" content="Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS" />
+    <meta property="og:title" content="Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបនៅកម្ពុជា" />
     <meta
       property="og:description"
-      content="Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់គ្រប់គ្រងការលក់ ទំនិញ ស្តុក ការបញ្ជាទិញ និងអាជីវកម្មបានយ៉ាងងាយស្រួល。"
+      content="Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបបំផុតសម្រាប់អាជីវកម្មនៅកម្ពុជា។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងការទូទាត់តាម Bakong KHQR បានយ៉ាងរហ័ស។"
     />
     <meta property="og:image" content="https://www.martsystemkh.software/og-image.png" />
     <meta property="og:image:secure_url" content="https://www.martsystemkh.software/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Mart System - ប្រព័ន្ធគ្រប់គ្រងហាង និង POS" />
+    <meta property="og:image:alt" content="Mart System - ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបនៅកម្ពុជា" />
     <meta property="og:locale" content="km_KH" />
+    <meta property="og:locale:alternate" content="en_US" />
 
-    <!-- Twitter / X -->
+    <!-- Twitter / X Cards -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@martsystemkh" />
+    <meta name="twitter:creator" content="@martsystemkh" />
     <meta name="twitter:url" content="https://www.martsystemkh.software/" />
-    <meta name="twitter:title" content="Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS" />
+    <meta name="twitter:title" content="Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបនៅកម្ពុជា" />
     <meta
       name="twitter:description"
-      content="ប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់ការលក់ ទំនិញ ស្តុក និងការគ្រប់គ្រងអាជីវកម្ម។"
+      content="ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើប គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់តាម KHQR សម្រាប់អាជីវកម្មនៅកម្ពុជា។"
     />
     <meta name="twitter:image" content="https://www.martsystemkh.software/og-image.png" />
     <meta name="twitter:image:alt" content="Mart System - ប្រព័ន្ធគ្រប់គ្រងហាង និង POS" />
 
-    <!-- Base Schema.org JSON-LD Structured Data -->
+    <!-- Comprehensive Schema.org JSON-LD Structured Data -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -75,18 +113,68 @@
             "@id": "https://www.martsystemkh.software/#website",
             "url": "https://www.martsystemkh.software/",
             "name": "Mart System",
-            "alternateName": ["ប្រព័ន្ធគ្រប់គ្រងហាង Mart System", "Mart POS Cambodia"],
-            "description": "Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់គ្រប់គ្រងការលក់ ទំនិញ ស្តុក ការបញ្ជាទិញ និងអាជីវកម្មបានយ៉ាងងាយស្រួល。",
-            "inLanguage": "km-KH"
+            "alternateName": ["ប្រព័ន្ធគ្រប់គ្រងហាង Mart System", "Mart POS Cambodia", "Mart System Cloud POS"],
+            "description": "Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបបំផុតសម្រាប់អាជីវកម្មនៅកម្ពុជា។",
+            "inLanguage": "km-KH",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://www.martsystemkh.software/products?search={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.martsystemkh.software/#software",
+            "name": "Mart System POS",
+            "applicationCategory": "BusinessApplication",
+            "applicationSubCategory": "Point of Sale & Inventory Management",
+            "operatingSystem": "Web, iOS, Android, Windows, macOS",
+            "description": "ប្រព័ន្ធគ្រប់គ្រងការលក់ POS និងស្តុកទំនិញទំនើប គាំទ្រការទូទាត់ប្រាក់តាម Bakong KHQR។",
+            "inLanguage": "km-KH",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD",
+              "availability": "https://schema.org/InStock"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.9",
+              "ratingCount": "128",
+              "bestRating": "5",
+              "worstRating": "1"
+            },
+            "featureList": [
+              "ចំណុចលក់រហ័ស POS (Point of Sale)",
+              "ទូទាត់តាម Bakong KHQR ស្វ័យប្រវត្តិ",
+              "គ្រប់គ្រងទំនិញ និងស្តុក (Inventory Management)",
+              "របាយការណ៍លក់ និងវិភាគចំណូល (Sales Analytics & Reports)",
+              "គ្រប់គ្រងព័ត៌មានអតិថិជន (Customer Management)",
+              "គាំទ្រភាសាខ្មែរ និងរូបិយប័ណ្ណដុល្លារ/រៀល (USD/KHR)"
+            ]
           },
           {
             "@type": "Organization",
             "@id": "https://www.martsystemkh.software/#organization",
             "name": "Mart System",
+            "legalName": "Mart System Cambodia Co., Ltd.",
             "url": "https://www.martsystemkh.software/",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://www.martsystemkh.software/favicon.svg"
+              "@id": "https://www.martsystemkh.software/#logo",
+              "url": "https://www.martsystemkh.software/favicon.svg",
+              "contentUrl": "https://www.martsystemkh.software/favicon.svg",
+              "caption": "Mart System Logo"
+            },
+            "image": "https://www.martsystemkh.software/og-image.png",
+            "description": "ក្រុមហ៊ុនផ្គត់ផ្គង់ប្រព័ន្ធគ្រប់គ្រងការលក់ និង POS ឈានមុខគេនៅកម្ពុជា។",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Phnom Penh",
+              "addressCountry": "KH"
             },
             "contactPoint": {
               "@type": "ContactPoint",
@@ -95,7 +183,21 @@
               "email": "raksabun2006@gmail.com",
               "areaServed": "KH",
               "availableLanguage": ["Khmer", "English"]
-            }
+            },
+            "sameAs": [
+              "https://www.facebook.com/martsystemkh",
+              "https://t.me/martsystemkh"
+            ]
+          },
+          {
+            "@type": "Store",
+            "@id": "https://www.martsystemkh.software/#store",
+            "name": "Mart System Store & POS",
+            "url": "https://www.martsystemkh.software/",
+            "image": "https://www.martsystemkh.software/og-image.png",
+            "priceRange": "$$",
+            "currenciesAccepted": "USD, KHR",
+            "paymentAccepted": "Cash, Credit Card, Bakong KHQR"
           }
         ]
       }

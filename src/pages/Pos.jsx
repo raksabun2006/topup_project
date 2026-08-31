@@ -114,61 +114,107 @@ export default function Pos() {
   const isPosPage = pathname === '/pos';
   const isCheckoutFlow = pathname === '/cart' || pathname === '/checkout' || pathname.startsWith('/payment');
 
-  let pageTitle = 'Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS';
-  let pageDescription = 'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់គ្រប់គ្រងការលក់ ទំនិញ ស្តុក ការបញ្ជាទិញ និងអាជីវកម្មបានយ៉ាងងាយស្រួល។';
+  let pageTitle = 'Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើប';
+  let pageDescription = 'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបបំផុតសម្រាប់អាជីវកម្មនៅកម្ពុជា។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស។';
+  let pageKeywords = 'Mart System, ប្រព័ន្ធគ្រប់គ្រងហាង, POS Cambodia, Point of Sale, KHQR POS, Cloud POS';
   let pageCanonical = '/';
   let pageRobots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
   if (isProductsPage) {
-    pageTitle = 'Products | Mart System';
-    pageDescription = 'ស្វែងរក និងគ្រប់គ្រងទំនិញសម្រាប់អាជីវកម្មរបស់អ្នកជាមួយ Mart System។';
+    pageTitle = 'បញ្ជីទំនិញ (Products Storefront) | Mart System';
+    pageDescription = 'ស្វែងរក និងទិញទំនិញជាច្រើនមុខក្នុងតម្លៃសមរម្យ ជាមួយប្រព័ន្ធ Mart System។';
+    pageKeywords = 'ទំនិញ, បញ្ជីទំនិញ, Mart Products, Store Catalog, Mart System Cambodia';
     pageCanonical = '/products';
   } else if (isPosPage) {
-    pageTitle = 'ចំណុចលក់ (POS) | Mart System';
-    pageDescription = 'ប្រព័ន្ធចំណុចលក់ (POS) ទំនើប ងាយស្រួលប្រើប្រាស់ គិតលុយរហ័ស គាំទ្រការទូទាត់តាម KHQR សម្រាប់ Mart System។';
+    pageTitle = 'ចំណុចលក់ (POS Terminal) | Mart System';
+    pageDescription = 'ប្រព័ន្ធចំណុចលក់ (POS) ទំនើប ងាយស្រួលប្រើប្រាស់ គិតលុយរហ័ស គាំទ្រការទូទាត់តាម Bakong KHQR សម្រាប់ Mart System។';
+    pageKeywords = 'ចំណុចលក់, ប្រព័ន្ធ POS, POS Terminal, Bakong KHQR POS, Mart System POS';
     pageCanonical = '/pos';
   } else if (isCheckoutFlow) {
-    pageTitle = 'ទូទាត់ប្រាក់ (Checkout) | Mart System';
+    pageTitle = 'ទូទាត់ប្រាក់ (Checkout & Payment) | Mart System';
     pageRobots = 'noindex, nofollow';
     pageCanonical = pathname;
   }
 
   const homepageSchema = useMemo(() => {
     if (isCheckoutFlow) return null;
+
+    const baseSchemaGraph = [
+      {
+        '@type': 'WebSite',
+        '@id': `${env.siteUrl}/#website`,
+        'url': `${env.siteUrl}/`,
+        'name': 'Mart System',
+        'alternateName': ['ប្រព័ន្ធគ្រប់គ្រងហាង Mart System', 'Mart POS Cambodia'],
+        'description': 'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់គ្រប់គ្រងការលក់ ទំនិញ ស្តុក ការបញ្ជាទិញ និងអាជីវកម្មបានយ៉ាងងាយស្រួល។',
+        'inLanguage': 'km-KH',
+      },
+      {
+        '@type': 'SoftwareApplication',
+        '@id': `${env.siteUrl}/#pos-app`,
+        'name': 'Mart System POS',
+        'applicationCategory': 'BusinessApplication',
+        'operatingSystem': 'Web',
+        'description': 'ប្រព័ន្ធគ្រប់គ្រងការលក់ និង POS សម្រាប់អាជីវកម្មខ្នាតតូច និងមធ្យមនៅកម្ពុជា។',
+        'offers': {
+          '@type': 'Offer',
+          'price': '0',
+          'priceCurrency': 'USD',
+          'availability': 'https://schema.org/InStock',
+        },
+      },
+    ];
+
+    if (isProductsPage) {
+      baseSchemaGraph.push({
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+          {
+            '@type': 'ListItem',
+            'position': 1,
+            'name': 'ទំព័រដើម (Home)',
+            'item': `${env.siteUrl}/`,
+          },
+          {
+            '@type': 'ListItem',
+            'position': 2,
+            'name': 'ទំនិញ (Products)',
+            'item': `${env.siteUrl}/products`,
+          },
+        ],
+      });
+    } else if (isPosPage) {
+      baseSchemaGraph.push({
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+          {
+            '@type': 'ListItem',
+            'position': 1,
+            'name': 'ទំព័រដើម (Home)',
+            'item': `${env.siteUrl}/`,
+          },
+          {
+            '@type': 'ListItem',
+            'position': 2,
+            'name': 'ចំណុចលក់ (POS)',
+            'item': `${env.siteUrl}/pos`,
+          },
+        ],
+      });
+    }
+
     return {
       '@context': 'https://schema.org',
-      '@graph': [
-        {
-          '@type': 'WebSite',
-          '@id': `${env.siteUrl}/#website`,
-          'url': `${env.siteUrl}/`,
-          'name': 'Mart System',
-          'alternateName': 'ប្រព័ន្ធគ្រប់គ្រងហាង Mart System',
-          'description': 'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់គ្រប់គ្រងការលក់ ទំនិញ ស្តុក ការបញ្ជាទិញ និងអាជីវកម្មបានយ៉ាងងាយស្រួល។',
-          'inLanguage': 'km-KH',
-        },
-        {
-          '@type': 'SoftwareApplication',
-          '@id': `${env.siteUrl}/#pos-app`,
-          'name': 'Mart System POS',
-          'applicationCategory': 'BusinessApplication',
-          'operatingSystem': 'Web',
-          'description': 'ប្រព័ន្ធគ្រប់គ្រងការលក់ និង POS សម្រាប់អាជីវកម្មខ្នាតតូច និងមធ្យមនៅកម្ពុជា។',
-          'offers': {
-            '@type': 'Offer',
-            'price': '0',
-            'priceCurrency': 'USD',
-          },
-        },
-      ],
+      '@graph': baseSchemaGraph,
     };
-  }, [isCheckoutFlow]);
+  }, [isCheckoutFlow, isProductsPage, isPosPage]);
 
   return (
     <div className={`flex h-full min-h-0 flex-1 flex-col bg-slate-50/50 dark:bg-ink-950 transition-colors duration-200 ${items.length > 0 ? 'pb-20 sm:pb-24' : 'pb-2 sm:pb-3'} lg:pb-0`}>
       <SEO
         title={pageTitle}
         description={pageDescription}
+        keywords={pageKeywords}
         canonical={pageCanonical}
         robots={pageRobots}
         jsonLd={homepageSchema}

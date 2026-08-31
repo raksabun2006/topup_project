@@ -11,11 +11,16 @@ export default function Footer() {
               Mart System
             </Link>
             <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug">
-              ត្រូវការធ្វើ System សម្រាប់អាជីវកម្មរបស់អ្នក?
+              ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-md">
-              ទំនាក់ទំនងមកខ្ញុំ ដើម្បីពិភាក្សា និងបង្កើត System តាមតម្រូវការរបស់អ្នក។
+              គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព។
             </p>
+            <nav aria-label="Footer quick links" className="flex items-center gap-4 pt-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+              <Link to="/pos" className="hover:underline">ចំណុចលក់ (POS)</Link>
+              <span>•</span>
+              <Link to="/products" className="hover:underline">ទំនិញ (Products)</Link>
+            </nav>
           </div>
 
           {/* Right Column: Contact Details & CTA */}

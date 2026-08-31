@@ -9,6 +9,7 @@ import { env } from '../config/env';
 export default function SEO({
   title = 'Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS',
   description = 'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់គ្រប់គ្រងការលក់ ទំនិញ ស្តុក ការបញ្ជាទិញ និងអាជីវកម្មបានយ៉ាងងាយស្រួល។',
+  keywords = 'Mart System, ប្រព័ន្ធគ្រប់គ្រងហាង, ប្រព័ន្ធ POS, ប្រព័ន្ធគ្រប់គ្រងការលក់, ប្រព័ន្ធគ្រប់គ្រងស្តុក, Bakong KHQR POS, POS System Cambodia',
   canonical,
   ogTitle,
   ogDescription,
@@ -70,6 +71,7 @@ export default function SEO({
 
     // 2. Standard Meta Tags
     setMetaTag('name', 'description', description);
+    setMetaTag('name', 'keywords', keywords);
     setMetaTag('name', 'robots', robots);
 
     // 3. Canonical Link Tag
@@ -124,6 +126,7 @@ export default function SEO({
   }, [
     title,
     description,
+    keywords,
     cleanCanonical,
     effectiveOgTitle,
     effectiveOgDescription,

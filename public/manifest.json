@@ -1,0 +1,26 @@
+{
+  "name": "Mart System - ប្រព័ន្ធគ្រប់គ្រងហាង និង POS",
+  "short_name": "Mart System",
+  "description": "ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើប គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងការទូទាត់តាម KHQR សម្រាប់អាជីវកម្មនៅកម្ពុជា។",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#059669",
+  "orientation": "portrait-primary",
+  "categories": ["business", "finance", "shopping", "productivity"],
+  "lang": "km-KH",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48 72x72 96x96 128x128 256x256 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
