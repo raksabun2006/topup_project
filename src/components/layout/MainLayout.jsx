@@ -15,7 +15,7 @@ export default function MainLayout() {
   const { pathname } = useLocation();
   const { isAdmin } = useAuth();
   const isPos = pathname === '/pos' || pathname === '/' || pathname === '/cart' || pathname === '/checkout' || pathname.startsWith('/payment');
-  const isAdminDashboard = pathname === '/dashboard' && isAdmin;
+  const isAdminDashboard = (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) && isAdmin;
   const isFullScreen = isPos || isAdminDashboard;
 
   return (

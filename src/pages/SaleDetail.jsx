@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Loader2, AlertCircle, ArrowLeft, Printer, XCircle, RotateCcw } from 'lucide-react';
+import { Loader2, AlertCircle, ArrowLeft, Printer, XCircle, RotateCcw, Receipt as ReceiptIcon } from 'lucide-react';
 import { useSale } from '../hooks/useSales';
 import { useAuth } from '../context/AuthContext';
 import { saleApi } from '../api/saleApi';
@@ -49,18 +49,24 @@ export default function SaleDetail() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-emerald-600" />
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3">
+        <Loader2 size={36} className="animate-spin text-emerald-600" />
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">កំពុងទាញយកព័ត៌មានវិក្កយបត្រ...</p>
       </div>
     );
   }
 
   if (error || !sale) {
     return (
-      <div className="mx-auto max-w-md px-4 py-16 text-center">
-        <AlertCircle size={40} className="mx-auto mb-4 text-rose-700" />
-        <p className="mb-6 text-rose-700">{error || 'រកមិនឃើញការលក់នេះទេ'}</p>
-        <Link to="/sales" className="text-sm font-medium text-emerald-600 hover:text-emerald-700">
+      <div className="mx-auto max-w-md px-4 py-16 text-center animate-fade-in">
+        <AlertCircle size={44} className="mx-auto mb-3 text-rose-600 dark:text-rose-400" />
+        <h3 className="text-base font-bold text-slate-900 dark:text-white">រកមិនឃើញការលក់នេះទេ</h3>
+        <p className="mt-1 mb-6 text-xs text-rose-600 dark:text-rose-400">{error || 'វិក្កយបត្រនេះប្រហែលជាត្រូវបានលុប ឬមិនមានក្នុងប្រព័ន្ធ'}</p>
+        <Link
+          to="/dashboard/sales"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-emerald-600/30 transition hover:bg-emerald-500"
+        >
+          <ArrowLeft size={14} />
           ត្រឡប់ទៅប្រវត្តិការលក់
         </Link>
       </div>
@@ -68,68 +74,87 @@ export default function SaleDetail() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-3 sm:px-6 py-6 sm:py-10">
+    <div className="mx-auto max-w-3xl space-y-5 animate-fade-in">
       <SEO
         title={sale?.invoiceNumber ? `វិក្កយបត្រ ${sale.invoiceNumber} | Mart System` : 'ព័ត៌មានលម្អិតការលក់ | Mart System'}
         robots="noindex, nofollow"
       />
-      <Link
-        to="/sales"
-        className="mb-4 sm:mb-6 inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 transition hover:text-slate-900 dark:hover:text-white"
-      >
-        <ArrowLeft size={16} />
-        ត្រឡប់ក្រោយ
-      </Link>
 
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{sale.invoiceNumber}</h1>
-          <div className="mt-1.5 sm:mt-2 flex items-center gap-2">
-            <SaleStatusBadge status={sale.status} />
-            <PaymentStatusBadge status={sale.paymentStatus} />
+      <div className="flex items-center justify-between">
+        <Link
+          to="/dashboard/sales"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-2xs transition hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-emerald-600"
+        >
+          <ArrowLeft size={14} />
+          <span>ត្រឡប់ទៅប្រវត្តិការលក់</span>
+        </Link>
+      </div>
+
+      {/* Invoice Details Banner */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <ReceiptIcon size={24} />
+            </div>
+            <div>
+              <h1 className="text-lg sm:text-xl font-mono font-black text-slate-900 dark:text-white">
+                {sale.invoiceNumber}
+              </h1>
+              <div className="mt-1.5 flex items-center gap-2">
+                <SaleStatusBadge status={sale.status} />
+                <PaymentStatusBadge status={sale.paymentStatus} />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition hover:border-emerald-500 hover:text-emerald-600 active:scale-95"
+            >
+              <Printer size={15} />
+              <span>បោះពុម្ព</span>
+            </button>
+
+            {sale.paymentStatus === 'PAID' && sale.status === 'COMPLETED' ? (
+              isAdmin && (
+                <button
+                  onClick={handleRefund}
+                  disabled={refunding}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/40 bg-rose-50 dark:bg-rose-950/30 px-3.5 py-2 text-xs font-bold text-rose-700 dark:text-rose-400 shadow-2xs transition hover:bg-rose-100 dark:hover:bg-rose-900/40 disabled:opacity-50 active:scale-95"
+                >
+                  {refunding ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
+                  <span>សងប្រាក់វិញ</span>
+                </button>
+              )
+            ) : (sale.status === 'PENDING' || sale.status === 'COMPLETED') ? (
+              <button
+                onClick={handleCancel}
+                disabled={cancelling}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/40 bg-rose-50 dark:bg-rose-950/30 px-3.5 py-2 text-xs font-bold text-rose-700 dark:text-rose-400 shadow-2xs transition hover:bg-rose-100 dark:hover:bg-rose-900/40 disabled:opacity-50 active:scale-95"
+              >
+                {cancelling ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                <span>បោះបង់ការលក់</span>
+              </button>
+            ) : null}
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => window.print()}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-ink-900 px-4 py-2 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 shadow-sm transition hover:border-emerald-500/40 hover:text-slate-900 dark:hover:text-white"
-          >
-            <Printer size={15} />
-            បោះពុម្ព
-          </button>
-          {sale.paymentStatus === 'PAID' && sale.status === 'COMPLETED' ? (
-            isAdmin && (
-              <button
-                onClick={handleRefund}
-                disabled={refunding}
-                className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 dark:bg-rose-950/30 px-4 py-2 text-sm font-medium text-rose-700 dark:text-rose-400 shadow-sm transition hover:bg-rose-500/10 dark:hover:bg-rose-950/50 disabled:opacity-50"
-              >
-                {refunding ? <Loader2 size={15} className="animate-spin" /> : <RotateCcw size={15} />}
-                សងប្រាក់វិញ
-              </button>
-            )
-          ) : (sale.status === 'PENDING' || sale.status === 'COMPLETED') ? (
-            <button
-              onClick={handleCancel}
-              disabled={cancelling}
-              className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 dark:bg-rose-950/30 px-4 py-2 text-sm font-medium text-rose-700 dark:text-rose-400 shadow-sm transition hover:bg-rose-500/10 dark:hover:bg-rose-950/50 disabled:opacity-50"
-            >
-              {cancelling ? <Loader2 size={15} className="animate-spin" /> : <XCircle size={15} />}
-              បោះបង់
-            </button>
-          ) : null}
-        </div>
+        {cancelError && (
+          <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-400">
+            {cancelError}
+          </div>
+        )}
+        {refundError && (
+          <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-400">
+            {refundError}
+          </div>
+        )}
       </div>
 
-      {cancelError && (
-        <p className="mb-4 text-sm text-rose-700 dark:text-rose-400">{cancelError}</p>
-      )}
-      {refundError && (
-        <p className="mb-4 text-sm text-rose-700 dark:text-rose-400">{refundError}</p>
-      )}
-
-      <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      {/* Receipt Display Area */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
         <Receipt sale={sale} showTaxDiscount={true} />
       </div>
     </div>

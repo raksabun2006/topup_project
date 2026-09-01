@@ -18,7 +18,7 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
   return (
     <div
       onClick={() => !outOfStock && onAdd(product)}
-      className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white dark:bg-slate-900 shadow-2xs transition-all duration-150 select-none ${
+      className={`group relative flex flex-col overflow-hidden rounded-xl border bg-white dark:bg-slate-900 shadow-2xs transition-all duration-150 select-none ${
         outOfStock
           ? 'border-slate-200 dark:border-slate-800 opacity-60 cursor-not-allowed'
           : cartQuantity > 0
@@ -28,14 +28,14 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
     >
       {/* In-Cart Quantity Badge */}
       {cartQuantity > 0 && (
-        <span className="absolute top-2 right-2 z-10 flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm animate-scale-in">
-          <Check size={11} />
+        <span className="absolute top-1.5 right-1.5 z-10 flex items-center gap-0.5 rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-xs animate-scale-in">
+          <Check size={10} />
           <span>{cartQuantity} ក្នុងរទេះ</span>
         </span>
       )}
 
-      {/* Product Image Area - shrink-0 prevents flex compression on mobile landscape */}
-      <div className="relative flex aspect-[4/3] min-h-[100px] sm:min-h-[120px] w-full shrink-0 items-center justify-center bg-slate-50/80 dark:bg-slate-800/60 p-2 overflow-hidden">
+      {/* Product Image Area - shrink-0 prevents flex compression */}
+      <div className="relative flex aspect-[4/3] max-h-24 sm:max-h-28 w-full shrink-0 items-center justify-center bg-slate-50/80 dark:bg-slate-800/60 p-1.5 sm:p-2 overflow-hidden">
         {product.imageUrl && !imageBroken ? (
           <img
             src={product.imageUrl}
@@ -46,27 +46,27 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
             onError={() => setImageBroken(true)}
           />
         ) : (
-          <Package size={28} className="text-slate-300 dark:text-slate-600" />
+          <Package size={22} className="text-slate-300 dark:text-slate-600" />
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-2 sm:p-2.5">
+      <div className="flex flex-1 flex-col p-1.5 sm:p-2">
         <p
-          className="line-clamp-1 text-xs font-bold text-slate-800 dark:text-slate-100 transition-colors group-hover:text-emerald-700 dark:group-hover:text-emerald-400"
+          className="line-clamp-1 text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 transition-colors group-hover:text-emerald-700 dark:group-hover:text-emerald-400"
           title={product.name}
         >
           {product.name}
         </p>
-        <p className="truncate text-[10px] text-slate-400 dark:text-slate-400">
+        <p className="truncate text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-400">
           {product.sku ? `SKU: ${product.sku}` : '\u00A0'}
         </p>
 
-        <div className="mt-auto flex items-center justify-between pt-1.5">
-          <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 sm:text-sm">
+        <div className="mt-auto flex items-center justify-between pt-1">
+          <span className="text-[11px] sm:text-xs font-black text-emerald-600 dark:text-emerald-400">
             {formatCurrency(product.price)}
           </span>
           <span
-            className={`text-[10px] font-semibold ${
+            className={`text-[9px] sm:text-[10px] font-semibold ${
               outOfStock ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 dark:text-slate-400'
             }`}
           >
@@ -81,13 +81,13 @@ export default function ProductCard({ product, onAdd, cartQuantity = 0 }) {
             onAdd(product);
           }}
           disabled={outOfStock}
-          className={`mt-2 flex h-7 items-center justify-center gap-1 rounded-xl text-xs font-bold text-white transition active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 ${
+          className={`mt-1.5 flex h-6 sm:h-6.5 items-center justify-center gap-1 rounded-lg text-[10px] sm:text-xs font-bold text-white transition active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 ${
             cartQuantity > 0
               ? 'bg-emerald-700 dark:bg-emerald-700 hover:bg-emerald-600 shadow-2xs'
               : 'bg-emerald-600 hover:bg-emerald-500 shadow-2xs'
           }`}
         >
-          <Plus size={13} />
+          <Plus size={12} />
           <span>{outOfStock ? 'អស់ស្តុក' : cartQuantity > 0 ? `បន្ថែមទៀត (${cartQuantity})` : 'បន្ថែម'}</span>
         </button>
       </div>

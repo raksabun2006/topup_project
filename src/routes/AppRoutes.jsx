@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { useAuth } from '../context/AuthContext';
 import MainLayout from '../components/layout/MainLayout';
+import AdminLayout from '../components/layout/AdminLayout';
 import Login from '../pages/Login';
 import Pos from '../pages/Pos';
 import Sales from '../pages/Sales';
@@ -14,16 +15,25 @@ import NotFound from '../pages/NotFound';
 
 /**
  * Route handler for /products:
- * - Admin logged in: Admin Products Management
+ * - Admin logged in: Admin Products Management (/dashboard/products)
  * - Customers/Guests: Public Product Storefront (Pos)
  */
 function ProductsRouteHandler() {
   const { isAdmin, isAuthenticated, loading } = useAuth();
   if (loading) return null;
   if (isAuthenticated && isAdmin) {
-    return <Products />;
+    return <Navigate to="/dashboard/products" replace />;
   }
   return <Pos />;
+}
+
+function DashboardWrapper() {
+  const { isAdmin, loading } = useAuth();
+  if (loading) return null;
+  if (isAdmin) {
+    return <AdminLayout />;
+  }
+  return <Dashboard />;
 }
 
 export default function AppRoutes() {
@@ -44,47 +54,56 @@ export default function AppRoutes() {
         <Route path="/payment/:saleId" element={<Pos />} />
         <Route path="/products" element={<ProductsRouteHandler />} />
 
-        {/* Protected Staff & Admin Routes */}
+        {/* Protected Dashboard & Admin Routes */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <DashboardWrapper />
             </ProtectedRoute>
           }
-        />
-        <Route
-          path="/sales"
-          element={
-            <ProtectedRoute>
-              <Sales />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/sales/:id"
-          element={
-            <ProtectedRoute>
-              <SaleDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/products"
-          element={
-            <ProtectedRoute requireAdmin>
-              <Products />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/customers"
-          element={
-            <ProtectedRoute requireAdmin>
-              <Customers />
-            </ProtectedRoute>
-          }
-        />
+        >
+          <Route index element={<Dashboard />} />
+          <Route
+            path="products"
+            element={
+              <ProtectedRoute requireAdmin>
+                <Products />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="sales"
+            element={
+              <ProtectedRoute>
+                <Sales />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="sales/:id"
+            element={
+              <ProtectedRoute>
+                <SaleDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="customers"
+            element={
+              <ProtectedRoute requireAdmin>
+                <Customers />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        {/* Legacy redirect aliases */}
+        <Route path="/sales" element={<Navigate to="/dashboard/sales" replace />} />
+        <Route path="/sales/:id" element={<Navigate to="/dashboard/sales" replace />} />
+        <Route path="/customers" element={<Navigate to="/dashboard/customers" replace />} />
+        <Route path="/admin/products" element={<Navigate to="/dashboard/products" replace />} />
+
         <Route
           path="/profile"
           element={

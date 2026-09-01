@@ -11,9 +11,9 @@ import UserAvatar from '../ui/UserAvatar';
 
 const ICON_LINKS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/products', icon: Package, label: 'Products', adminOnly: true },
-  { to: '/customers', icon: Users, label: 'Customers', adminOnly: true },
-  { to: '/sales', icon: Receipt, label: 'Sales' },
+  { to: '/dashboard/products', icon: Package, label: 'Products', adminOnly: true },
+  { to: '/dashboard/customers', icon: Users, label: 'Customers', adminOnly: true },
+  { to: '/dashboard/sales', icon: Receipt, label: 'Sales' },
 ];
 
 export default function Navbar() {
@@ -107,9 +107,9 @@ export default function Navbar() {
                   <div className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-black/20 animate-scale-in">
                     {[
                       { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-                      { to: '/sales', icon: Receipt, label: 'Sales' },
-                      ...(isAdmin ? [{ to: '/products', icon: Package, label: 'Products' }] : []),
-                      ...(isAdmin ? [{ to: '/customers', icon: Users, label: 'Customers' }] : []),
+                      { to: '/dashboard/sales', icon: Receipt, label: 'Sales' },
+                      ...(isAdmin ? [{ to: '/dashboard/products', icon: Package, label: 'Products' }] : []),
+                      ...(isAdmin ? [{ to: '/dashboard/customers', icon: Users, label: 'Customers' }] : []),
                       { to: '/profile', icon: User, label: 'Information' },
                     ].map(({ to, icon: Icon, label }) => (
                       <Link
@@ -166,9 +166,9 @@ export default function Navbar() {
 
                 {[
                   { to: '/pos', label: 'ចំណុចលក់ (POS)', icon: ShoppingCart },
-                  { to: '/sales', label: 'ការលក់ (Sales)', icon: Receipt },
-                  ...(isAdmin ? [{ to: '/products', label: 'ផលិតផល (Products)', icon: Package }] : []),
-                  ...(isAdmin ? [{ to: '/customers', label: 'អតិថិជន (Customers)', icon: Users }] : []),
+                  { to: '/dashboard/sales', label: 'ការលក់ (Sales)', icon: Receipt },
+                  ...(isAdmin ? [{ to: '/dashboard/products', label: 'ផលិតផល (Products)', icon: Package }] : []),
+                  ...(isAdmin ? [{ to: '/dashboard/customers', label: 'អតិថិជន (Customers)', icon: Users }] : []),
                   { to: '/dashboard', label: 'ផ្ទាំងគ្រប់គ្រង (Dashboard)', icon: LayoutDashboard },
                   { to: '/profile', label: 'ព័ត៌មានផ្ទាល់ខ្លួន (Profile)', icon: User },
                 ].map(({ to, label, icon: Icon }) => (
