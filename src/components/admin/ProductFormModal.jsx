@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react';
-import { X, Loader2, AlertCircle, ImageOff, Package, Plus, Check } from 'lucide-react';
+import {
+  X, Loader2, AlertCircle, ImageOff, Package, Plus, Check,
+  Sparkles, CheckCircle2
+} from 'lucide-react';
 import { adminProductApi } from '../../api/adminProductApi';
 import { categoryApi } from '../../api/categoryApi';
 import { getErrorMessage } from '../../api/client';
 import { useCategories } from '../../hooks/useCategories';
 
-const STATUS_OPTIONS = ['DRAFT', 'ACTIVE', 'INACTIVE', 'ARCHIVED'];
+const STATUS_OPTIONS = [
+  { value: 'ACTIVE', label: 'សកម្ម (Active)' },
+  { value: 'DRAFT', label: 'ព្រាង (Draft)' },
+  { value: 'INACTIVE', label: 'អសកម្ម (Inactive)' },
+  { value: 'ARCHIVED', label: 'ទុកក្នុងប័ណ្ណសារ (Archived)' },
+];
 
 const EMPTY = {
   sku: '', barcode: '', name: '', description: '', imageUrl: '',
@@ -47,8 +55,14 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
     setImageBroken(false);
   }, [product]);
 
+  const handleGenerateSku = () => {
+    const prefix = (form.name ? form.name.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, '') : 'PRD') || 'PRD';
+    const rand = Math.floor(100000 + Math.random() * 900000);
+    setForm((prev) => ({ ...prev, sku: `${prefix}-${rand}` }));
+  };
+
   const handleCreateCategory = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     const name = newCategoryName.trim();
     if (!name) return;
     setSavingCategory(true);
@@ -101,118 +115,87 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
     }
   };
 
-  const inputClass =
-    'w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-sm text-slate-900 dark:text-white shadow-sm ' +
-    'transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
-  const labelClass = 'mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300';
-
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs animate-fade-in"
       onClick={() => !saving && onClose()}
     >
       <div
-        className="w-full max-w-lg max-h-[92dvh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-slide-up sm:animate-scale-in pb-safe sm:pb-0"
+        className="w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 py-3.5 sm:px-6 sm:py-4">
-          <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">{isEdit ? 'កែប្រែផលិតផល' : 'ផលិតផលថ្មី'}</h3>
-          <button onClick={onClose} disabled={saving} className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition">
+        {/* Modal Header */}
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-3.5 bg-slate-50/60 dark:bg-slate-800/40">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <Package size={20} />
+            </div>
+            <div>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                {isEdit ? 'កែប្រែផលិតផល' : 'បន្ថែមផលិតផលថ្មី'}
+              </h2>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                {isEdit ? `ID: #${product.id}` : 'បំពេញព័ត៌មានខាងក្រោមដើម្បីបង្កើតផលិតផល'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            disabled={saving}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition"
+          >
             <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
+        {/* Modal Form Body */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5">
           {error && (
-            <div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-50 dark:bg-rose-950/30 p-3 text-xs sm:text-sm text-rose-700 dark:text-rose-400">
-              <AlertCircle size={16} className="mt-0.5 shrink-0" />
-              {error}
+            <div className="flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-50 dark:bg-rose-950/30 p-3 text-xs text-rose-700 dark:text-rose-400 animate-fade-in">
+              <AlertCircle size={15} className="mt-0.5 shrink-0 text-rose-600" />
+              <span>{error}</span>
             </div>
           )}
 
-          <div className="space-y-4">
+          {/* Product Name */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              ឈ្មោះផលិតផល <span className="text-rose-500">*</span>
+            </label>
+            <input
+              required
+              value={form.name}
+              onChange={set('name')}
+              placeholder="ឧ. Coca Cola 330ml, កាហ្វេទឹកដោះគោ..."
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+            />
+          </div>
+
+          {/* Category & Status */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>ឈ្មោះផលិតផល *</label>
-              <input required value={form.name} onChange={set('name')} className={inputClass} />
-            </div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  ប្រភេទ (Category)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowNewCategory((v) => !v)}
+                  className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-0.5"
+                >
+                  <Plus size={10} />
+                  <span>ប្រភេទថ្មី</span>
+                </button>
+              </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelClass}>SKU *</label>
-                <input required value={form.sku} onChange={set('sku')} className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>Barcode</label>
-                <input value={form.barcode} onChange={set('barcode')} className={inputClass} />
-              </div>
-            </div>
-
-            <div>
-              <label className={labelClass}>ការពិពណ៌នា</label>
-              <textarea rows={2} value={form.description} onChange={set('description')} className={inputClass} />
-            </div>
-
-            <div>
-              <label className={labelClass}>តំណភ្ជាប់រូបភាព (Image URL)</label>
-              <div className="flex items-center gap-3">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
-                  {form.imageUrl && !imageBroken ? (
-                    <img
-                      src={form.imageUrl}
-                      alt=""
-                      className="h-full w-full object-cover"
-                      onError={() => setImageBroken(true)}
-                    />
-                  ) : imageBroken ? (
-                    <ImageOff size={20} className="text-slate-500 dark:text-slate-400" />
-                  ) : (
-                    <Package size={20} className="text-slate-500 dark:text-slate-400" />
-                  )}
-                </div>
-                <input
-                  type="url"
-                  value={form.imageUrl}
-                  onChange={set('imageUrl')}
-                  placeholder="https://example.com/product.png"
-                  className={inputClass}
-                />
-              </div>
-              {imageBroken && (
-                <p className="mt-1.5 text-xs text-amber-700 dark:text-amber-400">មិនអាចផ្ទុករូបភាពពីតំណភ្ជាប់នេះទេ</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelClass}>តម្លៃលក់ *</label>
-                <input required type="number" min="0" step="0.01" value={form.price} onChange={set('price')} className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>តម្លៃដើម</label>
-                <input type="number" min="0" step="0.01" value={form.costPrice} onChange={set('costPrice')} className={inputClass} />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelClass}>ស្តុក *</label>
-                <input required type="number" min="0" step="1" value={form.stockQuantity} onChange={set('stockQuantity')} className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>ស្ថានភាព *</label>
-                <select required value={form.status} onChange={set('status')} className={inputClass}>
-                  {STATUS_OPTIONS.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className={labelClass}>ប្រភេទ</label>
-              <div className="flex items-center gap-2">
-                <select value={form.category} onChange={set('category')} className={inputClass}>
-                  <option value="">ជ្រើសរើសប្រភេទ</option>
+              {!showNewCategory ? (
+                <select
+                  value={form.category}
+                  onChange={set('category')}
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition cursor-pointer"
+                >
+                  <option value="">ជ្រើសរើសប្រភេទ (None)</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.name}>{c.name}</option>
                   ))}
@@ -220,24 +203,14 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
                     <option value={form.category}>{form.category}</option>
                   )}
                 </select>
-                <button
-                  type="button"
-                  onClick={() => setShowNewCategory((v) => !v)}
-                  title="បន្ថែមប្រភេទថ្មី"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 transition hover:border-emerald-500/40 hover:text-emerald-700 dark:hover:text-emerald-400"
-                >
-                  <Plus size={18} />
-                </button>
-              </div>
-
-              {showNewCategory && (
-                <div className="mt-2 flex items-center gap-2">
+              ) : (
+                <div className="flex items-center gap-1">
                   <input
                     autoFocus
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder="ឈ្មោះប្រភេទថ្មី"
-                    className={inputClass}
+                    placeholder="ឈ្មោះប្រភេទថ្មី..."
+                    className="flex-1 rounded-xl border border-emerald-500 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -249,32 +222,199 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
                     type="button"
                     onClick={handleCreateCategory}
                     disabled={savingCategory || !newCategoryName.trim()}
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 transition disabled:opacity-50"
                   >
-                    {savingCategory ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                    {savingCategory ? <Loader2 size={12} className="animate-spin" /> : <Check size={13} />}
                   </button>
                   <button
                     type="button"
                     onClick={() => { setShowNewCategory(false); setNewCategoryName(''); setCategoryError(''); }}
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                   >
-                    <X size={16} />
+                    <X size={13} />
                   </button>
                 </div>
               )}
-              {categoryError && <p className="mt-1.5 text-xs text-rose-700 dark:text-rose-400">{categoryError}</p>}
+              {categoryError && <p className="mt-1 text-[10px] text-rose-600 dark:text-rose-400">{categoryError}</p>}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                ស្ថានភាព (Status) <span className="text-rose-500">*</span>
+              </label>
+              <select
+                required
+                value={form.status}
+                onChange={set('status')}
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition cursor-pointer font-medium"
+              >
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 disabled:opacity-60"
-          >
-            {saving && <Loader2 size={16} className="animate-spin" />}
-            រក្សាទុក
-          </button>
+          {/* Pricing & Stock */}
+          <div className="grid grid-cols-3 gap-2.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                តម្លៃលក់ ($) <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">$</span>
+                <input
+                  required
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.price}
+                  onChange={set('price')}
+                  placeholder="0.00"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 pl-6 pr-2.5 py-2 text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                តម្លៃដើម ($)
+              </label>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.costPrice}
+                  onChange={set('costPrice')}
+                  placeholder="0.00"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 pl-6 pr-2.5 py-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                ស្តុក (Units) <span className="text-rose-500">*</span>
+              </label>
+              <input
+                required
+                type="number"
+                min="0"
+                step="1"
+                value={form.stockQuantity}
+                onChange={set('stockQuantity')}
+                placeholder="0"
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs sm:text-sm font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+              />
+            </div>
+          </div>
+
+          {/* SKU & Barcode */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  SKU <span className="text-rose-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleGenerateSku}
+                  className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-0.5"
+                >
+                  <Sparkles size={10} />
+                  <span>បង្កើត SKU</span>
+                </button>
+              </div>
+              <input
+                required
+                value={form.sku}
+                onChange={set('sku')}
+                placeholder="PRD-00123"
+                className="w-full font-mono rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white uppercase focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Barcode (បាកូដ)
+              </label>
+              <input
+                value={form.barcode}
+                onChange={set('barcode')}
+                placeholder="8851234567890"
+                className="w-full font-mono rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+              />
+            </div>
+          </div>
+
+          {/* Image URL with compact thumbnail */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              តំណភ្ជាប់រូបភាព (Image URL)
+            </label>
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                {form.imageUrl && !imageBroken ? (
+                  <img
+                    src={form.imageUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    onError={() => setImageBroken(true)}
+                  />
+                ) : imageBroken ? (
+                  <ImageOff size={16} className="text-amber-500" />
+                ) : (
+                  <Package size={16} className="text-slate-400" />
+                )}
+              </div>
+              <input
+                type="url"
+                value={form.imageUrl}
+                onChange={set('imageUrl')}
+                placeholder="https://example.com/product.png"
+                className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+              />
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              ការពិពណ៌នា (Description)
+            </label>
+            <textarea
+              rows={2}
+              value={form.description}
+              onChange={set('description')}
+              placeholder="ព័ត៌មានបន្ថែមពីផលិតផល..."
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition resize-none"
+            />
+          </div>
         </form>
+
+        {/* Modal Action Footer */}
+        <div className="shrink-0 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800 px-5 py-3 bg-slate-50/60 dark:bg-slate-800/40">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+          >
+            បោះបង់ (Cancel)
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={saving || !form.name.trim() || !form.sku.trim() || !form.price || form.stockQuantity === ''}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white shadow-md shadow-emerald-600/25 transition hover:bg-emerald-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+            <span>{isEdit ? 'រក្សាទុកការកែប្រែ' : 'រក្សាទុកផលិតផល'}</span>
+          </button>
+        </div>
       </div>
     </div>
   );
