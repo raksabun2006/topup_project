@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Receipt as ReceiptIcon, DollarSign, XCircle, Clock, AlertTriangle,
   AlertCircle, RefreshCw, Boxes, UserCheck, Filter, CheckCircle, Search,
-  ShoppingCart, ArrowRight, X
+  ArrowRight, X
 } from 'lucide-react';
 import { useSales } from '../../hooks/useSales';
 import { useLowStockInventory } from '../../hooks/useInventory';
@@ -111,8 +111,8 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-in">
-      {/* Top Search & Actions Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      {/* Top Search Bar */}
+      <div className="flex items-center justify-between gap-3">
         <div className="relative flex flex-1 max-w-md items-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 pl-3.5 pr-2 py-1.5 shadow-2xs focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 transition">
           <Search size={16} className="text-slate-400 shrink-0" />
           <input
@@ -126,16 +126,6 @@ export default function AdminDashboard() {
               <X size={14} />
             </button>
           )}
-        </div>
-
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          <Link
-            to="/pos"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:from-emerald-500 hover:to-emerald-600 active:scale-95"
-          >
-            <ShoppingCart size={15} />
-            <span>ចំណុចលក់ (POS)</span>
-          </Link>
         </div>
       </div>
 

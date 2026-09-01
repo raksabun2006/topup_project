@@ -515,7 +515,7 @@ export default function Products() {
                   className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xl hover:border-emerald-500/40 dark:hover:border-emerald-500/40 transition-all duration-200"
                 >
                   {/* Card Media Header */}
-                  <div className="relative aspect-[16/10] sm:aspect-[4/3] w-full shrink-0 items-center justify-center bg-slate-50/90 dark:bg-slate-850/70 p-2 overflow-hidden flex border-b border-slate-100 dark:border-slate-800">
+                  <div className="relative aspect-[16/10] sm:aspect-[4/3] w-full shrink-0 items-center justify-center bg-slate-50/90 dark:bg-slate-800/60 p-2 overflow-hidden flex border-b border-slate-100 dark:border-slate-800">
                     {product.imageUrl ? (
                       <img
                         src={product.imageUrl}
@@ -624,7 +624,7 @@ export default function Products() {
                   </div>
 
                   {/* Card Action Buttons */}
-                  <div className="border-t border-slate-100 dark:border-slate-800 p-2 sm:p-2.5 bg-slate-50/60 dark:bg-slate-850/50 flex items-center gap-1.5">
+                  <div className="border-t border-slate-100 dark:border-slate-800 p-2 sm:p-2.5 bg-slate-50/60 dark:bg-slate-800/50 flex items-center gap-1.5">
                     <button
                       type="button"
                       onClick={() => openEdit(product)}

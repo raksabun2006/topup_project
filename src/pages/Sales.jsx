@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import {
   AlertCircle, RefreshCw, Receipt, Search, User, DollarSign,
   CheckCircle2, Clock, LayoutGrid, List,
-  ArrowRight, Calendar, CreditCard, ChevronLeft, ChevronRight, X
+  ArrowRight, Calendar, ChevronLeft, ChevronRight, X
 } from 'lucide-react';
 import { useSales } from '../hooks/useSales';
 import { useCustomers } from '../hooks/useCustomers';
@@ -141,16 +141,6 @@ export default function Sales() {
               Dashboard / Sales — តាមដានវិក្កយបត្រ ការទូទាត់ និងប្រតិបត្តិការលក់ទាំងអស់
             </p>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Link
-            to="/pos"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:from-emerald-500 hover:to-emerald-600 active:scale-95"
-          >
-            <CreditCard size={16} />
-            <span>បើកចំណុចលក់ (POS)</span>
-          </Link>
         </div>
       </div>
 

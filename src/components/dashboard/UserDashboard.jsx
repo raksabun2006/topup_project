@@ -29,7 +29,7 @@ export default function UserDashboard() {
 
   return (
     <div className="mx-auto max-w-6xl px-3 sm:px-6 py-6 sm:py-10">
-      <div className="relative mb-6 sm:mb-10 overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-300 dark:border-slate-800 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 p-5 sm:p-8 shadow-xl shadow-emerald-200/50 dark:shadow-none">
+      <div className="relative mb-6 sm:mb-10 overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-300 dark:border-slate-800 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-5 sm:p-8 shadow-xl shadow-emerald-200/50 dark:shadow-none">
         <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">សួស្តី {user?.username}</h1>
         <p className="mt-1.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">ចាប់ផ្តើមការលក់ថ្មីនៅចំណុចលក់</p>
 

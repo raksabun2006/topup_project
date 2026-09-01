@@ -111,18 +111,18 @@ export default function AdminLayout() {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="border-t border-slate-100 dark:border-slate-800 p-3 space-y-1 bg-slate-50/60 dark:bg-slate-850/40">
+        <div className="border-t border-slate-100 dark:border-slate-800 p-3 space-y-1 bg-slate-50/60 dark:bg-slate-900">
           <Link
             to="/profile"
             onClick={() => setMobileNavOpen(false)}
-            className="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 transition hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+            className="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 transition hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
           >
-            <User size={16} className="text-slate-400" />
+            <User size={16} className="text-slate-400 dark:text-slate-400" />
             <span>ព័ត៌មានផ្ទាល់ខ្លួន (Profile)</span>
           </Link>
           <button
             onClick={logout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 transition hover:bg-rose-50 dark:hover:bg-rose-950/30"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 transition hover:bg-rose-50 dark:hover:bg-rose-950/40"
           >
             <LogOut size={16} />
             <span>ចាកចេញ (Sign Out)</span>
@@ -156,15 +156,6 @@ export default function AdminLayout() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Storefront / POS Link shortcut button */}
-            <Link
-              to="/pos"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-emerald-200/80 dark:border-emerald-500/30 bg-emerald-50/80 dark:bg-emerald-950/50 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 shadow-2xs transition active:scale-95"
-            >
-              <ShoppingCart size={14} />
-              <span>ចំណុចលក់ (POS)</span>
-            </Link>
-
             <ThemeToggle variant="admin" />
 
             {/* Low stock alert bell */}
