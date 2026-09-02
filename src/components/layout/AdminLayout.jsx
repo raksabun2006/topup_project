@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingCart, Receipt as ReceiptIcon, Package, Users, User, LogOut,
-  Bell, Menu, X, Store, Sparkles, ChevronRight, BarChart3
+  Menu, X, Store, Sparkles, ChevronRight, BarChart3
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useLowStockInventory } from '../../hooks/useInventory';
 import ThemeToggle from '../ui/ThemeToggle';
 import UserAvatar from '../ui/UserAvatar';
+import NotificationDropdown from '../ui/NotificationDropdown';
 import { env } from '../../config/env';
 
 const NAV_ITEMS = [
@@ -21,7 +21,6 @@ const NAV_ITEMS = [
 export default function AdminLayout() {
   const { user, logout, isAdmin } = useAuth();
   const { pathname } = useLocation();
-  const { items: lowStock } = useLowStockInventory();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const navItems = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin);
@@ -189,19 +188,8 @@ export default function AdminLayout() {
 
             <ThemeToggle variant="admin" />
 
-            {/* Low stock alert bell */}
-            <Link
-              to="/dashboard/products"
-              className="relative rounded-xl border border-slate-200 dark:border-slate-700 p-2 text-slate-600 dark:text-slate-400 transition hover:border-emerald-500/50 hover:bg-emerald-50 dark:hover:bg-slate-800"
-              title="ស្តុកជិតអស់"
-            >
-              <Bell size={17} />
-              {lowStock.length > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold text-white shadow-xs animate-scale-in">
-                  {lowStock.length}
-                </span>
-              )}
-            </Link>
+            {/* Interactive Notification Bell with Dropdown */}
+            <NotificationDropdown variant="admin" />
 
             {/* User Profile Pill */}
             <Link

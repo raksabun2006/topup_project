@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import { env } from '../../config/env';
 import ThemeToggle from '../ui/ThemeToggle';
 import UserAvatar from '../ui/UserAvatar';
+import NotificationDropdown from '../ui/NotificationDropdown';
 
 const ICON_LINKS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -76,6 +77,9 @@ export default function Navbar() {
           {/* Theme Toggle Button */}
           <ThemeToggle variant="navbar" />
 
+          {/* Notifications */}
+          {isAuthenticated && <NotificationDropdown variant="navbar" />}
+
           {!isAuthenticated ? (
             <div className="flex items-center gap-3">
               <Link
@@ -137,8 +141,9 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile Header Theme Toggle Shortcut */}
-        <div className="flex items-center gap-1 md:hidden">
+        {/* Mobile Header Notification & Theme Toggle Shortcuts */}
+        <div className="flex items-center gap-1.5 md:hidden">
+          {isAuthenticated && <NotificationDropdown variant="navbar" />}
           <ThemeToggle variant="navbar" />
         </div>
       </nav>
