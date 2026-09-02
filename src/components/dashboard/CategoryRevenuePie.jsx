@@ -1,35 +1,31 @@
 import { useEffect, useMemo, useState } from 'react';
-import { PieChart } from 'lucide-react';
+import { PieChart, Layers } from 'lucide-react';
 import { adminProductApi } from '../../api/adminProductApi';
 import { formatCurrency } from '../../utils/format';
-import { CATEGORICAL_PALETTE, OTHER_SLICE_COLOR, OTHER_SLICE_LABEL, readableTextOn } from '../../utils/chartPalette';
+import { CATEGORICAL_PALETTE, OTHER_SLICE_COLOR, OTHER_SLICE_LABEL } from '../../utils/chartPalette';
 
-const MAX_SLICES = 6;
+const MAX_SLICES = 5;
 const SIZE = 240;
 const CENTER = SIZE / 2;
-const RADIUS = 100;
-const INLINE_LABEL_MIN_PCT = 8;
+const OUTER_RADIUS = 100;
+const INNER_RADIUS = 68;
 
 function polarToCartesian(angleDeg, radius) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
   return { x: CENTER + radius * Math.cos(rad), y: CENTER + radius * Math.sin(rad) };
 }
 
-function sliceArcPath(startAngle, endAngle) {
-  const start = polarToCartesian(endAngle, RADIUS);
-  const end = polarToCartesian(startAngle, RADIUS);
-  const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-  return `M ${CENTER} ${CENTER} L ${start.x} ${start.y} A ${RADIUS} ${RADIUS} 0 ${largeArc} 0 ${end.x} ${end.y} Z`;
+function donutSlicePath(startAngle, endAngle, outerR = OUTER_RADIUS, innerR = INNER_RADIUS) {
+  const adjustedEnd = endAngle - startAngle >= 359.99 ? startAngle + 359.99 : endAngle;
+  const startOuter = polarToCartesian(startAngle, outerR);
+  const endOuter = polarToCartesian(adjustedEnd, outerR);
+  const startInner = polarToCartesian(adjustedEnd, innerR);
+  const endInner = polarToCartesian(startAngle, innerR);
+  const largeArc = adjustedEnd - startAngle > 180 ? 1 : 0;
+
+  return `M ${startOuter.x} ${startOuter.y} A ${outerR} ${outerR} 0 ${largeArc} 1 ${endOuter.x} ${endOuter.y} L ${startInner.x} ${startInner.y} A ${innerR} ${innerR} 0 ${largeArc} 0 ${endInner.x} ${endInner.y} Z`;
 }
 
-/**
- * ចំណូលតាមប្រភេទផលិតផល - backend គ្មាន report endpoint ទេ ដូច្នេះគណនាពី
- * sales ដែលបានបង់ប្រាក់ពិត (status COMPLETED និង paymentStatus PAID ទាំងពីរ
- * ព្រោះ Sale អាចជា COMPLETED តែមិនទាន់បង់ - ឧ. UNPAID) ដែលទាញយករួច
- * ផ្គូផ្គង item.productId ទៅនឹង category របស់ផលិតផលនោះ។ កំណត់ត្រឹម ៦
- * ប្រភេទធំបំផុត - ដែលនៅសល់បញ្ចូលរួមជា "ផ្សេងៗ" (ដូច choosing-a-form:
- * part-to-whole pie ≤ 6 segments)។
- */
 export default function CategoryRevenuePie({ sales, loading }) {
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
@@ -74,7 +70,6 @@ export default function CategoryRevenuePie({ sales, loading }) {
     const restTotal = entries.slice(MAX_SLICES).reduce((sum, e) => sum + e.value, 0);
     if (restTotal > 0) top.push({ name: OTHER_SLICE_LABEL, value: restTotal });
 
-    // ពណ៌តាមលំដាប់អក្សរក្រម (ថេរ) - កុំឲ្យពណ៌ប្តូរតាម rank ចំណូលរាល់ពេល reload
     const namedOrder = top.filter((e) => e.name !== OTHER_SLICE_LABEL).map((e) => e.name).sort();
     const colorByName = new Map(namedOrder.map((name, i) => [name, CATEGORICAL_PALETTE[i % CATEGORICAL_PALETTE.length]]));
 
@@ -95,122 +90,157 @@ export default function CategoryRevenuePie({ sales, loading }) {
     });
   }, [products, sales]);
 
-  const total = slices.reduce((sum, s) => sum + s.value, 0);
+  const totalRevenue = slices.reduce((sum, s) => sum + s.value, 0);
   const busy = loading || productsLoading;
+  const activeSlice = hover !== null ? slices[hover] : null;
 
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-ink-900 shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-4 sm:py-5">
-        <h2 className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white text-sm sm:text-base">
-          <PieChart size={18} className="text-emerald-600 dark:text-emerald-400" />
-          ចំណូលតាមប្រភេទ
-        </h2>
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs overflow-hidden">
+      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 sm:px-6 py-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-500/10 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400">
+            <PieChart size={18} />
+          </div>
+          <div>
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+              ចំណូលតាមប្រភេទផលិតផល
+            </h2>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+              Category Revenue Breakdown
+            </p>
+          </div>
+        </div>
+        {slices.length > 0 && (
+          <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-bold text-slate-600 dark:text-slate-300">
+            <Layers size={13} />
+            {slices.length} ប្រភេទ
+          </span>
+        )}
       </div>
 
       {busy && (
-        <div className="flex items-center justify-center p-8 sm:p-10">
-          <div className="h-40 w-40 animate-pulse rounded-full bg-ink-800" />
+        <div className="flex flex-col items-center justify-center p-8 sm:p-12">
+          <div className="h-44 w-44 animate-pulse rounded-full border-8 border-slate-200 dark:border-slate-800 bg-transparent" />
         </div>
       )}
 
       {!busy && productsError && (
-        <p className="p-8 sm:p-10 text-center text-sm text-rose-700 dark:text-rose-400">មិនអាចទាញយកទិន្នន័យប្រភេទបានទេ</p>
+        <p className="p-8 sm:p-10 text-center text-xs sm:text-sm text-rose-600 dark:text-rose-400 font-medium">
+          មិនអាចទាញយកទិន្នន័យប្រភេទបានទេ
+        </p>
       )}
 
       {!busy && !productsError && slices.length === 0 && (
-        <p className="p-8 sm:p-10 text-center text-sm text-slate-500 dark:text-slate-400">មិនទាន់មានទិន្នន័យលក់គ្រប់គ្រាន់សម្រាប់វិភាគទេ</p>
-      )}
-
-      {/* ប្រភេទតែមួយ = 100% - pie មិនចាំបាច់ទេ (ដូចលេខតែមួយមិនត្រូវការ chart) */}
-      {!busy && !productsError && slices.length === 1 && (
-        <div className="flex items-center gap-4 p-4 sm:p-6">
-          <span className="h-4 w-4 shrink-0 rounded-full" style={{ backgroundColor: slices[0].color }} />
-          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200">
-            ចំណូលទាំងអស់ ({formatCurrency(slices[0].value)}) មកពីប្រភេទ <strong>{slices[0].name}</strong> តែមួយ
+        <div className="p-8 sm:p-12 text-center">
+          <PieChart size={32} className="mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+            មិនទាន់មានទិន្នន័យលក់គ្រប់គ្រាន់សម្រាប់វិភាគទេ
           </p>
         </div>
       )}
 
-      {!busy && !productsError && slices.length > 1 && (
-        <div className="flex flex-col items-center gap-6 p-4 sm:p-6 sm:flex-row sm:items-center sm:justify-around">
-          <div className="relative w-48 sm:w-60 max-w-full shrink-0">
-            <svg
-              viewBox={`0 0 ${SIZE} ${SIZE}`}
-              className="h-auto w-full"
-              role="img"
-              aria-label={`ចំណូលតាមប្រភេទ សរុប ${formatCurrency(total)}`}
-              onMouseLeave={() => setHover(null)}
-            >
-              {slices.map((s, i) => {
-                const isHovered = hover === i;
-                const midAngle = (s.startAngle + s.endAngle) / 2;
-                const labelPos = polarToCartesian(midAngle, RADIUS * 0.64);
-                return (
-                  <g key={s.name}>
+      {!busy && !productsError && slices.length > 0 && (
+        <div className="p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          {/* Donut Chart Visual */}
+          <div className="lg:col-span-5 flex flex-col items-center justify-center">
+            <div className="relative w-52 sm:w-60 max-w-full">
+              <svg
+                viewBox={`0 0 ${SIZE} ${SIZE}`}
+                className="h-auto w-full overflow-visible select-none"
+                onMouseLeave={() => setHover(null)}
+              >
+                {slices.map((s, i) => {
+                  const isHovered = hover === i;
+                  return (
                     <path
-                      d={sliceArcPath(s.startAngle, s.endAngle)}
+                      key={s.name}
+                      d={donutSlicePath(
+                        s.startAngle,
+                        s.endAngle,
+                        isHovered ? OUTER_RADIUS + 4 : OUTER_RADIUS,
+                        isHovered ? INNER_RADIUS - 2 : INNER_RADIUS
+                      )}
                       fill={s.color}
                       stroke="#ffffff"
                       strokeWidth={2}
-                      opacity={hover != null && !isHovered ? 0.55 : 1}
-                      style={{ transition: 'opacity 0.15s, transform 0.15s', transformOrigin: `${CENTER}px ${CENTER}px`, transform: isHovered ? 'scale(1.03)' : 'scale(1)' }}
-                      tabIndex={0}
-                      role="button"
-                      aria-label={`${s.name}: ${formatCurrency(s.value)} (${s.pct.toFixed(1)}%)`}
+                      className="cursor-pointer transition-all duration-200"
+                      opacity={hover !== null && !isHovered ? 0.45 : 1}
+                      onClick={() => setHover(hover === i ? null : i)}
                       onMouseEnter={() => setHover(i)}
-                      onFocus={() => setHover(i)}
-                      onBlur={() => setHover((h) => (h === i ? null : h))}
-                    >
-                      <title>{`${s.name}: ${formatCurrency(s.value)} (${s.pct.toFixed(1)}%)`}</title>
-                    </path>
-                    {s.pct >= INLINE_LABEL_MIN_PCT && (
-                      <text
-                        x={labelPos.x}
-                        y={labelPos.y}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        fontSize={12}
-                        fontWeight={700}
-                        fill={readableTextOn(s.color)}
-                        pointerEvents="none"
-                      >
-                        {s.pct.toFixed(0)}%
-                      </text>
-                    )}
-                  </g>
-                );
-              })}
-            </svg>
+                      onTouchStart={() => setHover(i)}
+                    />
+                  );
+                })}
+              </svg>
 
-            {hover != null && (
-              <div className="pointer-events-none absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full rounded-lg border border-slate-200 dark:border-slate-700 bg-ink-900 dark:bg-slate-800 px-3 py-1.5 text-center text-xs shadow-lg shadow-black/10 z-10">
-                <p className="font-semibold text-slate-900 dark:text-white">{formatCurrency(slices[hover].value)}</p>
-                <p className="text-slate-500 dark:text-slate-400">{slices[hover].name} · {slices[hover].pct.toFixed(1)}%</p>
+              {/* Centered Donut Content */}
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  {activeSlice ? activeSlice.name : 'ចំណូលសរុប'}
+                </span>
+                <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white mt-0.5">
+                  {formatCurrency(activeSlice ? activeSlice.value : totalRevenue)}
+                </span>
+                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                  {activeSlice ? `${activeSlice.pct.toFixed(1)}%` : `${slices.length} ប្រភេទ`}
+                </span>
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Legend - ក៏ជា table-view ជំនួស សម្រាប់តម្លៃទាំងអស់ */}
-          <ul className="flex w-full flex-col gap-2 sm:w-56">
-            {slices.map((s, i) => (
-              <li
-                key={s.name}
-                onMouseEnter={() => setHover(i)}
-                onMouseLeave={() => setHover(null)}
-                className={`flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 transition ${hover === i ? 'bg-emerald-50 dark:bg-slate-800/60' : ''}`}
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
-                  <span className="truncate text-sm text-slate-700 dark:text-slate-200">{s.name}</span>
-                </span>
-                <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  {formatCurrency(s.value)} · {s.pct.toFixed(1)}%
-                </span>
-              </li>
-            ))}
-          </ul>
+          {/* Interactive Legend with Percentage Progress Bars */}
+          <div className="lg:col-span-7 space-y-3">
+            {slices.map((s, i) => {
+              const isHovered = hover === i;
+              return (
+                <div
+                  key={s.name}
+                  onClick={() => setHover(hover === i ? null : i)}
+                  onMouseEnter={() => setHover(i)}
+                  onMouseLeave={() => setHover(null)}
+                  className={`p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer ${
+                    isHovered
+                      ? 'border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-950/30 shadow-xs'
+                      : 'border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-100/70 dark:hover:bg-slate-800/60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="h-3 w-3 rounded-full shrink-0 shadow-2xs"
+                        style={{ backgroundColor: s.color }}
+                      />
+                      <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
+                        {s.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
+                        {formatCurrency(s.value)}
+                      </span>
+                      <span className="rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                        {s.pct.toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                    <div
+                      className="h-full rounded-full transition-all duration-300"
+                      style={{
+                        width: `${s.pct}%`,
+                        backgroundColor: s.color,
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
   );
 }
+

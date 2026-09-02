@@ -121,7 +121,7 @@ export function getErrorMessage(error) {
 
   // 500, 502, 503: Server Error / Provider Error / Unavailable
   if (status === 500 || status === 502 || status === 503) {
-    return 'Server កំពុងមានបញ្ហា ឬសេវា Bakong រវល់បណ្តោះអាសន្ន។ សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ។ (Server / Payment service temporarily unavailable)';
+    return 'Server កំពុងមានបញ្ហា';
   }
 
   // Use clean backend message if not a raw stack trace
