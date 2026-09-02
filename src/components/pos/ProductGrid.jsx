@@ -148,20 +148,26 @@ export default function ProductGrid({
 
   const cartQuantities = useMemo(() => {
     const map = new Map();
-    cartItems.forEach((item) => map.set(item.product.id, item.quantity));
+    (cartItems || []).forEach((item) => {
+      if (item?.product?.id) {
+        map.set(item.product.id, item.quantity);
+      }
+    });
     return map;
   }, [cartItems]);
 
+  const productList = Array.isArray(products) ? products.filter(Boolean) : [];
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return products;
-    return products.filter(
+    if (!q) return productList;
+    return productList.filter(
       (p) =>
         p.name?.toLowerCase().includes(q) ||
         p.sku?.toLowerCase().includes(q) ||
         p.barcode?.toLowerCase().includes(q)
     );
-  }, [products, search]);
+  }, [productList, search]);
 
   const triggerToast = (productName) => {
     setToastMessage(`បានបន្ថែម៖ ${productName}`);
@@ -173,7 +179,7 @@ export default function ProductGrid({
       const q = search.trim().toLowerCase();
       if (!q) return;
 
-      const exact = products.find(
+      const exact = productList.find(
         (p) => p.barcode?.toLowerCase() === q || p.sku?.toLowerCase() === q
       );
 
@@ -193,11 +199,11 @@ export default function ProductGrid({
   };
 
   const productJsonLd = useMemo(() => {
-    if (!products || products.length === 0) return null;
+    if (!productList || productList.length === 0) return null;
     return {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
-      itemListElement: products.slice(0, 20).map((product, index) => ({
+      itemListElement: productList.slice(0, 20).map((product, index) => ({
         '@type': 'ListItem',
         position: index + 1,
         item: {
@@ -216,7 +222,7 @@ export default function ProductGrid({
         },
       })),
     };
-  }, [products]);
+  }, [productList]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -289,7 +295,7 @@ export default function ProductGrid({
         </div>
 
         {/* Integrated Category Navigation (Directly below search) */}
-        {categories && categories.length > 0 && onSelectCategory && (
+        {Array.isArray(categories) && categories.length > 0 && onSelectCategory && (
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
             <button
               type="button"
@@ -305,13 +311,16 @@ export default function ProductGrid({
             </button>
 
             {categories.map((cat) => {
-              const Icon = getCategoryIcon(cat.name);
-              const active = category === cat.name;
+              const catName = typeof cat === 'string' ? cat : cat?.name;
+              const catId = typeof cat === 'string' ? cat : cat?.id || catName;
+              if (!catName) return null;
+              const Icon = getCategoryIcon(catName);
+              const active = category === catName;
               return (
                 <button
-                  key={cat.id}
+                  key={catId}
                   type="button"
-                  onClick={() => onSelectCategory(cat.name)}
+                  onClick={() => onSelectCategory(catName)}
                   className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95 cursor-pointer ${
                     active
                       ? 'bg-[#009F6B] text-white shadow-xs'
@@ -319,7 +328,7 @@ export default function ProductGrid({
                   }`}
                 >
                   <Icon size={14} />
-                  <span>{cat.name}</span>
+                  <span>{catName}</span>
                 </button>
               );
             })}
@@ -368,16 +377,16 @@ export default function ProductGrid({
           </div>
         )}
 
-        {!loading && !error && filtered.length > 0 && (
+        {!loading && !error && filtered && filtered.length > 0 && (
           <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3">
-            {filtered.map((product) => (
+            {filtered.filter(Boolean).map((product) => (
               <ProductCard
-                key={product.id}
+                key={product?.id || product?.sku || Math.random()}
                 product={product}
                 onAdd={onAdd}
                 onSetQuantity={onSetQuantity}
                 onRemove={onRemove}
-                cartQuantity={cartQuantities.get(product.id) ?? 0}
+                cartQuantity={cartQuantities.get(product?.id) ?? 0}
               />
             ))}
           </div>

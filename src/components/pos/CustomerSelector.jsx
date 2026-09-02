@@ -110,13 +110,15 @@ export default function CustomerSelector({ selectedCustomer, onSelect }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [walkInFailed, customers, selectedCustomer]);
 
+  const customerList = Array.isArray(customers) ? customers : [];
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return customers;
-    return customers.filter(
-      (c) => c.name?.toLowerCase().includes(q) || c.phone?.toLowerCase().includes(q)
+    if (!q) return customerList;
+    return customerList.filter(
+      (c) => c && (c.name?.toLowerCase().includes(q) || c.phone?.toLowerCase().includes(q))
     );
-  }, [customers, search]);
+  }, [customerList, search]);
 
   return (
     <div className="relative">

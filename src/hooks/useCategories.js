@@ -11,7 +11,15 @@ export function useCategories() {
     setLoading(true);
     setError('');
     try {
-      setCategories(await categoryApi.list());
+      const res = await categoryApi.list();
+      const list = Array.isArray(res)
+        ? res
+        : Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res?.content)
+        ? res.content
+        : [];
+      setCategories(list);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {

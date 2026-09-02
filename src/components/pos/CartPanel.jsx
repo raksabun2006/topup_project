@@ -114,6 +114,7 @@ export default function CartPanel({
   onCheckout,
   onHold,
   onCancel,
+  onClose,
 }) {
   const { isAuthenticated } = useAuth();
   const [showCustomDiscount, setShowCustomDiscount] = useState(false);
@@ -129,25 +130,25 @@ export default function CartPanel({
 
   return (
     <div className="flex flex-col rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden transition-all duration-200 lg:h-full lg:min-h-0">
-      {/* Top Header */}
-      <div className="flex shrink-0 items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3">
+      {/* Top Single Header */}
+      <div className="flex shrink-0 items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 sm:px-4 py-2.5 sm:py-3">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-2xs">
-            <ShoppingBag size={14} />
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#009F6B] text-white shadow-2xs">
+            <ShoppingBag size={16} />
           </div>
           <div className="flex items-center gap-1.5">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-              {isAuthenticated ? 'សរុបគិតលុយ (POS)' : 'រទេះទំនិញរបស់អ្នក'}
+            <h2 className="text-sm font-bold text-[#172033] dark:text-white">
+              {isAuthenticated ? 'រទេះទំនិញ (POS)' : 'រទេះទំនិញ'}
             </h2>
             {items.length > 0 && (
-              <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
+              <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[11px] font-bold text-[#009F6B] dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
                 {totalItemCount}
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           {isAuthenticated && (
             <HeldOrders heldOrders={heldOrders} onResume={onResumeHeld} onDiscard={onDiscardHeld} />
           )}
@@ -156,10 +157,20 @@ export default function CartPanel({
             <button
               onClick={handleClearCart}
               title="សម្អាតរទេះ"
-              className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition active:scale-95"
+              className="flex items-center gap-1 rounded-xl px-2 py-1 text-xs font-semibold text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition active:scale-95 cursor-pointer"
             >
               <Trash2 size={13} />
-              <span>សម្អាត</span>
+              <span className="hidden xs:inline">សម្អាត</span>
+            </button>
+          )}
+
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer"
+              title="បិទ"
+            >
+              <X size={18} />
             </button>
           )}
         </div>
@@ -172,17 +183,8 @@ export default function CartPanel({
         </div>
       )}
 
-      {/* Items Table Header */}
-      {items.length > 0 && (
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">
-          <span className="flex-1">ទំនិញ</span>
-          <span className="w-20 text-center">ចំនួន</span>
-          <span className="w-16 text-right">តម្លៃ</span>
-        </div>
-      )}
-
-      {/* Cart Items List or Welcoming Empty State (Dynamic Hug-Content Area) */}
-      <div className={`${items.length === 0 ? 'py-10 lg:flex-1 lg:flex lg:flex-col lg:justify-center' : 'flex-1 min-h-0 overflow-y-auto px-4 py-1 divide-y divide-slate-100 dark:divide-slate-800'}`}>
+      {/* Cart Items List (Clean receipt list without noisy table headers) */}
+      <div className={`${items.length === 0 ? 'py-10 lg:flex-1 lg:flex lg:flex-col lg:justify-center' : 'flex-1 min-h-0 overflow-y-auto px-3.5 sm:px-4 py-1 divide-y divide-slate-100 dark:divide-slate-800'}`}>
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-6 text-center animate-fade-in">
             <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
@@ -312,18 +314,20 @@ export default function CartPanel({
               )}
 
               <div className="flex items-center justify-between text-[#667085] dark:text-slate-400">
-                <span className="flex items-center gap-1">
-                  ពន្ធ (Tax)
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={taxPct}
-                    onChange={(e) => onTaxPctChange(e.target.value)}
-                    className="w-10 rounded border-b border-dashed border-slate-300 dark:border-slate-600 bg-transparent text-center text-xs font-semibold text-[#009F6B] dark:text-emerald-400 focus:border-[#009F6B] focus:outline-none"
-                  />
-                  %
+                <span className="flex items-center gap-1.5">
+                  <span>ពន្ធ (Tax)</span>
+                  <span className="inline-flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value={taxPct}
+                      onChange={(e) => onTaxPctChange(e.target.value)}
+                      className="w-7 bg-transparent text-center text-xs font-bold text-[#009F6B] dark:text-emerald-400 focus:outline-none"
+                    />
+                    %
+                  </span>
                 </span>
                 <span className="font-semibold text-[#172033] dark:text-slate-200">{formatCurrencyPrecise(taxAmount)}</span>
               </div>
@@ -337,29 +341,17 @@ export default function CartPanel({
               </div>
             </div>
 
-            {/* Quick Hold & Cancel Actions for Staff */}
-            {(onHold || onCancel) && items.length > 0 && (
-              <div className="grid grid-cols-2 gap-1.5 pt-0.5">
-                {onHold && (
-                  <button
-                    type="button"
-                    onClick={onHold}
-                    className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100/90 dark:hover:bg-slate-700 active:scale-95 transition cursor-pointer"
-                  >
-                    <PauseCircle size={13} className="text-amber-600 dark:text-amber-400" />
-                    <span>រង់ចាំ (Hold)</span>
-                  </button>
-                )}
-                {onCancel && (
-                  <button
-                    type="button"
-                    onClick={onCancel}
-                    className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 active:scale-95 transition cursor-pointer"
-                  >
-                    <XCircle size={13} />
-                    <span>បោះបង់</span>
-                  </button>
-                )}
+            {/* Quick Hold Action for Staff */}
+            {onHold && items.length > 0 && (
+              <div className="pt-0.5">
+                <button
+                  type="button"
+                  onClick={onHold}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100/90 dark:hover:bg-slate-700 active:scale-95 transition cursor-pointer"
+                >
+                  <PauseCircle size={14} className="text-amber-600 dark:text-amber-400" />
+                  <span>ផ្អាកការលក់នេះសិន (Hold Order)</span>
+                </button>
               </div>
             )}
           </div>

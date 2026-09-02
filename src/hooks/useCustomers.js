@@ -12,7 +12,15 @@ export function useCustomers() {
     setLoading(true);
     setError('');
     try {
-      setCustomers(await customerApi.list());
+      const res = await customerApi.list();
+      const list = Array.isArray(res)
+        ? res
+        : Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res?.content)
+        ? res.content
+        : [];
+      setCustomers(list);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {

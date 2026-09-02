@@ -3,13 +3,15 @@ import { Minus, Plus, Trash2, Package, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 
 export default function CartItem({ item, onSetQuantity, onRemove }) {
-  const { product, quantity } = item;
-  const lineTotal = product.price * quantity - (item.discount || 0);
+  if (!item || !item.product) return null;
+  const { product, quantity = 1 } = item;
+  const unitPrice = Number(product.price) || 0;
+  const lineTotal = unitPrice * quantity - (item.discount || 0);
   const maxStock = product.stockQuantity ?? Infinity;
   const atMaxStock = quantity >= maxStock;
   const [imageBroken, setImageBroken] = useState(false);
 
-  useEffect(() => setImageBroken(false), [product.imageUrl]);
+  useEffect(() => setImageBroken(false), [product?.imageUrl]);
 
   return (
     <div className="group relative flex items-center gap-2.5 py-2.5 sm:py-3 transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/60 -mx-1.5 px-2 rounded-xl border-b border-slate-100 dark:border-slate-800/80 last:border-0">
@@ -58,11 +60,11 @@ export default function CartItem({ item, onSetQuantity, onRemove }) {
               onSetQuantity(product.id, quantity - 1);
             }
           }}
-          className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-md bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-2xs transition hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-600 dark:hover:text-rose-400 active:scale-90 cursor-pointer"
+          className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-md bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-2xs transition hover:bg-slate-100 dark:hover:bg-slate-600 active:scale-90 cursor-pointer"
           title={quantity === 1 ? 'លុបទំនិញ' : 'បន្ថយចំនួន'}
           aria-label="Decrease quantity"
         >
-          {quantity === 1 ? <Trash2 size={12} className="text-rose-500" /> : <Minus size={12} />}
+          <Minus size={12} />
         </button>
 
         <span className="w-5 sm:w-6 text-center text-xs font-bold text-[#172033] dark:text-white select-none">

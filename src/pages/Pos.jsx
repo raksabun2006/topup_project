@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ShoppingCart, ChevronUp, ChevronDown } from 'lucide-react';
+import { ShoppingCart, ChevronUp, ChevronDown, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useCategories } from '../hooks/useCategories';
@@ -16,10 +16,16 @@ const HELD_ORDERS_KEY = 'pos_held_orders';
 
 function loadHeldOrders() {
   try {
-    return JSON.parse(sessionStorage.getItem(HELD_ORDERS_KEY)) ?? [];
+    const raw = sessionStorage.getItem(HELD_ORDERS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((o) => o && Array.isArray(o.items));
+    }
   } catch {
     return [];
   }
+  return [];
 }
 
 export default function Pos() {
@@ -348,22 +354,13 @@ export default function Pos() {
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs lg:hidden animate-fade-in">
           <div className="fixed inset-0" onClick={() => setMobileCartOpen(false)} />
           <div className="relative z-10 max-h-[90vh] w-full overflow-hidden rounded-t-3xl border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-slide-up pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-            {/* Sheet Handle & Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50/70 dark:bg-slate-800/60">
-              <div className="flex items-center gap-2">
-                <ShoppingCart size={18} className="text-emerald-600 dark:text-emerald-400" />
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">រទេះទំនិញរបស់អ្នក ({itemCount} ចំនួន)</h3>
-              </div>
-              <button
-                onClick={() => setMobileCartOpen(false)}
-                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200"
-              >
-                <X size={18} />
-              </button>
+            {/* Grab Handle for touch drawer UX */}
+            <div className="flex justify-center pt-2 pb-0.5" onClick={() => setMobileCartOpen(false)}>
+              <div className="h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-700" />
             </div>
 
-            {/* Cart Panel Content */}
-            <div className="flex-1 overflow-y-auto">
+            {/* Unified Cart Panel Content */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
               <CartPanel
                 items={items}
                 onSetQuantity={setQuantity}
@@ -387,7 +384,7 @@ export default function Pos() {
                   setShowCheckout(true);
                 }}
                 onHold={isAuthenticated ? () => { handleHoldOrder(); setMobileCartOpen(false); } : undefined}
-                onCancel={isAuthenticated ? () => { handleCancelOrder(); setMobileCartOpen(false); } : undefined}
+                onClose={() => setMobileCartOpen(false)}
               />
             </div>
           </div>

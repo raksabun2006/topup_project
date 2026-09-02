@@ -17,12 +17,13 @@ export default function ProductCard({
   onRemove,
   cartQuantity = 0,
 }) {
+  if (!product) return null;
   const available = (product.stockQuantity ?? 0) - cartQuantity;
   const outOfStock = (product.stockQuantity ?? 0) <= 0;
   const atMaxStock = available <= 0 && cartQuantity > 0;
   const [imageBroken, setImageBroken] = useState(false);
 
-  useEffect(() => setImageBroken(false), [product.imageUrl]);
+  useEffect(() => setImageBroken(false), [product?.imageUrl]);
 
   const handleCardClick = () => {
     if (outOfStock) return;

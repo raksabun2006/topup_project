@@ -9,7 +9,11 @@ function loadInitialCart() {
     const saved = localStorage.getItem(CART_STORAGE_KEY) || localStorage.getItem('cart');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) {
+        return parsed.filter(
+          (i) => i && i.product && typeof i.product === 'object' && typeof i.quantity === 'number'
+        );
+      }
     }
   } catch (e) {
     console.warn('Failed to load saved cart:', e);
@@ -34,24 +38,27 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const addItem = useCallback((product, quantity = 1) => {
+    if (!product || typeof product.id === 'undefined') return;
     setItems((prev) => {
-      const existing = prev.find((i) => i.product.id === product.id);
+      const safePrev = Array.isArray(prev) ? prev.filter((i) => i?.product?.id) : [];
+      const existing = safePrev.find((i) => i.product.id === product.id);
       const maxQty = product.stockQuantity ?? Infinity;
 
       if (existing) {
         const nextQty = Math.min(existing.quantity + quantity, maxQty);
-        return prev.map((i) =>
+        return safePrev.map((i) =>
           i.product.id === product.id ? { ...i, quantity: nextQty } : i
         );
       }
 
-      return [...prev, { product, quantity: Math.min(quantity, maxQty), discount: 0 }];
+      return [...safePrev, { product, quantity: Math.min(quantity, maxQty), discount: 0 }];
     });
   }, []);
 
   const setQuantity = useCallback((productId, quantity) => {
     setItems((prev) =>
-      prev
+      (Array.isArray(prev) ? prev : [])
+        .filter((i) => i?.product?.id)
         .map((i) => {
           if (i.product.id !== productId) return i;
           const maxQty = i.product.stockQuantity ?? Infinity;
@@ -63,7 +70,7 @@ export function CartProvider({ children }) {
   }, []);
 
   const removeItem = useCallback((productId) => {
-    setItems((prev) => prev.filter((i) => i.product.id !== productId));
+    setItems((prev) => (Array.isArray(prev) ? prev : []).filter((i) => i?.product?.id !== productId));
   }, []);
 
   const clear = useCallback(() => {
@@ -76,19 +83,25 @@ export function CartProvider({ children }) {
     }
   }, []);
 
+  const safeItems = Array.isArray(items) ? items.filter((i) => i?.product) : [];
+
   const subtotal = useMemo(
-    () => items.reduce((sum, i) => sum + i.product.price * i.quantity - (i.discount || 0), 0),
-    [items]
+    () =>
+      safeItems.reduce(
+        (sum, i) => sum + (Number(i.product?.price) || 0) * (i.quantity || 0) - (i.discount || 0),
+        0
+      ),
+    [safeItems]
   );
 
   const value = {
-    items,
+    items: safeItems,
     addItem,
     setQuantity,
     removeItem,
     clear,
     subtotal,
-    itemCount: items.reduce((sum, i) => sum + i.quantity, 0),
+    itemCount: safeItems.reduce((sum, i) => sum + (i.quantity || 0), 0),
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
