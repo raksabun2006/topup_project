@@ -198,44 +198,26 @@ export default function Products() {
         robots="noindex, nofollow"
       />
 
-      {/* Header Banner & Quick Actions */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
-              <Package size={22} />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                គ្រប់គ្រងផលិតផល
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Dashboard / Products — គ្រប់គ្រងបញ្ជីទំនិញ តម្លៃ ស្តុក និងប្រភេទ
-              </p>
-            </div>
-          </div>
-        </div>
+      {/* Quick Actions Bar */}
+      <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-2.5">
+        <button
+          onClick={() => setCategoryModalOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 active:scale-95"
+        >
+          <Tags size={16} className="text-emerald-600 dark:text-emerald-400" />
+          <span>គ្រប់គ្រងប្រភេទ</span>
+          <span className="ml-1 rounded-full bg-slate-100 dark:bg-slate-700 px-1.5 py-0.2 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+            {categories.length}
+          </span>
+        </button>
 
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-          <button
-            onClick={() => setCategoryModalOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 active:scale-95"
-          >
-            <Tags size={16} className="text-emerald-600 dark:text-emerald-400" />
-            <span>គ្រប់គ្រងប្រភេទ</span>
-            <span className="ml-1 rounded-full bg-slate-100 dark:bg-slate-700 px-1.5 py-0.2 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
-              {categories.length}
-            </span>
-          </button>
-
-          <button
-            onClick={openCreate}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:from-emerald-500 hover:to-emerald-600 active:scale-95"
-          >
-            <Plus size={17} />
-            <span>ផលិតផលថ្មី</span>
-          </button>
-        </div>
+        <button
+          onClick={openCreate}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-emerald-600 active:scale-95"
+        >
+          <Plus size={17} />
+          <span>ផលិតផលថ្មី</span>
+        </button>
       </div>
 
       {/* KPI Overview Metrics Cards */}

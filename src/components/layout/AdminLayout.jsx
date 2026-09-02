@@ -176,16 +176,7 @@ export default function AdminLayout() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-3">
-            {/* Quick POS action button on header for fast checkout */}
-            <Link
-              to="/pos"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm shadow-emerald-600/25 transition hover:scale-102 hover:from-emerald-500 hover:to-teal-500 active:scale-98"
-            >
-              <ShoppingCart size={15} />
-              <span>POS</span>
-            </Link>
-
+          <div className="flex items-center gap-2 sm:gap-2.5">
             <ThemeToggle variant="admin" />
 
             {/* Interactive Notification Bell with Dropdown */}
@@ -194,11 +185,11 @@ export default function AdminLayout() {
             {/* User Profile Pill */}
             <Link
               to="/profile"
-              className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-slate-800/60 p-1 sm:pr-3 transition hover:border-emerald-500/50"
+              className="flex items-center gap-2 h-9 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/90 pl-1 pr-3 shadow-2xs transition hover:border-emerald-500/50 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               <UserAvatar
                 user={user}
-                className="h-7 w-7 sm:h-8 sm:w-8 text-xs shadow-2xs"
+                className="h-7 w-7 text-xs shadow-2xs"
                 fallbackClass="bg-gradient-to-br from-emerald-600 to-teal-600 text-white font-bold"
               />
               <div className="hidden sm:block text-left">

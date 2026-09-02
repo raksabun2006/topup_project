@@ -110,25 +110,11 @@ export default function Customers() {
         robots="noindex, nofollow"
       />
 
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
-            <Users size={22} />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-              គ្រប់គ្រងអតិថិជន (Customers)
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Dashboard / Customers — គ្រប់គ្រងបញ្ជីអតិថិជន ព័ត៌មានទំនាក់ទំនង និងពិន្ទុសន្សំ
-            </p>
-          </div>
-        </div>
-
+      {/* Action Bar */}
+      <div className="flex items-center justify-end">
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:from-emerald-500 hover:to-emerald-600 active:scale-95"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-emerald-600 active:scale-95"
         >
           <Plus size={17} />
           <span>អតិថិជនថ្មី</span>

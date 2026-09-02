@@ -127,22 +127,7 @@ export default function Sales() {
         robots="noindex, nofollow"
       />
 
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
-            <Receipt size={22} />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-              ប្រវត្តិការលក់ (Sales History)
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Dashboard / Sales — តាមដានវិក្កយបត្រ ការទូទាត់ និងប្រតិបត្តិការលក់ទាំងអស់
-            </p>
-          </div>
-        </div>
-      </div>
+
 
       {/* KPI Overview Metric Cards */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">

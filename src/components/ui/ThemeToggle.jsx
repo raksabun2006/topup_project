@@ -10,15 +10,15 @@ export default function ThemeToggle({ className = '', variant = 'navbar' }) {
   const { isDark, toggleTheme } = useTheme();
 
   const baseStyles =
-    'relative inline-flex items-center justify-center rounded-full transition-all duration-200 outline-none select-none active:scale-95';
+    'relative inline-flex items-center justify-center rounded-full transition-all duration-200 outline-none select-none active:scale-95 cursor-pointer';
 
   const variants = {
     // In emerald navbar (white-tinted buttons)
     navbar:
-      'h-10 w-10 text-white/90 hover:bg-white/15 hover:text-white focus-visible:ring-2 focus-visible:ring-white/50',
+      'h-10 w-10 text-white/90 hover:bg-white/15 hover:text-white focus-visible:ring-2 focus-visible:ring-white/50 active:bg-white/20',
     // In Admin dashboard header / neutral headers
     admin:
-      'h-9 w-9 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 shadow-2xs focus-visible:ring-2 focus-visible:ring-emerald-500',
+      'h-9 w-9 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white active:bg-slate-200 dark:active:bg-slate-700 focus-visible:ring-2 focus-visible:ring-emerald-500',
     // In login/register or standalone pages
     floating:
       'h-10 w-10 text-slate-600 dark:text-slate-300 bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md backdrop-blur-xs focus-visible:ring-2 focus-visible:ring-emerald-500',

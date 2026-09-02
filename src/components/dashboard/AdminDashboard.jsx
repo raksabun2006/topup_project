@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Receipt, DollarSign, Clock, AlertTriangle,
   AlertCircle, RefreshCw, Boxes, UserCheck, CheckCircle2, Search,
-  ArrowRight, X, ShoppingCart, Plus, LayoutDashboard
+  ArrowRight, X, ShoppingCart, Plus
 } from 'lucide-react';
 import { useSales } from '../../hooks/useSales';
 import { useLowStockInventory } from '../../hooks/useInventory';
@@ -118,51 +118,33 @@ export default function AdminDashboard() {
         robots="noindex, nofollow"
       />
 
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
-            <LayoutDashboard size={22} />
-          </div>
-          <div>
-            <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
-              ផ្ទាំងគ្រប់គ្រង
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Dashboard — តាមដានចំណូល ការលក់ និងស្តុកទំនិញ
-            </p>
-          </div>
+      {/* Quick Actions Bar */}
+      <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-2.5">
+        <Link
+          to="/pos"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-emerald-600 active:scale-95"
+        >
+          <ShoppingCart size={17} />
+          <span>បើក POS</span>
+        </Link>
 
+        <Link
+          to="/dashboard/products"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 active:scale-95"
+        >
+          <Plus size={16} className="text-emerald-600 dark:text-emerald-400" />
+          <span>ផលិតផលថ្មី</span>
+        </Link>
+
+        <button
+          onClick={reload}
+          disabled={loading}
+          className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition active:scale-95 disabled:opacity-50"
+          title="ទាញយកឡើងវិញ"
+        >
+          <RefreshCw size={16} className={loading ? 'animate-spin text-emerald-600' : ''} />
+        </button>
         </div>
-
-        {/* Quick Actions */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-          <Link
-            to="/pos"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:from-emerald-500 hover:to-emerald-600 active:scale-95"
-          >
-            <ShoppingCart size={17} />
-            <span>បើក POS</span>
-          </Link>
-
-          <Link
-            to="/dashboard/products"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 active:scale-95"
-          >
-            <Plus size={16} className="text-emerald-600 dark:text-emerald-400" />
-            <span>ផលិតផលថ្មី</span>
-          </Link>
-
-          <button
-            onClick={reload}
-            disabled={loading}
-            className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition active:scale-95 disabled:opacity-50"
-            title="ទាញយកឡើងវិញ"
-          >
-            <RefreshCw size={16} className={loading ? 'animate-spin text-emerald-600' : ''} />
-          </button>
-        </div>
-      </div>
 
       {error && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4 text-xs sm:text-sm text-rose-700 dark:text-rose-400 animate-fade-in">

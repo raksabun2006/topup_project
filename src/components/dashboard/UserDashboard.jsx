@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Receipt, CheckCircle2, DollarSign, ShoppingCart, AlertCircle, RefreshCw,
-  TrendingUp, Calendar, ArrowRight, UserCheck
+  TrendingUp, Calendar, ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSales } from '../../hooks/useSales';
@@ -52,42 +52,24 @@ export default function UserDashboard() {
         robots="noindex, nofollow"
       />
 
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
-            <UserCheck size={22} />
-          </div>
-          <div>
-            <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
-              ផ្ទាំងគិតលុយ
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Staff / {user?.displayName || user?.username} — តាមដានការលក់ផ្ទាល់ខ្លួន
-            </p>
-          </div>
+      {/* Quick Actions Bar */}
+      <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-2.5">
+        <Link
+          to="/pos"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-emerald-600 active:scale-95"
+        >
+          <ShoppingCart size={17} />
+          <span>បើក POS</span>
+        </Link>
 
-        </div>
-
-        {/* Quick Actions */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-          <Link
-            to="/pos"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:from-emerald-500 hover:to-emerald-600 active:scale-95"
-          >
-            <ShoppingCart size={17} />
-            <span>បើក POS</span>
-          </Link>
-
-          <button
-            onClick={reload}
-            disabled={loading}
-            className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition active:scale-95 disabled:opacity-50"
-            title="ទាញយកឡើងវិញ"
-          >
-            <RefreshCw size={16} className={loading ? 'animate-spin text-emerald-600' : ''} />
-          </button>
-        </div>
+        <button
+          onClick={reload}
+          disabled={loading}
+          className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition active:scale-95 disabled:opacity-50"
+          title="ទាញយកឡើងវិញ"
+        >
+          <RefreshCw size={16} className={loading ? 'animate-spin text-emerald-600' : ''} />
+        </button>
       </div>
 
       {/* KPI Overview Metric Cards */}

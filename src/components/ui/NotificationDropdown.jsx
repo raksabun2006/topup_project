@@ -112,11 +112,15 @@ export default function NotificationDropdown({ variant = 'admin' }) {
         onClick={() => setOpen((prev) => !prev)}
         aria-label="ការជូនដំណឹង"
         aria-expanded={open}
-        className={`relative transition cursor-pointer flex items-center justify-center ${
+        className={`relative transition-all duration-200 outline-none select-none active:scale-95 cursor-pointer flex items-center justify-center rounded-full ${
           isNavbarVariant
-            ? 'h-10 w-10 rounded-full text-white/90 hover:bg-white/10 hover:text-white'
-            : 'rounded-xl border border-slate-200 dark:border-slate-700 p-2 text-slate-600 dark:text-slate-400 hover:border-emerald-500/50 hover:bg-emerald-50 dark:hover:bg-slate-800'
-        } ${open ? 'ring-2 ring-emerald-500/40 bg-emerald-50/80 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400' : ''}`}
+            ? `h-10 w-10 text-white/90 hover:bg-white/15 hover:text-white ${
+                open ? 'bg-white/20 text-white' : ''
+              }`
+            : `h-9 w-9 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white ${
+                open ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white' : ''
+              }`
+        }`}
         title="ការជូនដំណឹង (Notifications)"
       >
         <Bell
