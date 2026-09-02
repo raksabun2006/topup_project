@@ -224,177 +224,183 @@ export default function CartPanel({
         )}
       </div>
 
-      {/* Cart Summary & Direct Dynamic Action Area */}
-      {items.length > 0 && (
-        <div className="shrink-0 border-t border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-3 sm:p-3.5 space-y-2.5 animate-fade-in">
-          {isAuthenticated ? (
-            /* Staff/Admin Pricing Controls & Quick Discounts */
-            <div className="space-y-2">
-              {/* Quick Discount Presets */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="flex items-center gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                    <Percent size={11} className="text-emerald-600 dark:text-emerald-400" />
-                    បញ្ចុះតម្លៃ
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setShowCustomDiscount(!showCustomDiscount)}
-                    className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
-                  >
-                    {showCustomDiscount ? 'ជម្រើសលឿន' : 'ភាគរយផ្ទាល់'}
-                  </button>
-                </div>
-
-                {showCustomDiscount ? (
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        placeholder="0"
-                        value={discountPct}
-                        onChange={(e) => onDiscountPctChange(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1 text-right text-xs font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                      />
-                      <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
-                        %
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => onDiscountPctChange('0')}
-                      className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-xs text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                    >
-                      កំណត់ឡើងវិញ
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-5 gap-1">
-                    {DISCOUNT_PRESETS.map((preset) => {
-                      const active = Number(discountPct) === preset;
-                      return (
-                        <button
-                          key={preset}
-                          type="button"
-                          onClick={() => onDiscountPctChange(String(preset))}
-                          className={`rounded-md py-0.5 text-xs font-bold transition active:scale-95 ${
-                            active
-                              ? 'bg-emerald-600 text-white shadow-2xs'
-                              : 'border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800'
-                          }`}
-                        >
-                          {preset}%
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+      {/* Cart Summary & Direct Sticky Action Area */}
+      <div className="shrink-0 border-t border-slate-200/90 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900 p-3 sm:p-3.5 space-y-2.5">
+        {isAuthenticated ? (
+          /* Staff/Admin Pricing Controls & Quick Discounts */
+          <div className="space-y-2">
+            {/* Quick Discount Presets */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="flex items-center gap-1 text-[11px] font-bold text-[#172033] dark:text-slate-200">
+                  <Percent size={12} className="text-[#009F6B] dark:text-emerald-400" />
+                  <span>បញ្ចុះតម្លៃ</span>
+                  <kbd className="hidden sm:inline-block rounded bg-slate-200/70 dark:bg-slate-800 px-1 text-[9px] font-bold text-slate-500">
+                    F8
+                  </kbd>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowCustomDiscount(!showCustomDiscount)}
+                  className="text-[10px] font-bold text-[#009F6B] dark:text-emerald-400 hover:underline cursor-pointer"
+                >
+                  {showCustomDiscount ? 'ជម្រើសលឿន' : 'ភាគរយផ្ទាល់ %'}
+                </button>
               </div>
 
-              {/* Calculations Breakdown */}
-              <div className="space-y-1 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-900 p-2.5 text-xs">
-                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                  <span>សរុបរង</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(subtotal)}</span>
-                </div>
-
-                {discountAmount > 0 && (
-                  <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 font-medium">
-                    <span>បញ្ចុះតម្លៃ ({discountPct}%)</span>
-                    <span>-{formatCurrencyPrecise(discountAmount)}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                  <span className="flex items-center gap-1">
-                    ពន្ធ
+              {showCustomDiscount ? (
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
                     <input
+                      id="pos-discount-input"
                       type="number"
                       min="0"
                       max="100"
                       step="0.1"
-                      value={taxPct}
-                      onChange={(e) => onTaxPctChange(e.target.value)}
-                      className="w-9 rounded border-b border-dashed border-slate-300 dark:border-slate-600 bg-transparent text-center text-xs font-semibold text-emerald-700 dark:text-emerald-400 focus:border-emerald-500 focus:outline-none"
+                      placeholder="0"
+                      value={discountPct}
+                      onChange={(e) => onDiscountPctChange(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-right text-xs sm:text-sm font-bold text-[#172033] dark:text-white focus:border-[#009F6B] focus:outline-none focus:ring-1 focus:ring-[#009F6B]"
                     />
-                    %
-                  </span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrencyPrecise(taxAmount)}</span>
-                </div>
-
-                <div className="flex items-center justify-between border-t border-dashed border-slate-200 dark:border-slate-800 pt-1.5 text-sm font-bold text-slate-900 dark:text-white">
-                  <span>សរុបត្រូវបង់</span>
-                  <span className="text-base font-black text-emerald-600 dark:text-emerald-400">{formatCurrency(total)}</span>
-                </div>
-              </div>
-
-              {/* Main Action Buttons for Staff */}
-              {onCheckout && (
-                <div className="space-y-1.5 pt-0.5">
+                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                      %
+                    </span>
+                  </div>
                   <button
                     type="button"
-                    onClick={onCheckout}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 px-4 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/25 transition hover:bg-emerald-500 active:scale-[0.98]"
+                    onClick={() => onDiscountPctChange('0')}
+                    className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs text-[#667085] dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                   >
-                    <span>បង់ប្រាក់ ({formatCurrency(total)})</span>
-                    <ArrowRight size={15} />
+                    កំណត់ឡើងវិញ
                   </button>
-
-                  {(onHold || onCancel) && (
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {onHold && (
-                        <button
-                          type="button"
-                          onClick={onHold}
-                          className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800 active:scale-95 transition"
-                        >
-                          <PauseCircle size={13} className="text-amber-600 dark:text-amber-400" />
-                          <span>រង់ចាំ</span>
-                        </button>
-                      )}
-                      {onCancel && (
-                        <button
-                          type="button"
-                          onClick={onCancel}
-                          className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 active:scale-95 transition"
-                        >
-                          <XCircle size={13} />
-                          <span>បោះបង់</span>
-                        </button>
-                      )}
-                    </div>
-                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-5 gap-1.5">
+                  {DISCOUNT_PRESETS.map((preset) => {
+                    const active = Number(discountPct) === preset;
+                    return (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => onDiscountPctChange(String(preset))}
+                        className={`rounded-lg py-1 text-xs font-bold transition active:scale-95 cursor-pointer ${
+                          active
+                            ? 'bg-[#009F6B] text-white shadow-2xs'
+                            : 'border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-[#172033] dark:text-slate-300 hover:bg-slate-100/90 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        {preset}%
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
-          ) : (
-            /* Customer / Guest Checkout Summary & Direct Button */
-            <div className="space-y-2">
-              <div className="flex items-center justify-between rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-900 px-3.5 py-2.5 shadow-2xs">
-                <div>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">សរុបត្រូវបង់</span>
-                  <p className="text-[10px] text-slate-400">រួមបញ្ចូលទាំងស្រុង ({totalItemCount} មុខ)</p>
-                </div>
-                <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">{formatCurrency(total)}</span>
+
+            {/* Calculations Breakdown (Receipt Summary) */}
+            <div className="space-y-1.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-800/80 p-3 text-xs">
+              <div className="flex items-center justify-between text-[#667085] dark:text-slate-400">
+                <span>សរុបរង</span>
+                <span className="font-semibold text-[#172033] dark:text-slate-200">{formatCurrency(subtotal)}</span>
               </div>
 
-              {onCheckout && (
-                <button
-                  type="button"
-                  onClick={onCheckout}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/30 transition hover:bg-emerald-500 active:scale-[0.98]"
-                >
-                  <span>បង់ប្រាក់ ({formatCurrency(total)})</span>
-                  <ArrowRight size={15} />
-                </button>
+              {discountAmount > 0 && (
+                <div className="flex items-center justify-between text-[#009F6B] dark:text-emerald-400 font-medium">
+                  <span>បញ្ចុះតម្លៃ ({discountPct}%)</span>
+                  <span>-{formatCurrencyPrecise(discountAmount)}</span>
+                </div>
               )}
+
+              <div className="flex items-center justify-between text-[#667085] dark:text-slate-400">
+                <span className="flex items-center gap-1">
+                  ពន្ធ (Tax)
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={taxPct}
+                    onChange={(e) => onTaxPctChange(e.target.value)}
+                    className="w-10 rounded border-b border-dashed border-slate-300 dark:border-slate-600 bg-transparent text-center text-xs font-semibold text-[#009F6B] dark:text-emerald-400 focus:border-[#009F6B] focus:outline-none"
+                  />
+                  %
+                </span>
+                <span className="font-semibold text-[#172033] dark:text-slate-200">{formatCurrencyPrecise(taxAmount)}</span>
+              </div>
+
+              {/* Grand Total Row */}
+              <div className="flex items-baseline justify-between border-t border-dashed border-slate-200 dark:border-slate-700 pt-2 text-sm font-bold text-[#172033] dark:text-white">
+                <span className="text-sm font-bold">សរុបត្រូវបង់</span>
+                <span className="text-xl sm:text-2xl font-black text-[#009F6B] dark:text-emerald-400 tracking-tight">
+                  {formatCurrency(total)}
+                </span>
+              </div>
             </div>
-          )}
-        </div>
-      )}
+
+            {/* Quick Hold & Cancel Actions for Staff */}
+            {(onHold || onCancel) && items.length > 0 && (
+              <div className="grid grid-cols-2 gap-1.5 pt-0.5">
+                {onHold && (
+                  <button
+                    type="button"
+                    onClick={onHold}
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100/90 dark:hover:bg-slate-700 active:scale-95 transition cursor-pointer"
+                  >
+                    <PauseCircle size={13} className="text-amber-600 dark:text-amber-400" />
+                    <span>រង់ចាំ (Hold)</span>
+                  </button>
+                )}
+                {onCancel && (
+                  <button
+                    type="button"
+                    onClick={onCancel}
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 active:scale-95 transition cursor-pointer"
+                  >
+                    <XCircle size={13} />
+                    <span>បោះបង់</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Customer / Guest Checkout Summary */
+          <div className="space-y-2">
+            <div className="flex items-center justify-between rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-800 p-3 shadow-2xs">
+              <div>
+                <span className="text-xs font-bold text-[#172033] dark:text-slate-200">សរុបត្រូវបង់</span>
+                <p className="text-[10px] text-[#667085] dark:text-slate-400">({totalItemCount} មុខទំនិញ)</p>
+              </div>
+              <span className="text-xl sm:text-2xl font-black text-[#009F6B] dark:text-emerald-400">{formatCurrency(total)}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Large Prominent Sticky Checkout Button (52-56px height) */}
+        {onCheckout && (
+          <div className="pt-1">
+            <button
+              id="pos-checkout-button"
+              type="button"
+              onClick={onCheckout}
+              disabled={items.length === 0}
+              className="group flex h-13 sm:h-14 w-full items-center justify-between rounded-2xl bg-[#009F6B] px-5 text-sm sm:text-base font-extrabold text-white shadow-lg shadow-[#009F6B]/25 hover:bg-[#00845A] hover:shadow-xl hover:shadow-[#009F6B]/30 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 disabled:shadow-none cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <span>បង់ប្រាក់</span>
+                <kbd className="hidden sm:inline-block rounded bg-white/20 px-1.5 py-0.5 text-[10px] font-bold text-white/90">
+                  F9
+                </kbd>
+              </div>
+
+              <div className="flex items-center gap-2 text-base sm:text-lg font-black">
+                <span>{formatCurrency(total)}</span>
+                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

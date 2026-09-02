@@ -121,23 +121,27 @@ export default function CustomerSelector({ selectedCustomer, onSelect }) {
   return (
     <div className="relative">
       <button
+        id="pos-customer-button"
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs hover:border-emerald-500/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/80 transition active:scale-[0.99]"
+        className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-[#172033] dark:text-slate-200 shadow-2xs hover:border-[#009F6B] hover:bg-slate-50/50 dark:hover:bg-slate-800/80 transition active:scale-[0.99] cursor-pointer"
       >
         <span className="flex min-w-0 items-center gap-2">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-[#009F6B] dark:text-emerald-400">
             <User size={13} />
           </div>
           <span className="truncate">
             {loading ? 'កំពុងទាញយក...' : selectedCustomer?.name || 'ជ្រើសរើសអតិថិជន'}
           </span>
         </span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {selectedCustomer?.phone && (
-            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-normal hidden sm:inline">
+            <span className="text-[10px] text-[#667085] dark:text-slate-400 font-normal hidden sm:inline">
               {selectedCustomer.phone}
             </span>
           )}
+          <kbd className="hidden sm:inline-block rounded bg-slate-100 dark:bg-slate-800 px-1 py-0.2 text-[9px] font-bold text-slate-500">
+            F4
+          </kbd>
           <ChevronDown size={14} className="shrink-0 text-slate-400" />
         </div>
       </button>

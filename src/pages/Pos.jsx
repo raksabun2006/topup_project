@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ShoppingCart, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { ShoppingCart, ChevronUp, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useCategories } from '../hooks/useCategories';
-import { getCategoryIcon, AllCategoriesIcon } from '../utils/categoryIcons';
 import ProductGrid from '../components/pos/ProductGrid';
 import CartPanel from '../components/pos/CartPanel';
 import CheckoutModal from '../components/pos/CheckoutModal';
@@ -38,21 +37,79 @@ export default function Pos() {
   const [completedSale, setCompletedSale] = useState(null);
   const [stockReloadSignal, setStockReloadSignal] = useState(0);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     sessionStorage.setItem(HELD_ORDERS_KEY, JSON.stringify(heldOrders));
   }, [heldOrders]);
+
+  // Global Keyboard Shortcuts (F2 / Ctrl+K, F4, F8, F9, ESC)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // F2 or Ctrl+K: Focus search input
+      if (e.key === 'F2' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k')) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+        return;
+      }
+
+      // F4: Focus/open Customer selector
+      if (e.key === 'F4') {
+        e.preventDefault();
+        document.getElementById('pos-customer-button')?.click();
+        return;
+      }
+
+      // F8: Focus discount input
+      if (e.key === 'F8') {
+        e.preventDefault();
+        const discountInput = document.getElementById('pos-discount-input');
+        if (discountInput) {
+          discountInput.focus();
+          discountInput.select();
+        }
+        return;
+      }
+
+      // F9: Open Checkout modal
+      if (e.key === 'F9') {
+        e.preventDefault();
+        if (items.length > 0 && !showCheckout && !completedSale) {
+          setShowCheckout(true);
+        }
+        return;
+      }
+
+      // Escape: Close modals
+      if (e.key === 'Escape') {
+        if (showCheckout) {
+          e.preventDefault();
+          setShowCheckout(false);
+        } else if (completedSale) {
+          e.preventDefault();
+          setCompletedSale(null);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [items.length, showCheckout, completedSale]);
 
   // For unauthenticated customers, discount and tax are always 0.
   const activeDiscountPct = isAuthenticated ? discountPct : '0';
   const activeTaxPct = isAuthenticated ? taxPct : '0';
 
   const discountAmount = useMemo(
-    () => (isAuthenticated ? subtotal * (Number(activeDiscountPct) || 0) / 100 : 0),
+    () => (isAuthenticated ? (subtotal * (Number(activeDiscountPct) || 0)) / 100 : 0),
     [subtotal, activeDiscountPct, isAuthenticated]
   );
   const taxAmount = useMemo(
-    () => (isAuthenticated ? Math.max(0, subtotal - discountAmount) * (Number(activeTaxPct) || 0) / 100 : 0),
+    () =>
+      isAuthenticated
+        ? ((Math.max(0, subtotal - discountAmount) * (Number(activeTaxPct) || 0)) / 100)
+        : 0,
     [subtotal, discountAmount, activeTaxPct, isAuthenticated]
   );
   const total = Math.max(0, subtotal - discountAmount + taxAmount);
@@ -83,7 +140,10 @@ export default function Pos() {
   const handleResumeHeld = (id) => {
     const order = heldOrders.find((o) => o.id === id);
     if (!order) return;
-    if (items.length > 0 && !window.confirm('រទេះបច្ចុប្បន្នមានទំនិញរួចហើយ - បន្តការលក់ដែលកំពុងរង់ចាំនឹងជំនួសរទេះបច្ចុប្បន្ន។ បន្ត?')) {
+    if (
+      items.length > 0 &&
+      !window.confirm('រទេះបច្ចុប្បន្នមានទំនិញរួចហើយ - បន្តការលក់ដែលកំពុងរង់ចាំនឹងជំនួសរទេះបច្ចុប្បន្ន។ បន្ត?')
+    ) {
       return;
     }
     clear();
@@ -115,88 +175,58 @@ export default function Pos() {
   const isCheckoutFlow = pathname === '/cart' || pathname === '/checkout' || pathname.startsWith('/payment');
 
   let pageTitle = 'Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើប';
-  let pageDescription = 'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបបំផុតសម្រាប់អាជីវកម្មនៅកម្ពុជា។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស។';
+  let pageDescription =
+    'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបបំផុតសម្រាប់អាជីវកម្មនៅកម្ពុជា។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស។';
   let pageKeywords = 'Mart System, ប្រព័ន្ធគ្រប់គ្រងហាង, POS Cambodia, Point of Sale, KHQR POS, Cloud POS';
   let pageCanonical = '/';
-  let pageRobots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+  let pageRobots = 'index, follow';
 
   if (isProductsPage) {
-    pageTitle = 'បញ្ជីទំនិញ (Products Storefront) | Mart System';
-    pageDescription = 'ស្វែងរក និងទិញទំនិញជាច្រើនមុខក្នុងតម្លៃសមរម្យ ជាមួយប្រព័ន្ធ Mart System។';
-    pageKeywords = 'ទំនិញ, បញ្ជីទំនិញ, Mart Products, Store Catalog, Mart System Cambodia';
+    pageTitle = 'បញ្ជីទំនិញទាំងអស់ | Mart System POS';
+    pageDescription = 'មើលបញ្ជីទំនិញទាំងអស់នៅក្នុង Mart System រួមមានតម្លៃ ស្តុក និងប្រភេទផ្សេងៗ។';
+    pageKeywords = 'ទំនិញ, ស្តុក, Mart System Products, Catalog Cambodia';
     pageCanonical = '/products';
   } else if (isPosPage) {
-    pageTitle = 'ចំណុចលក់ (POS Terminal) | Mart System';
-    pageDescription = 'ប្រព័ន្ធចំណុចលក់ (POS) ទំនើប ងាយស្រួលប្រើប្រាស់ គិតលុយរហ័ស គាំទ្រការទូទាត់តាម Bakong KHQR សម្រាប់ Mart System។';
-    pageKeywords = 'ចំណុចលក់, ប្រព័ន្ធ POS, POS Terminal, Bakong KHQR POS, Mart System POS';
+    pageTitle = 'ផ្ទាំងគិតលុយ (POS) | Mart System';
+    pageDescription = 'ផ្ទាំងគិតលុយលឿនរហ័ស គាំទ្រការស្កេន Barcode បញ្ចុះតម្លៃ និងការទូទាត់តាម Bakong KHQR ផ្ទាល់។';
+    pageKeywords = 'POS Screen, Cashier Register, គិតលុយ, Bakong KHQR';
     pageCanonical = '/pos';
-  } else if (isCheckoutFlow) {
-    pageTitle = 'ទូទាត់ប្រាក់ (Checkout & Payment) | Mart System';
     pageRobots = 'noindex, nofollow';
+  } else if (isCheckoutFlow) {
+    pageTitle = 'ការទូទាត់ប្រាក់ (Checkout) | Mart System';
+    pageDescription = 'ទូទាត់ប្រាក់ទំនិញរបស់អ្នកដោយសុវត្ថិភាពតាមរយៈ Bakong KHQR ឬសាច់ប្រាក់។';
+    pageKeywords = 'Bakong KHQR, Checkout, ទូទាត់ប្រាក់';
     pageCanonical = pathname;
+    pageRobots = 'noindex, nofollow';
   }
 
   const homepageSchema = useMemo(() => {
-    if (isCheckoutFlow) return null;
-
     const baseSchemaGraph = [
       {
         '@type': 'WebSite',
         '@id': `${env.siteUrl}/#website`,
-        'url': `${env.siteUrl}/`,
+        'url': env.siteUrl,
         'name': 'Mart System',
-        'alternateName': ['ប្រព័ន្ធគ្រប់គ្រងហាង Mart System', 'Mart POS Cambodia'],
-        'description': 'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់គ្រប់គ្រងការលក់ ទំនិញ ស្តុក ការបញ្ជាទិញ និងអាជីវកម្មបានយ៉ាងងាយស្រួល។',
+        'description': pageDescription,
         'inLanguage': 'km-KH',
-      },
-      {
-        '@type': 'SoftwareApplication',
-        '@id': `${env.siteUrl}/#pos-app`,
-        'name': 'Mart System POS',
-        'applicationCategory': 'BusinessApplication',
-        'operatingSystem': 'Web',
-        'description': 'ប្រព័ន្ធគ្រប់គ្រងការលក់ និង POS សម្រាប់អាជីវកម្មខ្នាតតូច និងមធ្យមនៅកម្ពុជា។',
-        'offers': {
-          '@type': 'Offer',
-          'price': '0',
-          'priceCurrency': 'USD',
-          'availability': 'https://schema.org/InStock',
-        },
       },
     ];
 
-    if (isProductsPage) {
+    if (isProductsPage || isPosPage) {
       baseSchemaGraph.push({
         '@type': 'BreadcrumbList',
+        '@id': `${env.siteUrl}/#breadcrumb`,
         'itemListElement': [
           {
             '@type': 'ListItem',
             'position': 1,
-            'name': 'ទំព័រដើម (Home)',
-            'item': `${env.siteUrl}/`,
+            'name': 'ទំព័រដើម',
+            'item': env.siteUrl,
           },
           {
             '@type': 'ListItem',
             'position': 2,
-            'name': 'ទំនិញ (Products)',
-            'item': `${env.siteUrl}/products`,
-          },
-        ],
-      });
-    } else if (isPosPage) {
-      baseSchemaGraph.push({
-        '@type': 'BreadcrumbList',
-        'itemListElement': [
-          {
-            '@type': 'ListItem',
-            'position': 1,
-            'name': 'ទំព័រដើម (Home)',
-            'item': `${env.siteUrl}/`,
-          },
-          {
-            '@type': 'ListItem',
-            'position': 2,
-            'name': 'ចំណុចលក់ (POS)',
+            'name': isProductsPage ? 'ទំនិញ' : 'ផ្ទាំងគិតលុយ',
             'item': `${env.siteUrl}/pos`,
           },
         ],
@@ -207,10 +237,14 @@ export default function Pos() {
       '@context': 'https://schema.org',
       '@graph': baseSchemaGraph,
     };
-  }, [isCheckoutFlow, isProductsPage, isPosPage]);
+  }, [isCheckoutFlow, isProductsPage, isPosPage, pageDescription]);
 
   return (
-    <div className={`flex h-full min-h-0 flex-1 flex-col bg-slate-50/50 dark:bg-ink-950 transition-colors duration-200 ${items.length > 0 ? 'pb-20 sm:pb-24' : 'pb-2 sm:pb-3'} lg:pb-0`}>
+    <div
+      className={`flex h-full min-h-0 flex-1 flex-col bg-[#F7F9FA] dark:bg-slate-950 transition-colors duration-200 ${
+        items.length > 0 ? 'pb-20 sm:pb-24' : 'pb-2 sm:pb-3'
+      } lg:pb-0`}
+    >
       <SEO
         title={pageTitle}
         description={pageDescription}
@@ -220,7 +254,6 @@ export default function Pos() {
         jsonLd={homepageSchema}
       />
 
-      {/* Accessible semantic heading structure for SEO and screen readers */}
       <header className="sr-only">
         <h1>Mart System — ប្រព័ន្ធគ្រប់គ្រងហាង និង POS</h1>
         <h2>គ្រប់គ្រងការលក់បានងាយស្រួល</h2>
@@ -228,53 +261,23 @@ export default function Pos() {
         <h2>ប្រព័ន្ធគ្រប់គ្រងសម្រាប់អាជីវកម្ម</h2>
       </header>
 
-      {/* Category Pills Header on Mobile */}
-      <div className="shrink-0 sticky top-0 z-30 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-2.5 py-1.5 sm:px-4 sm:py-2 lg:hidden">
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <button
-            onClick={() => setCategory('')}
-            className={`flex shrink-0 items-center gap-1 sm:gap-1.5 rounded-full px-2.5 py-1 sm:px-3.5 sm:py-1.5 text-xs font-semibold transition ${
-              !category
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
-          >
-            <AllCategoriesIcon size={14} />
-            ទាំងអស់
-          </button>
-          {categories.map((cat) => {
-            const Icon = getCategoryIcon(cat.name);
-            const active = category === cat.name;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setCategory(cat.name)}
-                className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 sm:px-3.5 sm:py-1.5 text-xs font-semibold transition ${
-                  active
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                <Icon size={14} />
-                {cat.name}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 min-h-0 p-2.5 sm:p-4 lg:grid lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_390px] lg:gap-4 lg:overflow-hidden">
-        {/* Product Grid Container */}
-        <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4 shadow-xs">
+      {/* Main Responsive 2-Column POS Layout */}
+      <div className="flex-1 min-h-0 p-2.5 sm:p-3 lg:grid lg:grid-cols-[1fr_390px] xl:grid-cols-[1fr_420px] lg:gap-3.5 lg:overflow-hidden">
+        {/* Left Side: Product Catalog Area */}
+        <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-3.5 shadow-xs">
           <ProductGrid
             category={category}
+            onSelectCategory={setCategory}
+            categories={categories}
             onAdd={(product) => addItem(product, 1)}
+            onSetQuantity={setQuantity}
+            onRemove={removeItem}
             reloadSignal={stockReloadSignal}
+            searchInputRef={searchInputRef}
           />
         </div>
 
-        {/* Desktop Cart Panel (Hidden on mobile, shown on lg+) */}
+        {/* Right Side: Fixed Sticky Cart Sidebar (Desktop) */}
         <div className="hidden lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:overflow-hidden">
           <CartPanel
             items={items}
@@ -298,42 +301,6 @@ export default function Pos() {
             onHold={isAuthenticated ? handleHoldOrder : undefined}
             onCancel={isAuthenticated ? handleCancelOrder : undefined}
           />
-        </div>
-      </div>
-
-      {/* Desktop Bottom Category Bar */}
-      <div className="shrink-0 hidden px-4 pb-4 lg:block">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shadow-2xs">
-          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 pl-2 pr-1 shrink-0">ប្រភេទទំនិញ:</span>
-          <button
-            onClick={() => setCategory('')}
-            className={`flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition active:scale-95 ${
-              !category
-                ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 shadow-2xs'
-                : 'border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <AllCategoriesIcon size={15} />
-            <span>ទាំងអស់</span>
-          </button>
-          {categories.map((cat) => {
-            const Icon = getCategoryIcon(cat.name);
-            const active = category === cat.name;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setCategory(cat.name)}
-                className={`flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition active:scale-95 ${
-                  active
-                    ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 shadow-2xs'
-                    : 'border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                <Icon size={15} />
-                <span>{cat.name}</span>
-              </button>
-            );
-          })}
         </div>
       </div>
 

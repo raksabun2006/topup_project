@@ -33,6 +33,18 @@
   --color-ink-800: var(--color-ink-800);
   --color-ink-700: var(--color-ink-700);
   --color-ink-600: var(--color-ink-600);
+  --color-pos-primary: #009F6B;
+  --color-pos-primary-hover: #00845A;
+  --color-pos-primary-light: #E8F8F2;
+  --color-pos-bg: #F7F9FA;
+  --color-pos-card: #FFFFFF;
+  --color-pos-border: #E5E7EB;
+  --color-pos-text-primary: #172033;
+  --color-pos-text-secondary: #667085;
+  --color-pos-success: #12B76A;
+  --color-pos-warning: #F79009;
+  --color-pos-error: #F04438;
+  --color-pos-info: #2E90FA;
   --font-sans: 'Siemreap', ui-sans-serif, system-ui, sans-serif;
 }
 
