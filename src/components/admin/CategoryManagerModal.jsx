@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Loader2, AlertCircle, Trash2, Plus, Tags } from 'lucide-react';
 import { categoryApi } from '../../api/categoryApi';
 import { getErrorMessage } from '../../api/client';
@@ -45,13 +46,13 @@ export default function CategoryManagerModal({ onClose }) {
     'w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-sm text-slate-900 dark:text-white shadow-sm ' +
     'transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4 backdrop-blur-xs animate-fade-in"
+      className="fixed inset-0 z-[9999] flex flex-col justify-end sm:justify-center sm:items-center bg-black/75 p-0 sm:p-4 backdrop-blur-xs animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md max-h-[88dvh] sm:max-h-[85vh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-slide-up sm:animate-scale-in pb-safe sm:pb-0"
+        className="w-full max-w-md max-h-[85dvh] sm:max-h-[85vh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-slide-up sm:animate-scale-in pb-safe sm:pb-0"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile drag handle bar */}
@@ -62,13 +63,12 @@ export default function CategoryManagerModal({ onClose }) {
             <Tags size={18} className="text-emerald-600 dark:text-emerald-400" />
             គ្រប់គ្រងប្រភេទ
           </h3>
-
           <button onClick={onClose} className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition">
             <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleCreate} className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 px-6 py-4">
+        <form onSubmit={handleCreate} className="shrink-0 flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-3.5">
           <input
             autoFocus
             value={name}
@@ -85,10 +85,10 @@ export default function CategoryManagerModal({ onClose }) {
           </button>
         </form>
         {formError && (
-          <p className="-mt-2 px-6 pb-2 text-xs text-rose-700 dark:text-rose-400">{formError}</p>
+          <p className="shrink-0 px-4 sm:px-6 py-2 text-xs text-rose-700 dark:text-rose-400">{formError}</p>
         )}
 
-        <div className="max-h-80 overflow-y-auto px-3 py-2">
+        <div className="flex-1 min-h-0 overflow-y-auto px-3 py-2 touch-scroll">
           {loading && (
             <div className="flex justify-center py-8 text-emerald-600">
               <Loader2 size={24} className="animate-spin" />
@@ -124,6 +124,8 @@ export default function CategoryManagerModal({ onClose }) {
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
+

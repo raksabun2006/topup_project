@@ -1,21 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Receipt, CheckCircle, DollarSign, ShoppingCart, AlertCircle, RefreshCw,
-  Sparkles, TrendingUp, Calendar, ArrowRight
+  Receipt, CheckCircle2, DollarSign, ShoppingCart, AlertCircle, RefreshCw,
+  TrendingUp, Calendar, ArrowRight, UserCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSales } from '../../hooks/useSales';
 import { formatCurrency, formatDate } from '../../utils/format';
-import { StatCard } from '../ui/StatCard';
 import { SaleStatusBadge } from '../ui/SaleStatusBadge';
-
-function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'អរុណសួស្តី';
-  if (hour < 17) return 'ទិវាសួស្តី';
-  return 'សាយណ្ហសួស្តី';
-}
+import SEO from '../SEO';
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -42,105 +35,158 @@ export default function UserDashboard() {
     const paid = filteredMySales.filter((s) => s.status === 'COMPLETED' && s.paymentStatus === 'PAID');
     const revenue = paid.reduce((sum, s) => sum + (s.total || 0), 0);
     const avgTicket = paid.length > 0 ? revenue / paid.length : 0;
+    const completionRate = filteredMySales.length > 0 ? Math.round((paid.length / filteredMySales.length) * 100) : 0;
     return {
       total: filteredMySales.length,
       completed: paid.length,
       revenue,
       avgTicket,
+      completionRate,
     };
   }, [filteredMySales]);
 
   return (
-    <div className="mx-auto max-w-6xl px-3 sm:px-6 py-4 sm:py-8 space-y-5 sm:space-y-8 animate-fade-in">
-      {/* Hero Welcome & POS Launcher */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 bg-gradient-to-r from-emerald-600/15 via-white to-teal-600/10 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-5 sm:p-8 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 sm:space-y-5 animate-fade-in max-w-6xl mx-auto">
+      <SEO
+        title="ផ្ទាំងគិតលុយផ្ទាល់ខ្លួន (Cashier Dashboard) | Mart System"
+        robots="noindex, nofollow"
+      />
+
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
+            <UserCheck size={22} />
+          </div>
           <div>
-            <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-xs sm:text-sm">
-              <Sparkles size={16} />
-              <span>{getGreeting()}, {user?.displayName || user?.username}!</span>
-            </div>
-            <h1 className="mt-1 text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-              ផ្ទាំងគិតលុយ & ប្រតិបត្តិការផ្ទាល់ខ្លួន
+            <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+              ផ្ទាំងគិតលុយ
             </h1>
-            <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-              ចាប់ផ្តើមការលក់ថ្មី និងពិនិត្យមើលរបាយការណ៍វេនការងាររបស់អ្នក
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Staff / {user?.displayName || user?.username} — តាមដានការលក់ផ្ទាល់ខ្លួន
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <Link
-              to="/pos"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-3 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:scale-105 hover:from-emerald-500 hover:to-teal-500 active:scale-95"
-            >
-              <ShoppingCart size={18} />
-              <span>បើកចំណុចលក់ (POS)</span>
-            </Link>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          <Link
+            to="/pos"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:from-emerald-500 hover:to-emerald-600 active:scale-95"
+          >
+            <ShoppingCart size={17} />
+            <span>បើក POS</span>
+          </Link>
+
+          <button
+            onClick={reload}
+            disabled={loading}
+            className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition active:scale-95 disabled:opacity-50"
+            title="ទាញយកឡើងវិញ"
+          >
+            <RefreshCw size={16} className={loading ? 'animate-spin text-emerald-600' : ''} />
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Overview Metric Cards */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {/* Total Revenue */}
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-2xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">ចំណូលខ្ញុំ (PAID)</p>
+            <p className="mt-1 text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+              {loading ? '—' : formatCurrency(stats.revenue)}
+            </p>
+            <p className="mt-0.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+              {stats.completed} ការលក់បានបង់ប្រាក់
+            </p>
+          </div>
+          <div className="rounded-xl bg-emerald-500/10 dark:bg-emerald-950/50 p-2.5 text-emerald-600 dark:text-emerald-400">
+            <DollarSign size={22} />
           </div>
         </div>
 
-        {/* Period Selector Toggle */}
-        <div className="mt-5 pt-4 border-t border-slate-200/70 dark:border-slate-800/80 flex items-center justify-between gap-3">
-          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-            <Calendar size={14} />
-            <span>បង្ហាញទិន្នន័យ:</span>
-          </span>
-          <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-1 text-xs font-bold">
-            <button
-              onClick={() => setPeriod('TODAY')}
-              className={`rounded-lg px-3 py-1 transition ${
-                period === 'TODAY'
-                  ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-2xs'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              ថ្ងៃនេះ (Today)
-            </button>
-            <button
-              onClick={() => setPeriod('ALL')}
-              className={`rounded-lg px-3 py-1 transition ${
-                period === 'ALL'
-                  ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-2xs'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              ទាំងអស់ (All Time)
-            </button>
+        {/* Total Sales */}
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-2xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">ការលក់សរុប (ខ្ញុំ)</p>
+            <p className="mt-1 text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+              {loading ? '—' : stats.total}
+            </p>
+            <p className="mt-0.5 text-[10px] text-sky-600 dark:text-sky-400 font-semibold">
+              ប្រតិបត្តិការផ្ទាល់ខ្លួន
+            </p>
+          </div>
+          <div className="rounded-xl bg-sky-500/10 dark:bg-sky-950/50 p-2.5 text-sky-600 dark:text-sky-400">
+            <Receipt size={22} />
+          </div>
+        </div>
+
+        {/* Completed Sales */}
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-2xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">បានបញ្ចប់ជោគជ័យ</p>
+            <p className="mt-1 text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+              {loading ? '—' : stats.completed}
+            </p>
+            <p className="mt-0.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+              {stats.completionRate}% នៃចំនួនសរុប
+            </p>
+          </div>
+          <div className="rounded-xl bg-emerald-500/10 dark:bg-emerald-950/50 p-2.5 text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 size={22} />
+          </div>
+        </div>
+
+        {/* Average Ticket */}
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-2xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">មធ្យម/វិក្កយបត្រ</p>
+            <p className="mt-1 text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+              {loading ? '—' : formatCurrency(stats.avgTicket)}
+            </p>
+            <p className="mt-0.5 text-[10px] text-purple-600 dark:text-purple-400 font-semibold">
+              Average Ticket
+            </p>
+          </div>
+          <div className="rounded-xl bg-purple-500/10 dark:bg-purple-950/50 p-2.5 text-purple-600 dark:text-purple-400">
+            <TrendingUp size={22} />
           </div>
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid gap-3 sm:gap-5 grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={Receipt}
-          label="ការលក់សរុប (ខ្ញុំ)"
-          value={loading ? '—' : stats.total}
-          accent="blue"
-          loading={loading}
-        />
-        <StatCard
-          icon={CheckCircle}
-          label="បានបង់ប្រាក់រួច"
-          value={loading ? '—' : stats.completed}
-          accent="emerald"
-          loading={loading}
-        />
-        <StatCard
-          icon={DollarSign}
-          label="ចំណូលខ្ញុំ (Revenue)"
-          value={loading ? '—' : formatCurrency(stats.revenue)}
-          accent="amber"
-          loading={loading}
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="មធ្យម/វិក្កយបត្រ"
-          value={loading ? '—' : formatCurrency(stats.avgTicket)}
-          accent="purple"
-          loading={loading}
-        />
+      {/* Filter Bar */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 sm:p-4 shadow-2xs flex items-center justify-between gap-3">
+        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+          <Calendar size={14} />
+          <span>បង្ហាញទិន្នន័យ:</span>
+        </span>
+        <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-1 text-xs font-bold">
+          <button
+            onClick={() => setPeriod('TODAY')}
+            className={`rounded-lg px-3 py-1 transition cursor-pointer ${
+              period === 'TODAY'
+                ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-2xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            ថ្ងៃនេះ (Today)
+          </button>
+          <button
+            onClick={() => setPeriod('ALL')}
+            className={`rounded-lg px-3 py-1 transition cursor-pointer ${
+              period === 'ALL'
+                ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-2xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            ទាំងអស់ (All Time)
+          </button>
+        </div>
       </div>
+
 
       {/* Recent Sales List */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs overflow-hidden">

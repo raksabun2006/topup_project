@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X, Loader2, AlertCircle, ImageOff, Package, Plus, Check,
   Sparkles, CheckCircle2
@@ -115,13 +116,13 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-xs p-0 sm:p-4 animate-fade-in"
+      className="fixed inset-0 z-[9999] flex flex-col justify-end sm:justify-center sm:items-center bg-black/75 backdrop-blur-xs p-0 sm:p-4 animate-fade-in"
       onClick={() => !saving && onClose()}
     >
       <div
-        className="w-full max-w-lg max-h-[88dvh] sm:max-h-[85vh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-slide-up sm:animate-scale-in"
+        className="w-full max-w-lg max-h-[85dvh] sm:max-h-[85vh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-slide-up sm:animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile drag handle bar */}
@@ -153,7 +154,11 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
         </div>
 
         {/* Modal Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 touch-scroll overscroll-contain">
+        <form
+          id="product-form"
+          onSubmit={handleSubmit}
+          className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-3.5 touch-scroll overscroll-contain"
+        >
           {error && (
             <div className="flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-50 dark:bg-rose-950/30 p-3 text-xs text-rose-700 dark:text-rose-400 animate-fade-in">
               <AlertCircle size={15} className="mt-0.5 shrink-0 text-rose-600" />
@@ -397,8 +402,8 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
           </div>
         </form>
 
-        {/* Modal Action Footer with Safe-Area clearance */}
-        <div className="shrink-0 flex items-center justify-end gap-2.5 border-t border-slate-100 dark:border-slate-800 px-4 py-3 sm:px-5 sm:py-3.5 bg-slate-50/80 dark:bg-slate-800/60 pb-safe sm:pb-3.5">
+        {/* Modal Action Footer - Always visible and pinned above screen edge */}
+        <div className="shrink-0 flex items-center justify-end gap-2.5 border-t border-slate-100 dark:border-slate-800 px-4 py-3 sm:px-5 sm:py-3.5 bg-slate-50/95 dark:bg-slate-800/95 backdrop-blur-xs pb-safe sm:pb-3.5">
           <button
             type="button"
             onClick={onClose}
@@ -409,8 +414,8 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
           </button>
 
           <button
-            type="button"
-            onClick={handleSubmit}
+            type="submit"
+            form="product-form"
             disabled={saving || !form.name.trim() || !form.sku.trim() || !form.price || form.stockQuantity === ''}
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/30 transition hover:from-emerald-500 hover:to-teal-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
@@ -419,7 +424,9 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
+
 
