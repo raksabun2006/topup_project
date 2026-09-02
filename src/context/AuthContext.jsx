@@ -126,6 +126,13 @@ export function AuthProvider({ children }) {
     refreshProfile,
     isAuthenticated,
     isAdmin: !!(user?.role === 'ADMIN' || user?.roles?.includes('ADMIN')),
+    isManager: !!(user?.role === 'MANAGER' || user?.roles?.includes('MANAGER')),
+    isManagerOrAdmin: !!(
+      user?.role === 'ADMIN' ||
+      user?.role === 'MANAGER' ||
+      user?.roles?.includes('ADMIN') ||
+      user?.roles?.includes('MANAGER')
+    ),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

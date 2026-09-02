@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingCart, Receipt as ReceiptIcon, Package, Users, User, LogOut,
-  Menu, X, Store, Sparkles, ChevronRight, BarChart3
+  Menu, X, Store, Sparkles, ChevronRight, BarChart3, WalletCards
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../ui/ThemeToggle';
@@ -13,19 +13,25 @@ import { env } from '../../config/env';
 const NAV_ITEMS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'ផ្ទាំងគ្រប់គ្រង', end: true },
   { to: '/pos', icon: ShoppingCart, label: 'ចំណុចលក់ (POS)', isPos: true },
+  { to: '/dashboard/reports', icon: BarChart3, label: 'របាយការណ៍', managerOrAdminOnly: true },
+  { to: '/dashboard/expenses', icon: WalletCards, label: 'ការចំណាយ', managerOrAdminOnly: true },
   { to: '/dashboard/sales', icon: ReceiptIcon, label: 'ការលក់' },
   { to: '/dashboard/products', icon: Package, label: 'ផលិតផល', adminOnly: true },
   { to: '/dashboard/customers', icon: Users, label: 'អតិថិជន', adminOnly: true },
 ];
 
 export default function AdminLayout() {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, isManagerOrAdmin } = useAuth();
   const { pathname } = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  const navItems = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin);
+  const navItems = NAV_ITEMS.filter(
+    (item) => (!item.adminOnly || isAdmin) && (!item.managerOrAdminOnly || isManagerOrAdmin)
+  );
 
   const getPageInfo = () => {
+    if (pathname === '/dashboard/reports') return { title: 'របាយការណ៍ហិរញ្ញវត្ថុ', subtitle: 'Financial Analytics & Reports' };
+    if (pathname === '/dashboard/expenses') return { title: 'ការគ្រប់គ្រងចំណាយ', subtitle: 'Expense Tracking & Receipts' };
     if (pathname === '/dashboard/products') return { title: 'គ្រប់គ្រងផលិតផល', subtitle: 'Products Management' };
     if (pathname === '/dashboard/sales') return { title: 'ប្រវត្តិការលក់', subtitle: 'Sales Transactions' };
     if (pathname.startsWith('/dashboard/sales/')) return { title: 'ព័ត៌មានលម្អិតការលក់', subtitle: 'Sale Invoice Details' };

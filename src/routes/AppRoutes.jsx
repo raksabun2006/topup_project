@@ -10,6 +10,8 @@ import SaleDetail from '../pages/SaleDetail';
 import Products from '../pages/Products';
 import Customers from '../pages/Customers';
 import Dashboard from '../pages/Dashboard';
+import Reports from '../pages/Reports';
+import Expenses from '../pages/Expenses';
 import Profile from '../pages/Profile';
 import NotFound from '../pages/NotFound';
 
@@ -96,9 +98,27 @@ export default function AppRoutes() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="reports"
+            element={
+              <ProtectedRoute requireManagerOrAdmin>
+                <Reports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="expenses"
+            element={
+              <ProtectedRoute requireManagerOrAdmin>
+                <Expenses />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
-        {/* Legacy redirect aliases */}
+        {/* Legacy / Direct Route Aliases */}
+        <Route path="/reports" element={<Navigate to="/dashboard/reports" replace />} />
+        <Route path="/expenses" element={<Navigate to="/dashboard/expenses" replace />} />
         <Route path="/sales" element={<Navigate to="/dashboard/sales" replace />} />
         <Route path="/sales/:id" element={<Navigate to="/dashboard/sales" replace />} />
         <Route path="/customers" element={<Navigate to="/dashboard/customers" replace />} />

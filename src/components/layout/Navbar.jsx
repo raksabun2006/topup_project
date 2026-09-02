@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import {
   Store, Menu, X, User, LogOut, Receipt, LayoutDashboard, ShoppingCart,
-  Package, ChevronDown, Users, LogIn,
+  Package, ChevronDown, Users, LogIn, BarChart3, WalletCards,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { env } from '../../config/env';
@@ -12,13 +12,15 @@ import NotificationDropdown from '../ui/NotificationDropdown';
 
 const ICON_LINKS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/dashboard/reports', icon: BarChart3, label: 'Reports', managerOrAdminOnly: true },
+  { to: '/dashboard/expenses', icon: WalletCards, label: 'Expenses', managerOrAdminOnly: true },
   { to: '/dashboard/products', icon: Package, label: 'Products', adminOnly: true },
   { to: '/dashboard/customers', icon: Users, label: 'Customers', adminOnly: true },
   { to: '/dashboard/sales', icon: Receipt, label: 'Sales' },
 ];
 
 export default function Navbar() {
-  const { isAuthenticated, isAdmin, user, logout } = useAuth();
+  const { isAuthenticated, isAdmin, isManagerOrAdmin, user, logout } = useAuth();
   const navigate = useNavigate();
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,7 +33,9 @@ export default function Navbar() {
     navigate('/login');
   };
 
-  const iconLinks = ICON_LINKS.filter((l) => !l.adminOnly || isAdmin);
+  const iconLinks = ICON_LINKS.filter(
+    (l) => (!l.adminOnly || isAdmin) && (!l.managerOrAdminOnly || isManagerOrAdmin)
+  );
 
   return (
     <header className="sticky top-0 z-50 bg-emerald-600 dark:bg-slate-900 border-b border-emerald-500/30 dark:border-slate-800 shadow-md shadow-emerald-950/10 transition-colors duration-200">
