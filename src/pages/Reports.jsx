@@ -1,12 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  BarChart3,
-  Calendar,
-  WalletCards,
   RefreshCw,
-  TrendingUp,
   AlertCircle,
-  FileSpreadsheet,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { reportApi } from '../api/reportApi';
@@ -242,71 +237,52 @@ export default function Reports() {
       <SEO title="របាយការណ៍ហិរញ្ញវត្ថុ (Financial Reports) | Mart System" robots="noindex, nofollow" />
 
       <div className="flex-1 overflow-y-auto bg-[#F7F9FA] dark:bg-slate-950 p-3.5 sm:p-5 lg:p-6 space-y-5">
-        {/* Top Header & Actions Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-2">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#009F6B] text-white shadow-md shadow-[#009F6B]/30">
-                <BarChart3 size={22} />
-              </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black text-[#172033] dark:text-white tracking-tight">
-                  របាយការណ៍ហិរញ្ញវត្ថុ (Financial Reports)
-                </h1>
-                <p className="text-xs text-[#667085] dark:text-slate-400 font-medium">
-                  ទិដ្ឋភាពរួមនៃចំណូល ចំណាយ ចំណេញ និងស្ថិតិលក់ Mart System
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Tab Switcher & Refresh Button */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-1 shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setActiveTab('overview')}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === 'overview'
-                    ? 'bg-[#009F6B] text-white shadow-xs'
-                    : 'text-[#667085] dark:text-slate-400 hover:text-[#172033] dark:hover:text-white'
-                }`}
-              >
-                ទិដ្ឋភាពទូទៅ & និន្នាការ
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('monthly')}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === 'monthly'
-                    ? 'bg-[#009F6B] text-white shadow-xs'
-                    : 'text-[#667085] dark:text-slate-400 hover:text-[#172033] dark:hover:text-white'
-                }`}
-              >
-                របាយការណ៍ប្រចាំខែ
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('expenses')}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === 'expenses'
-                    ? 'bg-[#009F6B] text-white shadow-xs'
-                    : 'text-[#667085] dark:text-slate-400 hover:text-[#172033] dark:hover:text-white'
-                }`}
-              >
-                ការគ្រប់គ្រងចំណាយ
-              </button>
-            </div>
-
+        {/* Tab Switcher & Actions Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-1 shadow-2xs">
             <button
               type="button"
-              onClick={handleRefreshAll}
-              className="flex h-9 w-9 items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer"
-              title="ទាញយកទិន្នន័យឡើងវិញ"
+              onClick={() => setActiveTab('overview')}
+              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'overview'
+                  ? 'bg-[#009F6B] text-white shadow-xs'
+                  : 'text-[#667085] dark:text-slate-400 hover:text-[#172033] dark:hover:text-white'
+              }`}
             >
-              <RefreshCw size={15} />
+              ទិដ្ឋភាពទូទៅ & និន្នាការ
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('monthly')}
+              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'monthly'
+                  ? 'bg-[#009F6B] text-white shadow-xs'
+                  : 'text-[#667085] dark:text-slate-400 hover:text-[#172033] dark:hover:text-white'
+              }`}
+            >
+              របាយការណ៍ប្រចាំខែ
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('expenses')}
+              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'expenses'
+                  ? 'bg-[#009F6B] text-white shadow-xs'
+                  : 'text-[#667085] dark:text-slate-400 hover:text-[#172033] dark:hover:text-white'
+              }`}
+            >
+              ការគ្រប់គ្រងចំណាយ
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={handleRefreshAll}
+            className="flex h-9 w-9 items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer"
+            title="ទាញយកទិន្នន័យឡើងវិញ"
+          >
+            <RefreshCw size={15} />
+          </button>
         </div>
 
         {/* Global Error Alerts */}
