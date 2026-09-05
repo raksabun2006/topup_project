@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ShoppingCart, ChevronUp, ChevronDown, X } from 'lucide-react';
+import { ShoppingCart, ChevronUp, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useCategories } from '../hooks/useCategories';
@@ -11,7 +11,7 @@ import BakongPaymentModal from '../components/pos/BakongPaymentModal';
 import SaleSuccessModal from '../components/pos/SaleSuccessModal';
 import SEO from '../components/SEO';
 import { env } from '../config/env';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, parseBackendDate } from '../utils/format';
 
 const HELD_ORDERS_KEY = 'pos_held_orders';
 const ACTIVE_BAKONG_PAYMENT_KEY = 'pos_active_bakong_payment';
@@ -35,13 +35,39 @@ function loadActiveBakongPayment() {
     const raw = sessionStorage.getItem(ACTIVE_BAKONG_PAYMENT_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (parsed?.saleId) {
-      return parsed.sale || { saleId: parsed.saleId, isGuest: parsed.isGuest };
+    if (!parsed?.saleId) return null;
+
+    // Validate expiration
+    if (parsed.expiresAt) {
+      const exp = parseBackendDate(parsed.expiresAt);
+      if (exp && exp.getTime() <= Date.now()) {
+        sessionStorage.removeItem(ACTIVE_BAKONG_PAYMENT_KEY);
+        return null;
+      }
+    } else if (parsed.createdAt) {
+      const created = parseBackendDate(parsed.createdAt);
+      if (created && Date.now() - created.getTime() > 15 * 60 * 1000) {
+        sessionStorage.removeItem(ACTIVE_BAKONG_PAYMENT_KEY);
+        return null;
+      }
     }
+
+    return (
+      parsed.sale || {
+        saleId: parsed.saleId,
+        paymentId: parsed.paymentId,
+        qr: parsed.qr || parsed.qrString,
+        qrString: parsed.qrString || parsed.qr,
+        amount: parsed.amount,
+        currency: parsed.currency,
+        expiresAt: parsed.expiresAt,
+        billNumber: parsed.billNumber,
+        isGuest: parsed.isGuest,
+      }
+    );
   } catch {
     return null;
   }
-  return null;
 }
 
 export default function Pos() {
@@ -423,7 +449,7 @@ export default function Pos() {
       )}
 
       {/* Resumed Bakong Payment Modal (Preserves active payment session on page refresh) */}
-      {resumedPaymentSale && (
+      {!showCheckout && resumedPaymentSale && (
         <BakongPaymentModal
           sale={resumedPaymentSale}
           onPaid={(completed) => {
@@ -431,6 +457,11 @@ export default function Pos() {
             handleSaleSuccess(completed);
           }}
           onClose={() => {
+            try {
+              sessionStorage.removeItem(ACTIVE_BAKONG_PAYMENT_KEY);
+            } catch {
+              // ignore
+            }
             setResumedPaymentSale(null);
           }}
         />

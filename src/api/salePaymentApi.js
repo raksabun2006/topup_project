@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { apiClient } from './client';
 
 /**
@@ -274,4 +275,9 @@ export const salePaymentApi = {
       return normalizePaymentResponse(res.data);
     }
   },
+
+  /**
+   * Helper to check if an error was caused by AbortController/request cancellation
+   */
+  isCancel: (err) => axios.isCancel(err) || err?.name === 'CanceledError' || err?.code === 'ERR_CANCELED',
 };

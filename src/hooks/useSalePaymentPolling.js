@@ -6,11 +6,11 @@ import { env } from '../config/env';
 export const TERMINAL_SUCCESS = ['PAID', 'SUCCESS', 'COMPLETED'];
 export const TERMINAL_FAILURE = ['FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'];
 
-// Polling interval constants conforming strictly to specifications:
-// 1. First check: ~10 seconds after creation
-// 2. Subsequent checks: every 10–15 seconds (default 12s)
-// 3. RATE_LIMITED backoff: 30 seconds
-// 4. Temporary server/network error retry: 10–15 seconds (default 12s)
+// Strict polling cadence requirements:
+// 1. First check: 10 seconds after creation
+// 2. Subsequent checks: 12 seconds
+// 3. RATE_LIMITED (429): 30 seconds backoff
+// 4. Temporary server/network error retry: 12 seconds
 export const FIRST_POLL_DELAY_MS = 10000;
 export const POLL_INTERVAL_MS = Number(env.paymentPollIntervalMs || 12000);
 export const RATE_LIMIT_BACKOFF_MS = 30000;
@@ -26,30 +26,48 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
   const timerRef = useRef(null);
   const aliveRef = useRef(false);
   const inFlightRef = useRef(false);
+  const isPausedRef = useRef(false);
+  const abortControllerRef = useRef(null);
   const paymentStateRef = useRef('PENDING');
   paymentStateRef.current = paymentState;
+
+  const saleIdRef = useRef(saleId);
+  saleIdRef.current = saleId;
 
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  const checkPaymentRef = useRef(null);
-
+  // Single function to abort any in-flight request and clear scheduled timers
   const stop = useCallback(() => {
     aliveRef.current = false;
     inFlightRef.current = false;
+    isPausedRef.current = false;
     setIsChecking(false);
+
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
+    }
+
+    if (abortControllerRef.current) {
+      try {
+        abortControllerRef.current.abort();
+      } catch {
+        // ignore
+      }
+      abortControllerRef.current = null;
     }
   }, []);
 
   const scheduleNext = useCallback((delayMs) => {
+    // Clear any previous timer to ensure only ONE active timer exists
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-    if (!aliveRef.current) return;
+
+    if (!aliveRef.current || isPausedRef.current) return;
+
     // Never schedule if already in terminal state
     if (
       TERMINAL_SUCCESS.includes(paymentStateRef.current) ||
@@ -57,25 +75,25 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
     ) {
       return;
     }
+
     timerRef.current = setTimeout(() => {
-      if (checkPaymentRef.current) {
-        checkPaymentRef.current(false);
-      }
+      timerRef.current = null;
+      checkPaymentRef.current?.(false);
     }, delayMs);
   }, []);
 
   const checkPayment = useCallback(
     async (isManual = false) => {
-      // 1. Guard checks
-      if ((!aliveRef.current && !isManual) || !saleId) return;
+      const currentSaleId = saleIdRef.current;
+      if (!currentSaleId || (!aliveRef.current && !isManual)) return;
 
-      // Concurrency lock: Ignore duplicate requests while one is already in-flight
+      // In-flight concurrency lock: Do NOT initiate new request if one is in progress
       if (inFlightRef.current) {
-        console.log(`[useSalePaymentPolling] Check ignored: Request already in-flight for saleId:`, saleId);
+        console.log(`[useSalePaymentPolling] Request already in-flight for saleId ${currentSaleId}, ignoring trigger.`);
         return;
       }
 
-      // Do not check if already in terminal state
+      // Terminal state guard: Stop immediately if already terminal
       if (
         TERMINAL_SUCCESS.includes(paymentStateRef.current) ||
         TERMINAL_FAILURE.includes(paymentStateRef.current)
@@ -84,19 +102,33 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
         return;
       }
 
-      // If user triggered manual check, clear pending scheduled timer
+      // If user manually triggered check, clear pending scheduled timer
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
+
+      // Create new AbortController for this request
+      if (abortControllerRef.current) {
+        try {
+          abortControllerRef.current.abort();
+        } catch {
+          // ignore
+        }
+      }
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
       inFlightRef.current = true;
       setIsChecking(true);
       setPaymentState((prev) => (TERMINAL_SUCCESS.includes(prev) ? prev : 'CHECKING'));
 
       try {
-        console.log(`[useSalePaymentPolling] Polling payment status via GET /api/v1/sales/${saleId}/payment/status`);
-        const result = await salePaymentApi.checkStatus(saleId, optionsRef.current);
+        console.log(`[useSalePaymentPolling] GET /api/v1/sales/${currentSaleId}/payment/status (cadence: ${isManual ? 'manual' : 'polling'})`);
+        const result = await salePaymentApi.checkStatus(currentSaleId, {
+          ...optionsRef.current,
+          signal: controller.signal,
+        });
 
         if (!aliveRef.current) return;
 
@@ -113,17 +145,15 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
             result.raw?.status === 'RATE_LIMITED' ||
             result.data?.status === 'RATE_LIMITED';
 
-          // 2. Handle RATE_LIMITED from backend
+          // 1. Handle RATE_LIMITED from backend body (30s backoff)
           if (isRateLimited) {
-            console.warn(`[useSalePaymentPolling] RATE_LIMITED received for saleId ${saleId}. Backing off for 30s.`);
+            console.warn(`[useSalePaymentPolling] RATE_LIMITED received for saleId ${currentSaleId}. Backing off for 30s.`);
             setPaymentState('RATE_LIMITED');
             setStatusMessage(
               result.message ||
               'មិនអាចពិនិត្យស្ថានភាពការទូទាត់បានជាបណ្តោះអាសន្ន។ កំពុងផ្ទៀងផ្ទាត់ការទូទាត់... សូមរង់ចាំបន្តិច'
             );
-            // Preserve existing QR and payment info
             setPayment((prev) => (prev ? { ...prev, ...result } : result));
-            // Back off 30 seconds before next retry
             scheduleNext(RATE_LIMIT_BACKOFF_MS);
             return;
           }
@@ -135,7 +165,7 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
 
           const isFailure = TERMINAL_FAILURE.includes(rawStatus);
 
-          // Update payment data preserving QR code and identifiers
+          // Update payment data while preserving QR and identification details
           setPayment((prev) => {
             if (!prev) return result;
             return {
@@ -151,13 +181,13 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
               amount: prev.amount ?? result.amount,
               currency: prev.currency || result.currency,
               paymentId: result.paymentId || prev.paymentId || null,
-              saleId: saleId,
+              saleId: currentSaleId,
             };
           });
 
-          // 3. Stop immediately on terminal success (PAID / COMPLETED / SUCCESS)
+          // 2. Stop immediately on terminal success
           if (isPaid) {
-            console.log(`[useSalePaymentPolling] Payment SUCCESS reached (${rawStatus}), stopping polling immediately.`);
+            console.log(`[useSalePaymentPolling] Payment SUCCESS reached (${rawStatus}), stopping polling.`);
             setPaymentState('PAID');
             setStatusMessage('');
             setError('');
@@ -165,23 +195,27 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
             return;
           }
 
-          // 4. Stop immediately on terminal failure (FAILED / EXPIRED / CANCELLED / REFUNDED)
+          // 3. Stop immediately on terminal failure
           if (isFailure) {
-            console.log(`[useSalePaymentPolling] Terminal status reached (${rawStatus}), stopping polling.`);
+            console.log(`[useSalePaymentPolling] Terminal failure reached (${rawStatus}), stopping polling.`);
             setPaymentState(rawStatus);
             setStatusMessage(result.message || '');
             stop();
             return;
           }
 
-          // 5. Still PENDING: reset checking notices and schedule next check in 10–15s
+          // 4. Still PENDING: reset checking notices and schedule next check in 12s
           setPaymentState('PENDING');
           setStatusMessage('');
           setError('');
           scheduleNext(POLL_INTERVAL_MS);
         }
       } catch (err) {
-        if (!aliveRef.current) return;
+        if (!aliveRef.current || salePaymentApi.isCancel(err)) {
+          // Request was aborted cleanly, ignore
+          return;
+        }
+
         const httpStatus = err?.response?.status;
         const responseData = err?.response?.data;
         const isRateLimitHttp =
@@ -189,9 +223,9 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
           responseData?.status === 'RATE_LIMITED' ||
           responseData?.code === 'RATE_LIMITED';
 
-        console.warn(`[useSalePaymentPolling] Notice for saleId ${saleId}:`, httpStatus, err?.message);
+        console.warn(`[useSalePaymentPolling] Notice for saleId ${currentSaleId}:`, httpStatus, err?.message);
 
-        // Terminal auth errors
+        // Terminal auth errors (401 / 403)
         if (httpStatus === 401 || httpStatus === 403) {
           setError(getErrorMessage(err));
           setPaymentState('ERROR');
@@ -210,8 +244,8 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
           return;
         }
 
-        // 6. Handle 500, 502, 503, Network Error, Timeout:
-        // DO NOT show Payment Failed. Show friendly status message and retry after delay.
+        // Handle 500, 502, 503, Network Error, Timeout:
+        // Do NOT show Payment Failed. Keep QR displayed, retry after 12s
         if (paymentStateRef.current !== 'PAID' && paymentStateRef.current !== 'COMPLETED') {
           setPaymentState('ERROR');
           setStatusMessage('កំពុងពិនិត្យការទូទាត់... សូមរង់ចាំបន្តិច។');
@@ -222,23 +256,25 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
         setIsChecking(false);
       }
     },
-    [saleId, stop, scheduleNext]
+    [stop, scheduleNext]
   );
 
+  const checkPaymentRef = useRef(checkPayment);
   checkPaymentRef.current = checkPayment;
 
   // Manual trigger for user "Check Payment" button clicks
   const checkNow = useCallback(() => {
-    return checkPayment(true);
-  }, [checkPayment]);
+    return checkPaymentRef.current?.(true);
+  }, []);
 
+  // Polling lifecycle + Page Visibility API
   useEffect(() => {
     if (!enabled || !saleId) {
       stop();
       return;
     }
 
-    // Clean up any existing timer before starting
+    // Clean up any existing timer or in-flight request before starting
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -246,17 +282,43 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
 
     aliveRef.current = true;
     inFlightRef.current = false;
+    isPausedRef.current = document.hidden;
     setPaymentState('PENDING');
 
-    // First check runs after ~10 seconds to give customer time to open banking app and scan
-    timerRef.current = setTimeout(() => {
-      checkPayment(false);
-    }, FIRST_POLL_DELAY_MS);
+    // Handle Page Visibility: pause when hidden, resume & check immediately when visible
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        console.log('[useSalePaymentPolling] Tab hidden: Pausing polling timer.');
+        isPausedRef.current = true;
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+          timerRef.current = null;
+        }
+      } else {
+        console.log('[useSalePaymentPolling] Tab visible: Resuming polling, checking once immediately.');
+        isPausedRef.current = false;
+        // Trigger immediate check when returning to tab, then resume 12s interval
+        if (aliveRef.current && !inFlightRef.current) {
+          checkPaymentRef.current?.(false);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Initial poll runs after 10s if tab is currently visible
+    if (!document.hidden) {
+      timerRef.current = setTimeout(() => {
+        timerRef.current = null;
+        checkPaymentRef.current?.(false);
+      }, FIRST_POLL_DELAY_MS);
+    }
 
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       stop();
     };
-  }, [enabled, saleId, stop, checkPayment]);
+  }, [enabled, saleId, stop]);
 
   return {
     payment,

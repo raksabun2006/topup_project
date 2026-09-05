@@ -86,8 +86,14 @@ export default function CheckoutModal({
     return (
       <BakongPaymentModal
         sale={pendingSale}
-        onPaid={onSuccess}
-        onClose={() => setPendingSale(null)}
+        onPaid={(completed) => {
+          setPendingSale(null);
+          onSuccess(completed);
+        }}
+        onClose={() => {
+          setPendingSale(null);
+          onClose();
+        }}
       />
     );
   }

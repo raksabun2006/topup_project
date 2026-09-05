@@ -10,6 +10,50 @@ import { saleApi } from '../../api/saleApi';
 import { getErrorMessage } from '../../api/client';
 import { formatCurrency, parseBackendDate, formatCountdown } from '../../utils/format';
 
+const ACTIVE_PAYMENT_KEY = 'pos_active_bakong_payment';
+
+function getStoredPaymentSession(saleId) {
+  try {
+    const raw = sessionStorage.getItem(ACTIVE_PAYMENT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || (saleId && parsed.saleId !== saleId)) return null;
+
+    if (parsed.expiresAt) {
+      const expDate = parseBackendDate(parsed.expiresAt);
+      if (expDate && expDate.getTime() <= Date.now()) {
+        sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
+        return null;
+      }
+    } else if (parsed.createdAt) {
+      const createdDate = parseBackendDate(parsed.createdAt);
+      if (createdDate && Date.now() - createdDate.getTime() > 15 * 60 * 1000) {
+        sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
+        return null;
+      }
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function savePaymentSession(data) {
+  try {
+    sessionStorage.setItem(ACTIVE_PAYMENT_KEY, JSON.stringify(data));
+  } catch {
+    // ignore
+  }
+}
+
+function clearPaymentSession() {
+  try {
+    sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const { isAuthenticated } = useAuth();
   const isGuest = Boolean(sale?.isGuest ?? !isAuthenticated);
@@ -34,7 +78,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     null
   );
 
-  const ACTIVE_PAYMENT_KEY = 'pos_active_bakong_payment';
+  const paymentCreatingRef = useRef(false);
+  const createAbortControllerRef = useRef(null);
 
   const [creating, setCreating] = useState(true);
   const [createError, setCreateError] = useState('');
@@ -129,11 +174,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     if (finalizedRef.current || !mountedRef.current) return;
     finalizedRef.current = true;
 
-    try {
-      sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
-    } catch {
-      // ignore
-    }
+    clearPaymentSession();
 
     setPollingEnabled(false);
     stopPolling();
@@ -173,138 +214,62 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     if (initRef.current || !originalSaleId) return;
     initRef.current = true;
 
+    // 1. Check if initial sale prop already has payment data or QR
+    const initialQr =
+      sale?.qrString ||
+      sale?.qr ||
+      sale?.payment?.qrString ||
+      sale?.payment?.qr;
+    const initialPaymentId = sale?.paymentId || sale?.payment?.paymentId;
+    const initialExpiresAt = sale?.expiresAt || sale?.payment?.expiresAt;
+
+    // 2. Check sessionStorage for existing active session
+    const stored = getStoredPaymentSession(originalSaleId);
+
+    if (initialQr || stored?.qr || stored?.qrString) {
+      console.log(`[BakongPaymentModal] Existing active payment found for saleId:`, originalSaleId);
+      const existingData = {
+        saleId: originalSaleId,
+        paymentId: initialPaymentId || stored?.paymentId || paymentIdRef.current,
+        qr: initialQr || stored?.qr || stored?.qrString,
+        qrString: initialQr || stored?.qrString || stored?.qr,
+        amount: sale?.amount || stored?.amount || sale?.total,
+        currency: sale?.currency || stored?.currency || 'USD',
+        expiresAt: initialExpiresAt || stored?.expiresAt || null,
+        billNumber: sale?.billNumber || sale?.invoiceNumber || stored?.billNumber,
+        createdAt: stored?.createdAt || sale?.createdAt,
+        status: 'PENDING',
+        paymentStatus: 'PENDING',
+        paid: false,
+      };
+
+      if (existingData.paymentId) {
+        paymentIdRef.current = existingData.paymentId;
+      }
+
+      setPayment(existingData);
+      setIsExpiredLocal(false);
+      setCreating(false);
+      setPollingEnabled(true);
+      return;
+    }
+
+    // 3. Atomic lock to prevent any duplicate calls to POST /payment
+    if (paymentCreatingRef.current) return;
+    paymentCreatingRef.current = true;
+
     let isMounted = true;
+    const controller = new AbortController();
+    createAbortControllerRef.current = controller;
 
     (async () => {
       try {
-        console.log(`[BakongPaymentModal] Mounted with originalSaleId:`, originalSaleId);
+        console.log(`[BakongPaymentModal] Creating payment (POST /payment) for originalSaleId:`, originalSaleId);
+        const created = await salePaymentApi.create(originalSaleId, 'BAKONG', {
+          isGuest,
+          signal: controller.signal,
+        });
 
-        // Step 1: ALWAYS check payment status FIRST using GET /sales/{saleId}/payment/status
-        // If payment is already PAID or exists, DO NOT create a new payment!
-        let statusCheck = null;
-        try {
-          statusCheck = await salePaymentApi.checkStatus(originalSaleId, { isGuest });
-          if (statusCheck?.paymentId) {
-            paymentIdRef.current = statusCheck.paymentId;
-          }
-        } catch {
-          // Status endpoint might return 404 if payment hasn't been created yet
-        }
-
-        if (!isMounted) return;
-
-        // If statusCheck returned a result:
-        if (statusCheck) {
-          const isCheckPaid =
-            statusCheck.paid === true ||
-            (typeof statusCheck.isPaid === 'function' && statusCheck.isPaid()) ||
-            statusCheck.paymentStatus === 'PAID' ||
-            statusCheck.status === 'PAID';
-
-          if (isCheckPaid) {
-            try {
-              sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
-            } catch {
-              // ignore
-            }
-            setPayment(statusCheck);
-            setPollingEnabled(false);
-            stopPolling();
-            setCreating(false);
-            return;
-          }
-
-          // If pending and has QR, use existing payment and start polling
-          if (statusCheck.qr || statusCheck.qrString) {
-            setPayment(statusCheck);
-            setIsExpiredLocal(false);
-            try {
-              sessionStorage.setItem(
-                ACTIVE_PAYMENT_KEY,
-                JSON.stringify({
-                  saleId: originalSaleId,
-                  paymentId: statusCheck.paymentId,
-                  isGuest,
-                  sale,
-                })
-              );
-            } catch {
-              // ignore
-            }
-            setPollingEnabled(true);
-            setCreating(false);
-            return;
-          }
-        }
-
-        // Step 2: If status check didn't have QR, check GET /sales/{saleId}/payment
-        let existing = null;
-        try {
-          existing = await salePaymentApi.get(originalSaleId, { isGuest });
-          if (existing?.paymentId) {
-            paymentIdRef.current = existing.paymentId;
-          }
-        } catch {
-          // Payment has not been created yet (404)
-        }
-
-        if (!isMounted) return;
-
-        if (existing) {
-          const combined = {
-            ...existing,
-            ...(statusCheck || {}),
-            qrString: existing.qrString || statusCheck?.qrString || null,
-            qr: existing.qr || statusCheck?.qr || null,
-            paid: statusCheck?.paid ?? existing.paid,
-            status: statusCheck?.status ?? existing.status,
-            paymentStatus: statusCheck?.paymentStatus ?? existing.paymentStatus,
-          };
-
-          setPayment(combined);
-
-          const isExistingPaid =
-            combined.paid === true ||
-            (typeof combined.isPaid === 'function' && combined.isPaid()) ||
-            combined.paymentStatus === 'PAID' ||
-            combined.status === 'PAID';
-
-          if (isExistingPaid) {
-            try {
-              sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
-            } catch {
-              // ignore
-            }
-            setPollingEnabled(false);
-            stopPolling();
-            setCreating(false);
-            return;
-          }
-
-          if (combined.qrString || combined.qr) {
-            setIsExpiredLocal(false);
-            try {
-              sessionStorage.setItem(
-                ACTIVE_PAYMENT_KEY,
-                JSON.stringify({
-                  saleId: originalSaleId,
-                  paymentId: combined.paymentId,
-                  isGuest,
-                  sale,
-                })
-              );
-            } catch {
-              // ignore
-            }
-            setPollingEnabled(true);
-            setCreating(false);
-            return;
-          }
-        }
-
-        // Step 3: ONLY create payment if NO existing payment exists
-        console.log(`[BakongPaymentModal] No existing payment found. Creating payment for originalSaleId:`, originalSaleId);
-        const created = await salePaymentApi.create(originalSaleId, 'BAKONG', { isGuest });
         if (!isMounted) return;
 
         if (created?.paymentId) {
@@ -327,105 +292,83 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
           created?.status === 'PAID';
 
         if (isCreatedPaid) {
-          try {
-            sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
-          } catch {
-            // ignore
-          }
+          clearPaymentSession();
           setPollingEnabled(false);
           stopPolling();
         } else {
-          try {
-            sessionStorage.setItem(
-              ACTIVE_PAYMENT_KEY,
-              JSON.stringify({
-                saleId: originalSaleId,
-                paymentId: created?.paymentId,
-                isGuest,
-                sale,
-              })
-            );
-          } catch {
-            // ignore
-          }
+          savePaymentSession({
+            saleId: originalSaleId,
+            paymentId: created?.paymentId,
+            qr: created?.qr || created?.qrString,
+            qrString: created?.qrString || created?.qr,
+            amount: created?.amount ?? sale?.total,
+            currency: created?.currency || 'USD',
+            expiresAt: created?.expiresAt,
+            billNumber: created?.billNumber || created?.invoiceNumber || sale?.invoiceNumber,
+            createdAt: created?.createdAt || new Date().toISOString(),
+            isGuest,
+            sale,
+          });
           setPollingEnabled(true);
         }
       } catch (err) {
-        if (!isMounted) return;
+        if (!isMounted || salePaymentApi.isCancel(err)) return;
 
         // If backend returned 409 Conflict (payment already created for this sale)
         if (err?.response?.status === 409) {
           try {
-            const fallbackStatus = await salePaymentApi.checkStatus(originalSaleId, { isGuest });
+            console.log(`[BakongPaymentModal] 409 Conflict: payment already exists. Fetching existing payment for saleId:`, originalSaleId);
+            const fallback = await salePaymentApi.get(originalSaleId, {
+              isGuest,
+              signal: controller.signal,
+            });
+
             if (!isMounted) return;
-            if (fallbackStatus?.paymentId) {
-              paymentIdRef.current = fallbackStatus.paymentId;
+
+            if (fallback?.paymentId) {
+              paymentIdRef.current = fallback.paymentId;
             }
-            setPayment(fallbackStatus);
+
+            setPayment(fallback);
             setIsExpiredLocal(false);
+
             const isFallbackPaid =
-              fallbackStatus?.paid === true ||
-              (typeof fallbackStatus?.isPaid === 'function' && fallbackStatus.isPaid()) ||
-              fallbackStatus?.paymentStatus === 'PAID' ||
-              fallbackStatus?.status === 'PAID';
+              fallback?.paid === true ||
+              (typeof fallback?.isPaid === 'function' && fallback.isPaid()) ||
+              fallback?.paymentStatus === 'PAID' ||
+              fallback?.status === 'PAID';
 
             if (isFallbackPaid) {
-              try {
-                sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
-              } catch {
-                // ignore
-              }
+              clearPaymentSession();
               setPollingEnabled(false);
               stopPolling();
             } else {
-              try {
-                sessionStorage.setItem(
-                  ACTIVE_PAYMENT_KEY,
-                  JSON.stringify({
-                    saleId: originalSaleId,
-                    paymentId: fallbackStatus?.paymentId,
-                    isGuest,
-                    sale,
-                  })
-                );
-              } catch {
-                // ignore
-              }
+              savePaymentSession({
+                saleId: originalSaleId,
+                paymentId: fallback?.paymentId,
+                qr: fallback?.qr || fallback?.qrString,
+                qrString: fallback?.qrString || fallback?.qr,
+                amount: fallback?.amount ?? sale?.total,
+                currency: fallback?.currency || 'USD',
+                expiresAt: fallback?.expiresAt,
+                billNumber: fallback?.billNumber || fallback?.invoiceNumber || sale?.invoiceNumber,
+                createdAt: fallback?.createdAt || new Date().toISOString(),
+                isGuest,
+                sale,
+              });
               setPollingEnabled(true);
             }
             return;
-          } catch {
-            try {
-              const fallbackGet = await salePaymentApi.get(originalSaleId, { isGuest });
-              if (!isMounted) return;
-              if (fallbackGet?.paymentId) {
-                paymentIdRef.current = fallbackGet.paymentId;
-              }
-              setPayment(fallbackGet);
-              setIsExpiredLocal(false);
-              try {
-                sessionStorage.setItem(
-                  ACTIVE_PAYMENT_KEY,
-                  JSON.stringify({
-                    saleId: originalSaleId,
-                    paymentId: fallbackGet?.paymentId,
-                    isGuest,
-                    sale,
-                  })
-                );
-              } catch {
-                // ignore
-              }
-              setPollingEnabled(true);
-              return;
-            } catch {
-              // ignore
-            }
+          } catch (fallbackErr) {
+            if (!isMounted || salePaymentApi.isCancel(fallbackErr)) return;
+            setCreateError(getErrorMessage(fallbackErr));
+            return;
           }
         }
 
         setCreateError(getErrorMessage(err));
       } finally {
+        paymentCreatingRef.current = false;
         if (isMounted) {
           setCreating(false);
         }
@@ -434,6 +377,11 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
     return () => {
       isMounted = false;
+      try {
+        controller.abort();
+      } catch {
+        // ignore
+      }
     };
   }, [originalSaleId, isGuest, stopPolling, setPayment, sale]);
 
@@ -465,21 +413,9 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     setRegenerating(true);
     setCreateError('');
     setIsExpiredLocal(false);
-    try {
-      // First check if payment was already completed before recreating
-      try {
-        const check = await salePaymentApi.checkStatus(originalSaleId, { isGuest });
-        if (check?.paid || check?.paymentStatus === 'PAID' || check?.status === 'PAID') {
-          if (check.paymentId) paymentIdRef.current = check.paymentId;
-          setPayment(check);
-          setPollingEnabled(false);
-          stopPolling();
-          return;
-        }
-      } catch {
-        // continue
-      }
+    clearPaymentSession();
 
+    try {
       console.log(`[BakongPaymentModal.regenerateQr] Creating new payment QR with originalSaleId:`, originalSaleId);
       const created = await salePaymentApi.create(originalSaleId, 'BAKONG', { isGuest });
       if (created?.paymentId) {
@@ -490,14 +426,33 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         created?.paid === true ||
         created?.paymentStatus === 'PAID' ||
         created?.status === 'PAID';
-      setPollingEnabled(!isCreatedPaid);
+
+      if (isCreatedPaid) {
+        setPollingEnabled(false);
+        stopPolling();
+      } else {
+        savePaymentSession({
+          saleId: originalSaleId,
+          paymentId: created?.paymentId,
+          qr: created?.qr || created?.qrString,
+          qrString: created?.qrString || created?.qr,
+          amount: created?.amount ?? sale?.total,
+          currency: created?.currency || 'USD',
+          expiresAt: created?.expiresAt,
+          billNumber: created?.billNumber || created?.invoiceNumber || sale?.invoiceNumber,
+          createdAt: created?.createdAt || new Date().toISOString(),
+          isGuest,
+          sale,
+        });
+        setPollingEnabled(true);
+      }
     } catch (err) {
       setCreateError(getErrorMessage(err));
     } finally {
       isRegeneratingRef.current = false;
       setRegenerating(false);
     }
-  }, [originalSaleId, isPaid, isGuest, stopPolling, setPayment]);
+  }, [originalSaleId, isPaid, isGuest, stopPolling, setPayment, sale]);
 
   // Dynamic Countdown calculation derived strictly from backend expiresAt
   const [secondsLeft, setSecondsLeft] = useState(null);
@@ -523,6 +478,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
       setSecondsLeft(remainingSeconds);
 
       if (remainingSeconds <= 0) {
+        clearPaymentSession();
         setIsExpiredLocal(true);
         setPollingEnabled(false);
         stopPolling();
@@ -535,10 +491,14 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   }, [payment?.qrString, payment?.qr, payment?.expiresAt, status, stopPolling]);
 
   const handleCancel = async () => {
-    try {
-      sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
-    } catch {
-      // ignore
+    clearPaymentSession();
+
+    if (createAbortControllerRef.current) {
+      try {
+        createAbortControllerRef.current.abort();
+      } catch {
+        // ignore
+      }
     }
 
     if (finalizedRef.current || isPaid) {
