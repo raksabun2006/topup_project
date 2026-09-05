@@ -30,8 +30,20 @@ export function useSalePaymentPolling(saleId, enabled) {
       const result = await salePaymentApi.checkStatus(saleId);
       if (!aliveRef.current) return;
 
-      setPayment(result);
+      setPayment((prev) => {
+        if (!prev) return result;
+        return {
+          ...prev,
+          ...result,
+          qrString: prev.qrString || result?.qrString || null,
+          qr: prev.qr || result?.qr || null,
+          billNumber: prev.billNumber || result?.billNumber || null,
+          expiresAt: prev.expiresAt || result?.expiresAt || null,
+          merchantName: prev.merchantName || result?.merchantName || null,
+        };
+      });
       setError('');
+
 
       const statusUpper = result?.status ? String(result.status).toUpperCase() : '';
       const isPaid =

@@ -91,31 +91,44 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
     (async () => {
       try {
-        // Step 1: Check if an existing payment / status already exists for this sale
+        // Step 1: First check if payment already exists via GET /sales/{saleId}/payment (contains qrString)
         let existing = null;
         try {
-          existing = await salePaymentApi.checkStatus(sale.id);
+          existing = await salePaymentApi.get(sale.id);
         } catch {
-          try {
-            existing = await salePaymentApi.get(sale.id);
-          } catch {
-            // Payment does not exist yet
-          }
+          // Payment has not been created yet (404)
         }
 
         if (!isMounted) return;
 
-        // Step 2: If existing payment found, check if already paid or pending
+        // Step 2: If existing payment found, check latest status and display existing QR
         if (existing) {
-          setPayment(existing);
+          let statusCheck = null;
+          try {
+            statusCheck = await salePaymentApi.checkStatus(sale.id);
+          } catch {
+            // ignore
+          }
 
-          if (existing.paid || existing.status === 'PAID') {
+          const combined = {
+            ...existing,
+            ...(statusCheck || {}),
+            qrString: existing.qrString || statusCheck?.qrString || null,
+            qr: existing.qr || statusCheck?.qr || null,
+            paid: statusCheck?.paid ?? existing.paid,
+            status: statusCheck?.status ?? existing.status,
+            paymentStatus: statusCheck?.paymentStatus ?? existing.paymentStatus,
+          };
+
+          setPayment(combined);
+
+          if (combined.paid || combined.status === 'PAID') {
             // Already paid! Do not generate a new QR or create another payment
             setCreating(false);
             return;
           }
 
-          if (existing.status === 'PENDING' && existing.qrString) {
+          if (combined.qrString || combined.qr) {
             // Existing pending QR available, start polling
             setIsExpiredLocal(false);
             setPollingEnabled(true);
@@ -124,7 +137,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
           }
         }
 
-        // Step 3: Create payment QR on backend
+        // Step 3: No existing payment found, create payment QR via POST /sales/{saleId}/payment
         const created = await salePaymentApi.create(sale.id, 'BAKONG');
         if (!isMounted) return;
 
@@ -160,6 +173,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
       isMounted = false;
     };
   }, [sale.id, setPayment]);
+
 
   // Clean up polling timer when component unmounts
   useEffect(() => {
@@ -256,7 +270,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const paymentAmount = payment?.amount ?? sale.total;
   const paymentCurrency = payment?.currency || 'USD';
   const merchantDisplayName = payment?.merchantName || 'Mart System';
-
+  const qrValue = payment?.qrString || payment?.qr || null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4 backdrop-blur-sm animate-fade-in">
@@ -352,7 +366,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
               <div className="flex justify-center px-4 py-4 sm:px-6 sm:py-5">
                 {status === 'PENDING' ? (
                   <div className="relative w-full">
-                    {payment?.qrString ? (
+                    {qrValue ? (
                       /* Standard KHQR Red Card - Keep white bg inside card for optical scanner contrast */
                       <div className="relative mx-auto w-full max-w-[260px] sm:max-w-[270px] overflow-hidden rounded-2xl bg-white shadow-lg border border-slate-200 animate-fade-in">
                         {/* KHQR Header Banner */}
@@ -379,13 +393,14 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                         {/* Real KHQR QR Code rendered from backend data.qrString */}
                         <div className="flex items-center justify-center p-4 sm:p-5 bg-white">
                           <QRCodeSVG
-                            value={payment.qrString}
+                            value={qrValue}
                             size={180}
                             level="M"
                             marginSize={0}
                             className="max-w-full h-auto"
                           />
                         </div>
+
 
                         {/* Acceptance Networks Footer */}
                         <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-3.5 sm:px-4 py-2 text-[9px] sm:text-[10px] text-slate-500">
