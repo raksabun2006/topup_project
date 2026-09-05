@@ -23,30 +23,142 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     useSalePaymentPolling(sale.id, pollingEnabled);
 
   // Normalize status string from backend
-  const rawStatus = payment?.status ? String(payment.status).toUpperCase() : '';
-  const status = isExpiredLocal && rawStatus === 'PENDING' ? 'EXPIRED' : rawStatus;
+  const rawStatus = payment?.status || payment?.paymentStatus || '';
+  const statusUpper = String(rawStatus).toUpperCase();
+  const isPaid =
+    payment?.paid === true ||
+    statusUpper === 'PAID' ||
+    statusUpper === 'SUCCESS' ||
+    statusUpper === 'COMPLETED';
+
+  const status = isPaid
+    ? 'PAID'
+    : isExpiredLocal && statusUpper === 'PENDING'
+    ? 'EXPIRED'
+    : statusUpper || 'PENDING';
 
   const initRef = useRef(false);
   const finalizedRef = useRef(false);
   const isRegeneratingRef = useRef(false);
 
-  // Initial QR creation (POST /sales/{saleId}/payment)
+  // Complete sale flow with strict idempotency lock
+  const completeSale = useCallback(async () => {
+    if (finalizedRef.current) return;
+    finalizedRef.current = true;
+
+    setPollingEnabled(false);
+    stopPolling();
+    setFinishing(true);
+    setFinishError('');
+
+    try {
+      // 1. Fetch latest sale to verify status
+      let updatedSale = null;
+      try {
+        updatedSale = await saleApi.getById(sale.id);
+      } catch (err) {
+        console.warn('Notice fetching sale by ID:', err);
+      }
+
+      // 2. If sale is not yet marked paid on backend, invoke markPaid safely
+      if (!updatedSale || updatedSale.paymentStatus !== 'PAID') {
+        try {
+          updatedSale = await saleApi.markPaid(sale.id);
+        } catch (err) {
+          // 409 Conflict is normal if already completed
+          if (err?.response?.status !== 409) {
+            console.warn('Notice while marking sale paid:', err);
+          }
+        }
+      }
+
+      // 3. Complete sale in POS (moves to Receipt modal and resets cart)
+      onPaid(updatedSale || sale);
+    } catch (err) {
+      console.warn('Notice during sale completion:', err);
+      onPaid(sale);
+    } finally {
+      setFinishing(false);
+    }
+  }, [sale, onPaid, stopPolling]);
+
+  // Initial Check & Create (handles refresh, reopen, and already-paid states safely)
   useEffect(() => {
     if (initRef.current) return;
     initRef.current = true;
 
+    let isMounted = true;
+
     (async () => {
       try {
+        // Step 1: Check if an existing payment / status already exists for this sale
+        let existing = null;
+        try {
+          existing = await salePaymentApi.checkStatus(sale.id);
+        } catch {
+          try {
+            existing = await salePaymentApi.get(sale.id);
+          } catch {
+            // Payment does not exist yet
+          }
+        }
+
+        if (!isMounted) return;
+
+        // Step 2: If existing payment found, check if already paid or pending
+        if (existing) {
+          setPayment(existing);
+
+          if (existing.paid || existing.status === 'PAID') {
+            // Already paid! Do not generate a new QR or create another payment
+            setCreating(false);
+            return;
+          }
+
+          if (existing.status === 'PENDING' && existing.qrString) {
+            // Existing pending QR available, start polling
+            setIsExpiredLocal(false);
+            setPollingEnabled(true);
+            setCreating(false);
+            return;
+          }
+        }
+
+        // Step 3: Create payment QR on backend
         const created = await salePaymentApi.create(sale.id, 'BAKONG');
+        if (!isMounted) return;
+
         setPayment(created);
         setIsExpiredLocal(false);
-        setPollingEnabled(created?.status === 'PENDING');
+        setPollingEnabled(created?.status === 'PENDING' && !created?.paid);
       } catch (err) {
+        if (!isMounted) return;
+
+        // If backend returned 409 Conflict (payment already created for this sale)
+        if (err?.response?.status === 409) {
+          try {
+            const fallback = await salePaymentApi.get(sale.id);
+            if (!isMounted) return;
+            setPayment(fallback);
+            setIsExpiredLocal(false);
+            setPollingEnabled(fallback?.status === 'PENDING' && !fallback?.paid);
+            return;
+          } catch {
+            // ignore
+          }
+        }
+
         setCreateError(getErrorMessage(err));
       } finally {
-        setCreating(false);
+        if (isMounted) {
+          setCreating(false);
+        }
       }
     })();
+
+    return () => {
+      isMounted = false;
+    };
   }, [sale.id, setPayment]);
 
   // Clean up polling timer when component unmounts
@@ -56,9 +168,17 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     };
   }, [stopPolling]);
 
+  // When payment reaches PAID / SUCCESS (confirmed by Backend)
+  useEffect(() => {
+    if (!isPaid || finalizedRef.current) {
+      return;
+    }
+    completeSale();
+  }, [isPaid, completeSale]);
+
   // Regenerate / Retry QR
   const regenerateQr = useCallback(async () => {
-    if (isRegeneratingRef.current) return;
+    if (isRegeneratingRef.current || isPaid) return;
     isRegeneratingRef.current = true;
     setRegenerating(true);
     setCreateError('');
@@ -66,14 +186,14 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     try {
       const created = await salePaymentApi.create(sale.id, 'BAKONG');
       setPayment(created);
-      setPollingEnabled(true);
+      setPollingEnabled(created?.status === 'PENDING' && !created?.paid);
     } catch (err) {
       setCreateError(getErrorMessage(err));
     } finally {
       isRegeneratingRef.current = false;
       setRegenerating(false);
     }
-  }, [sale.id, setPayment]);
+  }, [sale.id, isPaid, setPayment]);
 
   // Dynamic Countdown calculation derived strictly from backend expiresAt
   const [secondsLeft, setSecondsLeft] = useState(null);
@@ -109,32 +229,9 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     return () => clearInterval(interval);
   }, [payment?.qrString, payment?.expiresAt, status, stopPolling]);
 
-  // When payment status reaches PAID / COMPLETED / SUCCESS (confirmed by Backend)
-  useEffect(() => {
-    if ((status !== 'PAID' && status !== 'COMPLETED' && status !== 'SUCCESS') || finalizedRef.current) {
-      return;
-    }
-    finalizedRef.current = true;
-    setPollingEnabled(false);
-    stopPolling();
-
-    (async () => {
-      setFinishing(true);
-      setFinishError('');
-      try {
-        const updatedSale = await saleApi.markPaid(sale.id);
-        onPaid(updatedSale || sale);
-      } catch (err) {
-        console.warn('Notice while completing sale:', err);
-        onPaid(sale);
-      } finally {
-        setFinishing(false);
-      }
-    })();
-  }, [status, sale, onPaid, stopPolling]);
-
   const handleCancel = async () => {
     setCanceling(true);
+    setPollingEnabled(false);
     stopPolling();
     try {
       await salePaymentApi.cancel(sale.id);
@@ -151,14 +248,15 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     }
   };
 
-  const isSuccess = status === 'PAID' || status === 'COMPLETED' || status === 'SUCCESS';
+  const isSuccess = isPaid;
   const isExpired = status === 'EXPIRED';
   const isCancelled = status === 'CANCELLED';
 
-  const billNo = payment?.billNumber || sale.invoiceNumber || 'INV';
+  const billNo = payment?.billNumber || payment?.invoiceNumber || sale.invoiceNumber || 'INV';
   const paymentAmount = payment?.amount ?? sale.total;
   const paymentCurrency = payment?.currency || 'USD';
-  const merchantDisplayName = payment?.merchantName || 'Bun Raksa';
+  const merchantDisplayName = payment?.merchantName || 'Mart System';
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4 backdrop-blur-sm animate-fade-in">

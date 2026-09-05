@@ -11,9 +11,11 @@ export function useSalePaymentPolling(saleId, enabled) {
 
   const timerRef = useRef(null);
   const aliveRef = useRef(false);
+  const inFlightRef = useRef(false);
 
   const stop = useCallback(() => {
     aliveRef.current = false;
+    inFlightRef.current = false;
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -21,37 +23,62 @@ export function useSalePaymentPolling(saleId, enabled) {
   }, []);
 
   const poll = useCallback(async () => {
-    if (!aliveRef.current) return;
+    if (!aliveRef.current || inFlightRef.current) return;
+    inFlightRef.current = true;
+
     try {
       const result = await salePaymentApi.checkStatus(saleId);
       if (!aliveRef.current) return;
+
       setPayment(result);
       setError('');
 
       const statusUpper = result?.status ? String(result.status).toUpperCase() : '';
+      const isPaid =
+        result?.paid === true ||
+        statusUpper === 'PAID' ||
+        statusUpper === 'SUCCESS' ||
+        statusUpper === 'COMPLETED';
 
-      // Stop polling on terminal statuses
-      if (TERMINAL_STATUSES.includes(statusUpper)) {
+      // Stop immediately when payment is confirmed or has reached a terminal status
+      if (isPaid || TERMINAL_STATUSES.includes(statusUpper)) {
         stop();
         return;
       }
 
-      // Schedule next poll in 3000ms
-      timerRef.current = setTimeout(poll, env.paymentPollIntervalMs);
+      // Schedule next poll interval (2-3 seconds)
+      if (aliveRef.current) {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        const interval = env.paymentPollIntervalMs || 3000;
+        timerRef.current = setTimeout(() => {
+          inFlightRef.current = false;
+          poll();
+        }, interval);
+      }
     } catch (err) {
       if (!aliveRef.current) return;
       const httpStatus = err?.response?.status;
       console.warn('Payment polling notice:', httpStatus, err?.message);
 
-      // Stop polling on authentication or resource-not-found errors
+      // Stop polling on explicit authentication or resource-not-found errors
       if (httpStatus === 401 || httpStatus === 403 || httpStatus === 404) {
         setError(getErrorMessage(err));
         stop();
         return;
       }
 
-      // For 502/503 (provider busy) or temporary network glitches, continue retrying
-      timerRef.current = setTimeout(poll, env.paymentPollIntervalMs);
+      // For temporary provider busy (502/503), timeouts, or network glitches:
+      // Keep status as PENDING and retry after poll interval
+      if (aliveRef.current) {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        const interval = env.paymentPollIntervalMs || 3000;
+        timerRef.current = setTimeout(() => {
+          inFlightRef.current = false;
+          poll();
+        }, interval);
+      }
+    } finally {
+      inFlightRef.current = false;
     }
   }, [saleId, stop]);
 
@@ -60,10 +87,16 @@ export function useSalePaymentPolling(saleId, enabled) {
       stop();
       return;
     }
+
     aliveRef.current = true;
+    inFlightRef.current = false;
     poll();
-    return stop;
+
+    return () => {
+      stop();
+    };
   }, [enabled, saleId, poll, stop]);
 
   return { payment, error, setPayment, stop };
 }
+

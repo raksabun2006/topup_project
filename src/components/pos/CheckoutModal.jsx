@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
-import { X, Loader2, AlertCircle, Banknote, Clock, QrCode, CreditCard, Check, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { X, Loader2, AlertCircle, Banknote, Clock, QrCode, CreditCard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { formatCurrency, formatCurrencyPrecise } from '../../utils/format';
 import { saleApi } from '../../api/saleApi';
 import { getErrorMessage } from '../../api/client';
 import BakongPaymentModal from './BakongPaymentModal';
+
 
 const QUICK_AMOUNTS = [5, 10, 20, 50, 100];
 
