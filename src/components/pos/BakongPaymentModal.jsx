@@ -34,6 +34,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     null
   );
 
+  const ACTIVE_PAYMENT_KEY = 'pos_active_bakong_payment';
+
   const [creating, setCreating] = useState(true);
   const [createError, setCreateError] = useState('');
   const [pollingEnabled, setPollingEnabled] = useState(false);
@@ -41,14 +43,20 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const [canceling, setCanceling] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [isExpiredLocal, setIsExpiredLocal] = useState(false);
-  const [manualChecking, setManualChecking] = useState(false);
-  const [manualCheckMsg, setManualCheckMsg] = useState('');
 
-  // Payment polling always uses originalSaleId and options
+  // Payment polling always uses originalSaleId and options via single controller
   const pollingOptions = useRef({ isGuest });
   pollingOptions.current = { isGuest };
-  const { payment, error: pollError, setPayment, stop: stopPolling } =
-    useSalePaymentPolling(originalSaleId, pollingEnabled, pollingOptions.current);
+  const {
+    payment,
+    paymentState,
+    isChecking,
+    statusMessage,
+    error: pollError,
+    checkNow,
+    setPayment,
+    stop: stopPolling,
+  } = useSalePaymentPolling(originalSaleId, pollingEnabled, pollingOptions.current);
 
   // Normalize status string from backend
   const statusUpper = String(
@@ -64,22 +72,46 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   ).toUpperCase();
 
   const isPaid =
+    paymentState === 'PAID' ||
+    paymentState === 'COMPLETED' ||
     payment?.paid === true ||
     (typeof payment?.isPaid === 'function' && payment.isPaid()) ||
     ['PAID', 'SUCCESS', 'COMPLETED'].includes(statusUpper) ||
     ['PAID', 'SUCCESS', 'COMPLETED'].includes(paymentStatusUpper);
 
   const isTerminalFailure =
-    ['FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'].includes(statusUpper) ||
-    ['FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'].includes(paymentStatusUpper);
+    paymentState === 'FAILED' ||
+    paymentState === 'CANCELLED' ||
+    paymentState === 'REFUNDED' ||
+    ['FAILED', 'CANCELLED', 'REFUNDED'].includes(statusUpper) ||
+    ['FAILED', 'CANCELLED', 'REFUNDED'].includes(paymentStatusUpper);
+
+  const isExpired =
+    isExpiredLocal ||
+    paymentState === 'EXPIRED' ||
+    statusUpper === 'EXPIRED' ||
+    paymentStatusUpper === 'EXPIRED';
+
+  const isCancelled =
+    paymentState === 'CANCELLED' ||
+    statusUpper === 'CANCELLED' ||
+    paymentStatusUpper === 'CANCELLED';
+
+  const isRateLimited = paymentState === 'RATE_LIMITED';
+  const isTemporaryError = paymentState === 'ERROR';
+
+  // QR card remains actively rendered while waiting, checking, rate limited, or temporary error
+  const isQrActive = !isPaid && !isExpired && !isCancelled && !isTerminalFailure;
 
   const status = isPaid
     ? 'PAID'
-    : isExpiredLocal && (statusUpper === 'PENDING' || paymentStatusUpper === 'PENDING')
+    : isExpired
     ? 'EXPIRED'
+    : isCancelled
+    ? 'CANCELLED'
     : isTerminalFailure
-    ? (['FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'].includes(statusUpper) ? statusUpper : paymentStatusUpper)
-    : statusUpper || paymentStatusUpper || 'PENDING';
+    ? 'FAILED'
+    : paymentState || statusUpper || paymentStatusUpper || 'PENDING';
 
   const initRef = useRef(false);
   const finalizedRef = useRef(false);
@@ -96,6 +128,12 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const completeSale = useCallback(async () => {
     if (finalizedRef.current || !mountedRef.current) return;
     finalizedRef.current = true;
+
+    try {
+      sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
+    } catch {
+      // ignore
+    }
 
     setPollingEnabled(false);
     stopPolling();
@@ -164,10 +202,11 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
             statusCheck.status === 'PAID';
 
           if (isCheckPaid) {
-            // Already paid!
-            // 1. Keep existing saleId
-            // 2. Keep existing paymentId
-            // 3. Immediately show success, stop polling, complete UI
+            try {
+              sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
+            } catch {
+              // ignore
+            }
             setPayment(statusCheck);
             setPollingEnabled(false);
             stopPolling();
@@ -179,6 +218,19 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
           if (statusCheck.qr || statusCheck.qrString) {
             setPayment(statusCheck);
             setIsExpiredLocal(false);
+            try {
+              sessionStorage.setItem(
+                ACTIVE_PAYMENT_KEY,
+                JSON.stringify({
+                  saleId: originalSaleId,
+                  paymentId: statusCheck.paymentId,
+                  isGuest,
+                  sale,
+                })
+              );
+            } catch {
+              // ignore
+            }
             setPollingEnabled(true);
             setCreating(false);
             return;
@@ -218,6 +270,11 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
             combined.status === 'PAID';
 
           if (isExistingPaid) {
+            try {
+              sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
+            } catch {
+              // ignore
+            }
             setPollingEnabled(false);
             stopPolling();
             setCreating(false);
@@ -226,6 +283,19 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
           if (combined.qrString || combined.qr) {
             setIsExpiredLocal(false);
+            try {
+              sessionStorage.setItem(
+                ACTIVE_PAYMENT_KEY,
+                JSON.stringify({
+                  saleId: originalSaleId,
+                  paymentId: combined.paymentId,
+                  isGuest,
+                  sale,
+                })
+              );
+            } catch {
+              // ignore
+            }
             setPollingEnabled(true);
             setCreating(false);
             return;
@@ -257,9 +327,27 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
           created?.status === 'PAID';
 
         if (isCreatedPaid) {
+          try {
+            sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
+          } catch {
+            // ignore
+          }
           setPollingEnabled(false);
           stopPolling();
         } else {
+          try {
+            sessionStorage.setItem(
+              ACTIVE_PAYMENT_KEY,
+              JSON.stringify({
+                saleId: originalSaleId,
+                paymentId: created?.paymentId,
+                isGuest,
+                sale,
+              })
+            );
+          } catch {
+            // ignore
+          }
           setPollingEnabled(true);
         }
       } catch (err) {
@@ -282,9 +370,27 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
               fallbackStatus?.status === 'PAID';
 
             if (isFallbackPaid) {
+              try {
+                sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
+              } catch {
+                // ignore
+              }
               setPollingEnabled(false);
               stopPolling();
             } else {
+              try {
+                sessionStorage.setItem(
+                  ACTIVE_PAYMENT_KEY,
+                  JSON.stringify({
+                    saleId: originalSaleId,
+                    paymentId: fallbackStatus?.paymentId,
+                    isGuest,
+                    sale,
+                  })
+                );
+              } catch {
+                // ignore
+              }
               setPollingEnabled(true);
             }
             return;
@@ -297,6 +403,19 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
               }
               setPayment(fallbackGet);
               setIsExpiredLocal(false);
+              try {
+                sessionStorage.setItem(
+                  ACTIVE_PAYMENT_KEY,
+                  JSON.stringify({
+                    saleId: originalSaleId,
+                    paymentId: fallbackGet?.paymentId,
+                    isGuest,
+                    sale,
+                  })
+                );
+              } catch {
+                // ignore
+              }
               setPollingEnabled(true);
               return;
             } catch {
@@ -316,7 +435,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     return () => {
       isMounted = false;
     };
-  }, [originalSaleId, isGuest, stopPolling, setPayment]);
+  }, [originalSaleId, isGuest, stopPolling, setPayment, sale]);
 
   // Clean up polling timer when component unmounts
   useEffect(() => {
@@ -333,56 +452,11 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     completeSale();
   }, [isPaid, completeSale]);
 
-  // Instant Manual Status Verification (triggers active backend gateway check using originalSaleId)
-  const handleManualCheck = useCallback(async () => {
-    if (manualChecking || finalizedRef.current || isPaid) return;
-    setManualChecking(true);
-    setManualCheckMsg('');
-    try {
-      console.log(`[BakongPaymentModal.handleManualCheck] Checking status with originalSaleId:`, originalSaleId);
-      const res = await salePaymentApi.checkStatus(originalSaleId, { isGuest });
-      if (!mountedRef.current) return;
-      if (res) {
-        if (res.paymentId) {
-          paymentIdRef.current = res.paymentId;
-        }
-        setPayment((prev) => ({
-          ...(prev || {}),
-          ...res,
-          qrString: prev?.qrString || res.qrString || null,
-          qr: prev?.qr || res.qr || null,
-          billNumber: prev?.billNumber || res.billNumber || null,
-          invoiceNumber: prev?.invoiceNumber || res.invoiceNumber || null,
-        }));
-        const statusUpper = String(res.status || '').toUpperCase();
-        const paymentStatusUpper = String(res.paymentStatus || '').toUpperCase();
-        const isSuccess =
-          res.paid === true ||
-          (typeof res.isPaid === 'function' && res.isPaid()) ||
-          ['PAID', 'SUCCESS', 'COMPLETED'].includes(statusUpper) ||
-          ['PAID', 'SUCCESS', 'COMPLETED'].includes(paymentStatusUpper);
-
-        if (isSuccess) {
-          setPollingEnabled(false);
-          stopPolling();
-          return;
-        } else {
-          setManualCheckMsg('ធនាគារមិនទាន់បានបញ្ជាក់ការទូទាត់នៅឡើយទេ (Waiting for bank confirmation)');
-          setTimeout(() => {
-            if (mountedRef.current) setManualCheckMsg('');
-          }, 3500);
-        }
-      }
-    } catch (err) {
-      if (mountedRef.current) {
-        setManualCheckMsg(getErrorMessage(err));
-      }
-    } finally {
-      if (mountedRef.current) {
-        setManualChecking(false);
-      }
-    }
-  }, [manualChecking, isPaid, originalSaleId, isGuest, stopPolling, setPayment]);
+  // Instant Manual Status Verification (delegates to single controller with inFlight concurrency guard)
+  const handleManualCheck = useCallback(() => {
+    if (isChecking || finalizedRef.current || isPaid) return;
+    checkNow();
+  }, [isChecking, isPaid, checkNow]);
 
   // Regenerate / Retry QR
   const regenerateQr = useCallback(async () => {
@@ -461,6 +535,12 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   }, [payment?.qrString, payment?.qr, payment?.expiresAt, status, stopPolling]);
 
   const handleCancel = async () => {
+    try {
+      sessionStorage.removeItem(ACTIVE_PAYMENT_KEY);
+    } catch {
+      // ignore
+    }
+
     if (finalizedRef.current || isPaid) {
       onClose();
       return;
@@ -496,8 +576,6 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   };
 
   const isSuccess = isPaid;
-  const isExpired = status === 'EXPIRED';
-  const isCancelled = status === 'CANCELLED';
 
   const billNo = payment?.billNumber || payment?.invoiceNumber || sale?.invoiceNumber || 'INV';
   const paymentAmount = payment?.amount ?? sale?.total;
@@ -562,8 +640,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
               <CheckCircle size={38} />
             </div>
-            <h4 className="text-xl font-black text-slate-900 dark:text-white">✓ Payment Successful</h4>
-            <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Sale Completed</p>
+            <h4 className="text-xl font-black text-slate-900 dark:text-white">✓ ការទូទាត់ជោគជ័យ</h4>
+            <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Payment completed successfully.</p>
             <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
               Invoice: {billNo}
             </p>
@@ -580,11 +658,11 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
         {/* Main Body Container with Scroll */}
         <div className="flex-1 overflow-y-auto">
-          {/* Main Display: PENDING QR Code or Failed / Expired state */}
+          {/* Main Display: Active QR Code or Failed / Expired state */}
           {!creating && !createError && !isSuccess && (
             <>
               <div className="flex justify-center px-4 py-4 sm:px-6 sm:py-5">
-                {status === 'PENDING' ? (
+                {isQrActive ? (
                   <div className="relative w-full">
                     {qrValue ? (
                       /* Standard KHQR Red Card - Keep white bg inside card for optical scanner contrast */
@@ -671,8 +749,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                 )}
               </div>
 
-              {/* Expiration Countdown Banner (Pending State) */}
-              {status === 'PENDING' && secondsLeft != null && (
+              {/* Expiration Countdown Banner (Active QR State) */}
+              {isQrActive && secondsLeft != null && (
                 <div className="px-4 sm:px-6 pb-2 text-center">
                   <p className={`text-xs font-semibold ${secondsLeft <= 60 ? 'text-rose-600 dark:text-rose-400 animate-pulse' : 'text-slate-500 dark:text-slate-400'}`}>
                     QR ផុតកំណត់ក្នុង {formatCountdown(secondsLeft)}
@@ -680,8 +758,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                 </div>
               )}
 
-              {/* Bill Details Summary when not pending */}
-              {status !== 'PENDING' && (
+              {/* Bill Details Summary when not active QR */}
+              {!isQrActive && (
                 <div className="border-y border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 px-4 sm:px-6 py-2.5 sm:py-3 text-center">
                   <p className="text-xs text-slate-500 dark:text-slate-400">ចំនួនទឹកប្រាក់សរុប</p>
                   <p className="mt-0.5 text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
@@ -696,18 +774,41 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         {/* Action Buttons Footer */}
         {!creating && !createError && !isSuccess && (
           <div className="shrink-0 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 sm:px-6 sm:py-4">
-            {status === 'PENDING' ? (
+            {isQrActive ? (
               <>
-                {pollError ? (
+                {isRateLimited ? (
+                  <div className="flex items-center gap-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 p-2.5 text-xs text-amber-800 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 animate-fade-in">
+                    <AlertCircle size={15} className="shrink-0 text-amber-600 dark:text-amber-400" />
+                    <span className="leading-snug">
+                      {statusMessage || 'មិនអាចពិនិត្យស្ថានភាពការទូទាត់បានជាបណ្តោះអាសន្ន។ កំពុងផ្ទៀងផ្ទាត់ការទូទាត់... សូមរង់ចាំបន្តិច'}
+                    </span>
+                  </div>
+                ) : isTemporaryError ? (
+                  <div className="flex items-center gap-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 p-2.5 text-xs text-blue-800 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60 animate-fade-in">
+                    <Loader2 size={15} className="shrink-0 text-blue-600 dark:text-blue-400 animate-spin" />
+                    <span className="leading-snug">
+                      {statusMessage || 'កំពុងពិនិត្យការទូទាត់... សូមរង់ចាំបន្តិច។'}
+                    </span>
+                  </div>
+                ) : pollError ? (
                   <p className="mb-2 text-center text-xs text-rose-600 dark:text-rose-400">{pollError}</p>
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 py-2.5 px-3 text-center">
                     <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                      <Loader2 size={14} className="animate-spin text-emerald-600 shrink-0" />
-                      <span>កំពុងរង់ចាំការទូទាត់... (Waiting for payment...)</span>
+                      {isChecking ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin text-emerald-600 shrink-0" />
+                          <span>● កំពុងពិនិត្យ... (Checking payment...)</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                          <span>កំពុងរង់ចាំការបង់ប្រាក់ (Waiting for payment...)</span>
+                        </>
+                      )}
                     </div>
                     <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
-                      សូមស្កេន KHQR ដើម្បីបង់ប្រាក់ (Please scan the KHQR and complete payment.)
+                      Please complete payment · សូមស្កេន KHQR ដើម្បីបង់ប្រាក់
                     </p>
                   </div>
                 )}
@@ -716,27 +817,21 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                 <button
                   type="button"
                   onClick={handleManualCheck}
-                  disabled={manualChecking || canceling}
+                  disabled={isChecking || canceling || finishing}
                   className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-600/30 bg-emerald-50/70 dark:bg-emerald-950/40 py-2.5 px-3 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition cursor-pointer disabled:opacity-50"
                 >
-                  {manualChecking ? (
+                  {isChecking ? (
                     <>
                       <Loader2 size={14} className="animate-spin text-emerald-600" />
-                      <span>កំពុងពិនិត្យ... (Checking payment...)</span>
+                      <span>● កំពុងពិនិត្យ... (Checking...)</span>
                     </>
                   ) : (
                     <>
                       <RefreshCw size={14} className="text-emerald-600" />
-                      <span>ពិនិត្យស្ថានភាពទូទាត់ (Check Payment Status)</span>
+                      <span>ពិនិត្យស្ថានភាពទូទាត់ (Check Payment)</span>
                     </>
                   )}
                 </button>
-
-                {manualCheckMsg && (
-                  <p className="mt-1 text-center text-[11px] text-amber-600 dark:text-amber-400 font-medium animate-fade-in">
-                    {manualCheckMsg}
-                  </p>
-                )}
 
                 {payment?.deeplinkUrl && (
                   <a

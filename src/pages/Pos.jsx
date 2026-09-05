@@ -7,12 +7,14 @@ import { useCategories } from '../hooks/useCategories';
 import ProductGrid from '../components/pos/ProductGrid';
 import CartPanel from '../components/pos/CartPanel';
 import CheckoutModal from '../components/pos/CheckoutModal';
+import BakongPaymentModal from '../components/pos/BakongPaymentModal';
 import SaleSuccessModal from '../components/pos/SaleSuccessModal';
 import SEO from '../components/SEO';
 import { env } from '../config/env';
 import { formatCurrency } from '../utils/format';
 
 const HELD_ORDERS_KEY = 'pos_held_orders';
+const ACTIVE_BAKONG_PAYMENT_KEY = 'pos_active_bakong_payment';
 
 function loadHeldOrders() {
   try {
@@ -28,6 +30,20 @@ function loadHeldOrders() {
   return [];
 }
 
+function loadActiveBakongPayment() {
+  try {
+    const raw = sessionStorage.getItem(ACTIVE_BAKONG_PAYMENT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.saleId) {
+      return parsed.sale || { saleId: parsed.saleId, isGuest: parsed.isGuest };
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export default function Pos() {
   const { pathname } = useLocation();
   const { isAuthenticated } = useAuth();
@@ -40,6 +56,7 @@ export default function Pos() {
   const [taxPct, setTaxPct] = useState('0');
   const [heldOrders, setHeldOrders] = useState(loadHeldOrders);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [resumedPaymentSale, setResumedPaymentSale] = useState(loadActiveBakongPayment);
   const [completedSale, setCompletedSale] = useState(null);
   const [stockReloadSignal, setStockReloadSignal] = useState(0);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
@@ -402,6 +419,20 @@ export default function Pos() {
           total={total}
           onClose={() => setShowCheckout(false)}
           onSuccess={handleSaleSuccess}
+        />
+      )}
+
+      {/* Resumed Bakong Payment Modal (Preserves active payment session on page refresh) */}
+      {resumedPaymentSale && (
+        <BakongPaymentModal
+          sale={resumedPaymentSale}
+          onPaid={(completed) => {
+            setResumedPaymentSale(null);
+            handleSaleSuccess(completed);
+          }}
+          onClose={() => {
+            setResumedPaymentSale(null);
+          }}
         />
       )}
 
