@@ -4,7 +4,7 @@ import { getErrorMessage } from '../api/client';
 import { env } from '../config/env';
 
 const TERMINAL_SUCCESS = ['PAID', 'SUCCESS', 'COMPLETED'];
-const TERMINAL_FAILURE = ['FAILED', 'EXPIRED', 'CANCELLED'];
+const TERMINAL_FAILURE = ['FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'];
 
 export function useSalePaymentPolling(saleId, enabled) {
   const [payment, setPayment] = useState(null);
@@ -28,14 +28,23 @@ export function useSalePaymentPolling(saleId, enabled) {
   }, [clearTimer]);
 
   const poll = useCallback(async () => {
-    if (!aliveRef.current || inFlightRef.current) return;
+    if (!aliveRef.current || inFlightRef.current || !saleId) return;
     inFlightRef.current = true;
 
     try {
+      console.log(`[useSalePaymentPolling] Polling payment status for saleId:`, saleId);
       const result = await salePaymentApi.checkStatus(saleId);
       if (!aliveRef.current) return;
 
       if (result) {
+        console.log(`[useSalePaymentPolling] Received result:`, {
+          saleIdUsedForPolling: saleId,
+          saleIdFromBackend: result.saleId,
+          paymentIdFromBackend: result.paymentId,
+          status: result.status,
+          paid: result.paid,
+        });
+
         setPayment((prev) => {
           if (!prev) return result;
           return {
@@ -51,8 +60,8 @@ export function useSalePaymentPolling(saleId, enabled) {
             merchantName: prev.merchantName || result.merchantName || null,
             amount: prev.amount ?? result.amount,
             currency: prev.currency || result.currency,
-            paymentId: prev.paymentId || result.paymentId,
-            saleId: prev.saleId || result.saleId,
+            paymentId: result.paymentId || prev.paymentId || null,
+            saleId: saleId, // Always strictly preserve the original saleId
           };
         });
         setError('');
@@ -69,6 +78,7 @@ export function useSalePaymentPolling(saleId, enabled) {
 
         // Stop polling immediately on terminal states
         if (isPaid || isFailure) {
+          console.log(`[useSalePaymentPolling] Terminal status reached (${statusUpper || paymentStatusUpper}), stopping.`);
           stop();
           return;
         }
@@ -85,16 +95,16 @@ export function useSalePaymentPolling(saleId, enabled) {
     } catch (err) {
       if (!aliveRef.current) return;
       const httpStatus = err?.response?.status;
-      console.warn('Payment polling notice:', httpStatus, err?.message);
+      console.warn(`[useSalePaymentPolling] Notice for saleId ${saleId}:`, httpStatus, err?.message);
 
-      // Stop polling on explicit authentication, forbidden, or not found errors
-      if (httpStatus === 401 || httpStatus === 403 || httpStatus === 404) {
+      // Stop polling only on explicit authentication or forbidden errors
+      if (httpStatus === 401 || httpStatus === 403) {
         setError(getErrorMessage(err));
         stop();
         return;
       }
 
-      // For temporary errors (5xx, timeouts, network glitch):
+      // For temporary errors (network glitch, timeouts, 404 while DB initializes, 5xx):
       // Keep state as PENDING and schedule next poll
       if (aliveRef.current) {
         clearTimer();

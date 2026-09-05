@@ -10,6 +10,21 @@ import { getErrorMessage } from '../../api/client';
 import { formatCurrency, parseBackendDate, formatCountdown } from '../../utils/format';
 
 export default function BakongPaymentModal({ sale, onPaid, onClose }) {
+  // 1. Resolve and strictly lock the original Sale ID from sale creation
+  const originalSaleId = useRef(
+    (typeof sale === 'string' ? sale : null) ||
+    sale?.saleId ||
+    sale?.orderId ||
+    sale?.entityId ||
+    sale?.id ||
+    sale?.data?.id ||
+    sale?.data?.saleId ||
+    null
+  ).current;
+
+  // 2. Track paymentId separately from saleId
+  const paymentIdRef = useRef(sale?.paymentId || null);
+
   const [creating, setCreating] = useState(true);
   const [createError, setCreateError] = useState('');
   const [pollingEnabled, setPollingEnabled] = useState(false);
@@ -21,8 +36,9 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const [manualChecking, setManualChecking] = useState(false);
   const [manualCheckMsg, setManualCheckMsg] = useState('');
 
+  // Payment polling always uses originalSaleId
   const { payment, error: pollError, setPayment, stop: stopPolling } =
-    useSalePaymentPolling(sale.id, pollingEnabled);
+    useSalePaymentPolling(originalSaleId, pollingEnabled);
 
   // Normalize status string from backend
   const statusUpper = String(payment?.status || '').toUpperCase();
@@ -33,15 +49,15 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     ['PAID', 'SUCCESS', 'COMPLETED'].includes(paymentStatusUpper);
 
   const isTerminalFailure =
-    ['FAILED', 'EXPIRED', 'CANCELLED'].includes(statusUpper) ||
-    ['FAILED', 'EXPIRED', 'CANCELLED'].includes(paymentStatusUpper);
+    ['FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'].includes(statusUpper) ||
+    ['FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'].includes(paymentStatusUpper);
 
   const status = isPaid
     ? 'PAID'
     : isExpiredLocal && (statusUpper === 'PENDING' || paymentStatusUpper === 'PENDING')
     ? 'EXPIRED'
     : isTerminalFailure
-    ? (['FAILED', 'EXPIRED', 'CANCELLED'].includes(statusUpper) ? statusUpper : paymentStatusUpper)
+    ? (['FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'].includes(statusUpper) ? statusUpper : paymentStatusUpper)
     : statusUpper || paymentStatusUpper || 'PENDING';
 
   const initRef = useRef(false);
@@ -66,10 +82,11 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     setFinishError('');
 
     try {
-      // 1. Fetch latest verified sale entity from backend
+      // 1. Fetch latest verified sale entity from backend using originalSaleId
       let updatedSale = null;
       try {
-        updatedSale = await saleApi.getById(sale.id);
+        console.log(`[BakongPaymentModal] Completing sale: fetching sale with originalSaleId:`, originalSaleId);
+        updatedSale = await saleApi.getById(originalSaleId);
       } catch (err) {
         console.warn('Notice fetching sale by ID:', err);
       }
@@ -91,21 +108,26 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         setFinishing(false);
       }
     }
-  }, [sale, onPaid, stopPolling]);
+  }, [originalSaleId, sale, onPaid, stopPolling]);
 
   // Initial Check & Create (handles refresh, reopen, and already-paid states safely)
   useEffect(() => {
-    if (initRef.current) return;
+    if (initRef.current || !originalSaleId) return;
     initRef.current = true;
 
     let isMounted = true;
 
     (async () => {
       try {
+        console.log(`[BakongPaymentModal] Mounted with originalSaleId:`, originalSaleId);
+
         // Step 1: First check if payment already exists via GET /sales/{saleId}/payment (contains qrString)
         let existing = null;
         try {
-          existing = await salePaymentApi.get(sale.id);
+          existing = await salePaymentApi.get(originalSaleId);
+          if (existing?.paymentId) {
+            paymentIdRef.current = existing.paymentId;
+          }
         } catch {
           // Payment has not been created yet (404)
         }
@@ -116,9 +138,14 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         if (existing) {
           let statusCheck = null;
           try {
-            statusCheck = await salePaymentApi.checkStatus(sale.id);
+            console.log(`[BakongPaymentModal] Existing payment found. Checking status for originalSaleId:`, originalSaleId);
+            statusCheck = await salePaymentApi.checkStatus(originalSaleId);
           } catch {
             // ignore
+          }
+
+          if (statusCheck?.paymentId) {
+            paymentIdRef.current = statusCheck.paymentId;
           }
 
           const combined = {
@@ -148,9 +175,20 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
           }
         }
 
-        // Step 3: No existing payment found, create payment QR via POST /sales/{saleId}/payment
-        const created = await salePaymentApi.create(sale.id, 'BAKONG');
+        // Step 3: No existing payment found, create payment QR via POST /api/v1/sales/{saleId}/payment
+        console.log(`[BakongPaymentModal] Creating payment for originalSaleId:`, originalSaleId);
+        const created = await salePaymentApi.create(originalSaleId, 'BAKONG');
         if (!isMounted) return;
+
+        if (created?.paymentId) {
+          paymentIdRef.current = created.paymentId;
+        }
+
+        console.log(`[BakongPaymentModal] Payment created successfully:`, {
+          originalSaleId,
+          paymentId: created?.paymentId,
+          status: created?.status,
+        });
 
         setPayment(created);
         setIsExpiredLocal(false);
@@ -161,8 +199,11 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         // If backend returned 409 Conflict (payment already created for this sale)
         if (err?.response?.status === 409) {
           try {
-            const fallback = await salePaymentApi.get(sale.id);
+            const fallback = await salePaymentApi.get(originalSaleId);
             if (!isMounted) return;
+            if (fallback?.paymentId) {
+              paymentIdRef.current = fallback.paymentId;
+            }
             setPayment(fallback);
             setIsExpiredLocal(false);
             setPollingEnabled(fallback?.status === 'PENDING' && !fallback?.paid);
@@ -183,7 +224,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     return () => {
       isMounted = false;
     };
-  }, [sale.id, setPayment]);
+  }, [originalSaleId, setPayment]);
 
 
   // Clean up polling timer when component unmounts
@@ -201,15 +242,19 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     completeSale();
   }, [isPaid, completeSale]);
 
-  // Instant Manual Status Verification (triggers active backend gateway check)
+  // Instant Manual Status Verification (triggers active backend gateway check using originalSaleId)
   const handleManualCheck = useCallback(async () => {
     if (manualChecking || finalizedRef.current || isPaid) return;
     setManualChecking(true);
     setManualCheckMsg('');
     try {
-      const res = await salePaymentApi.checkStatus(sale.id);
+      console.log(`[BakongPaymentModal.handleManualCheck] Checking status with originalSaleId:`, originalSaleId);
+      const res = await salePaymentApi.checkStatus(originalSaleId);
       if (!mountedRef.current) return;
       if (res) {
+        if (res.paymentId) {
+          paymentIdRef.current = res.paymentId;
+        }
         setPayment((prev) => ({
           ...(prev || {}),
           ...res,
@@ -242,7 +287,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         setManualChecking(false);
       }
     }
-  }, [manualChecking, isPaid, sale.id, setPayment]);
+  }, [manualChecking, isPaid, originalSaleId, setPayment]);
 
   // Regenerate / Retry QR
   const regenerateQr = useCallback(async () => {
@@ -252,7 +297,11 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     setCreateError('');
     setIsExpiredLocal(false);
     try {
-      const created = await salePaymentApi.create(sale.id, 'BAKONG');
+      console.log(`[BakongPaymentModal.regenerateQr] Creating new payment QR with originalSaleId:`, originalSaleId);
+      const created = await salePaymentApi.create(originalSaleId, 'BAKONG');
+      if (created?.paymentId) {
+        paymentIdRef.current = created.paymentId;
+      }
       setPayment(created);
       setPollingEnabled(created?.status === 'PENDING' && !created?.paid);
     } catch (err) {
@@ -261,7 +310,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
       isRegeneratingRef.current = false;
       setRegenerating(false);
     }
-  }, [sale.id, isPaid, setPayment]);
+  }, [originalSaleId, isPaid, setPayment]);
 
   // Dynamic Countdown calculation derived strictly from backend expiresAt
   const [secondsLeft, setSecondsLeft] = useState(null);
@@ -305,13 +354,23 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     setCanceling(true);
     setPollingEnabled(false);
     stopPolling();
-    try {
-      await salePaymentApi.cancel(sale.id);
-    } catch {
-      // Continue canceling
+
+    // Cancellation uses paymentId for payment cancellation
+    const activePaymentId = paymentIdRef.current || payment?.paymentId || payment?.id;
+    console.log(`[BakongPaymentModal.handleCancel] Canceling payment with paymentId:`, activePaymentId, `and saleId:`, originalSaleId);
+
+    if (activePaymentId) {
+      try {
+        await salePaymentApi.cancel(activePaymentId);
+      } catch (err) {
+        console.warn('Notice canceling payment:', err?.message);
+      }
     }
+
     try {
-      await saleApi.cancel(sale.id);
+      if (originalSaleId) {
+        await saleApi.cancel(originalSaleId);
+      }
     } catch {
       // Close modal regardless
     } finally {

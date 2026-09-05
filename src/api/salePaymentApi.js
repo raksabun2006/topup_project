@@ -104,17 +104,27 @@ export function normalizePaymentResponse(raw, fallbackSaleId = null) {
     }
   }
 
+  // Strictly separate paymentId and saleId
+  const rawPaymentId =
+    data?.paymentId ||
+    raw?.paymentId ||
+    (data?.id && data.id !== fallbackSaleId ? data.id : null) ||
+    (raw?.id && raw.id !== fallbackSaleId ? raw.id : null) ||
+    null;
+
+  const rawSaleId =
+    data?.saleId ||
+    data?.orderId ||
+    data?.entityId ||
+    raw?.saleId ||
+    raw?.orderId ||
+    raw?.entityId ||
+    fallbackSaleId ||
+    null;
+
   return {
-    saleId:
-      data?.saleId ||
-      data?.orderId ||
-      data?.entityId ||
-      raw?.saleId ||
-      raw?.orderId ||
-      raw?.entityId ||
-      fallbackSaleId ||
-      null,
-    paymentId: data?.paymentId || data?.id || raw?.paymentId || raw?.id || null,
+    saleId: rawSaleId,
+    paymentId: rawPaymentId,
     status: finalStatus,
     paymentStatus: finalStatus,
     paid: isPaid,
@@ -156,10 +166,17 @@ export const salePaymentApi = {
    * POST /api/v1/sales/{saleId}/payment
    */
   create: async (saleId, provider = 'BAKONG') => {
+    console.log(`[salePaymentApi.create] Creating payment for saleId:`, saleId);
     const res = await apiClient.post(`/api/v1/sales/${saleId}/payment`, {
       provider,
     });
-    return normalizePaymentResponse(res.data, saleId);
+    const normalized = normalizePaymentResponse(res.data, saleId);
+    console.log(`[salePaymentApi.create] Payment created:`, {
+      saleId: normalized?.saleId,
+      paymentId: normalized?.paymentId,
+      status: normalized?.status,
+    });
+    return normalized;
   },
 
   /**
@@ -167,6 +184,7 @@ export const salePaymentApi = {
    * GET /api/v1/sales/{saleId}/payment
    */
   get: async (saleId) => {
+    console.log(`[salePaymentApi.get] Fetching payment for saleId:`, saleId);
     const res = await apiClient.get(`/api/v1/sales/${saleId}/payment`);
     return normalizePaymentResponse(res.data, saleId);
   },
@@ -174,24 +192,33 @@ export const salePaymentApi = {
   /**
    * Check & verify payment status with Bakong.
    * Active verification endpoint:
-   * GET /api/v1/sales/{saleId}/payment/status
+   * GET /api/v1/sales/{saleId}/payment/status (expects SALE ID)
    */
   checkStatus: async (saleId) => {
+    console.log(`[salePaymentApi.checkStatus] GET /api/v1/sales/${saleId}/payment/status (using saleId: ${saleId})`);
     const res = await apiClient.get(`/api/v1/sales/${saleId}/payment/status`);
-    return normalizePaymentResponse(res.data, saleId);
+    const normalized = normalizePaymentResponse(res.data, saleId);
+    console.log(`[salePaymentApi.checkStatus] Result:`, {
+      saleId,
+      paymentId: normalized?.paymentId,
+      status: normalized?.status,
+      paid: normalized?.paid,
+    });
+    return normalized;
   },
 
   /**
    * Cancel payment on backend.
-   * POST /sales/payment/{paymentId}/cancel
+   * POST /api/v1/sales/payment/{paymentId}/cancel (expects PAYMENT ID)
    */
-  cancel: async (paymentIdOrSaleId) => {
+  cancel: async (paymentId) => {
+    console.log(`[salePaymentApi.cancel] POST /api/v1/sales/payment/${paymentId}/cancel (using paymentId: ${paymentId})`);
     try {
-      const res = await apiClient.post(`/sales/payment/${paymentIdOrSaleId}/cancel`);
-      return normalizePaymentResponse(res.data, paymentIdOrSaleId);
+      const res = await apiClient.post(`/api/v1/sales/payment/${paymentId}/cancel`);
+      return normalizePaymentResponse(res.data);
     } catch {
-      const res = await apiClient.post(`/sales/${paymentIdOrSaleId}/payment/cancel`);
-      return normalizePaymentResponse(res.data, paymentIdOrSaleId);
+      const res = await apiClient.post(`/sales/payment/${paymentId}/cancel`);
+      return normalizePaymentResponse(res.data);
     }
   },
 };
