@@ -5,39 +5,84 @@ import { apiClient } from './client';
  * - Wrapped ApiResponsePaymentResponse: { success, message, data: { status, paymentStatus, paid, qrString, ... } }
  * - Direct SalePaymentStatusResponse / DTO: { paid: true, paymentStatus: 'PAID', saleId, invoiceNumber, amount, currency, ... }
  * - Direct PaymentResponse: { paymentId, orderId, qrString, md5, amount, currency, status: 'PAID', billNumber, ... }
+ * - String or primitive status responses
  */
 export function normalizePaymentResponse(raw, fallbackSaleId = null) {
-  if (!raw || typeof raw !== 'object') {
+  if (!raw) {
     return null;
   }
 
+  // If raw is a direct string
+  if (typeof raw === 'string') {
+    const rawUpper = raw.trim().toUpperCase();
+    const isSuccess = ['PAID', 'SUCCESS', 'COMPLETED'].includes(rawUpper);
+    return {
+      saleId: fallbackSaleId,
+      status: isSuccess ? 'PAID' : rawUpper,
+      paymentStatus: isSuccess ? 'PAID' : rawUpper,
+      paid: isSuccess,
+      raw,
+    };
+  }
+
   // Unwrap envelope if present
-  const data = raw.data && typeof raw.data === 'object' ? raw.data : raw;
+  let data = raw;
+  if (raw.data != null) {
+    data = raw.data;
+  } else if (raw.result != null) {
+    data = raw.result;
+  }
+
+  // If data is an array (e.g. content list)
+  if (Array.isArray(data)) {
+    data = data[0] || {};
+  }
+
+  // If data is a string inside the envelope
+  if (typeof data === 'string') {
+    const dataUpper = data.trim().toUpperCase();
+    const isSuccess = ['PAID', 'SUCCESS', 'COMPLETED'].includes(dataUpper);
+    return {
+      saleId: raw.saleId || raw.orderId || fallbackSaleId,
+      status: isSuccess ? 'PAID' : dataUpper,
+      paymentStatus: isSuccess ? 'PAID' : dataUpper,
+      paid: isSuccess,
+      raw,
+    };
+  }
 
   // Collect all potential status strings from both inner data and outer envelope
   const candidateStrings = [
-    data.paymentStatus,
-    data.status,
-    data.payment_status,
-    data.orderStatus,
-    data.saleStatus,
-    raw.paymentStatus,
-    raw.status,
-    raw.payment_status,
-    raw.orderStatus,
-    raw.saleStatus,
+    data?.paymentStatus,
+    data?.status,
+    data?.payment_status,
+    data?.orderStatus,
+    data?.saleStatus,
+    data?.transactionStatus,
+    data?.txnStatus,
+    data?.state,
+    raw?.paymentStatus,
+    raw?.status,
+    raw?.payment_status,
+    raw?.orderStatus,
+    raw?.saleStatus,
+    raw?.transactionStatus,
+    raw?.txnStatus,
+    raw?.state,
   ]
     .filter((s) => typeof s === 'string' && s.trim())
     .map((s) => s.trim().toUpperCase());
 
   // Boolean paid check: explicit boolean flags or terminal success status strings
   const explicitPaid =
-    data.paid === true ||
-    data.paid === 'true' ||
-    raw.paid === true ||
-    raw.paid === 'true' ||
-    data.isPaid === true ||
-    raw.isPaid === true;
+    data?.paid === true ||
+    data?.paid === 'true' ||
+    raw?.paid === true ||
+    raw?.paid === 'true' ||
+    data?.isPaid === true ||
+    raw?.isPaid === true ||
+    data?.is_paid === true ||
+    raw?.is_paid === true;
 
   const hasTerminalSuccess = candidateStrings.some((s) =>
     ['PAID', 'SUCCESS', 'COMPLETED'].includes(s)
@@ -61,46 +106,46 @@ export function normalizePaymentResponse(raw, fallbackSaleId = null) {
 
   return {
     saleId:
-      data.saleId ||
-      data.orderId ||
-      data.entityId ||
-      raw.saleId ||
-      raw.orderId ||
-      raw.entityId ||
+      data?.saleId ||
+      data?.orderId ||
+      data?.entityId ||
+      raw?.saleId ||
+      raw?.orderId ||
+      raw?.entityId ||
       fallbackSaleId ||
       null,
-    paymentId: data.paymentId || data.id || raw.paymentId || raw.id || null,
+    paymentId: data?.paymentId || data?.id || raw?.paymentId || raw?.id || null,
     status: finalStatus,
     paymentStatus: finalStatus,
     paid: isPaid,
     amount:
-      data.amount != null
+      data?.amount != null
         ? Number(data.amount)
-        : raw.amount != null
+        : raw?.amount != null
         ? Number(raw.amount)
         : null,
-    currency: data.currency || raw.currency || 'USD',
-    qrString: data.qrString || data.qr || raw.qrString || raw.qr || null,
-    qr: data.qr || data.qrString || raw.qr || raw.qrString || null,
-    md5: data.md5 || raw.md5 || null,
+    currency: data?.currency || raw?.currency || 'USD',
+    qrString: data?.qrString || data?.qr || raw?.qrString || raw?.qr || null,
+    qr: data?.qr || data?.qrString || raw?.qr || raw?.qrString || null,
+    md5: data?.md5 || raw?.md5 || null,
     invoiceNumber:
-      data.invoiceNumber ||
-      data.billNumber ||
-      raw.invoiceNumber ||
-      raw.billNumber ||
+      data?.invoiceNumber ||
+      data?.billNumber ||
+      raw?.invoiceNumber ||
+      raw?.billNumber ||
       null,
     billNumber:
-      data.billNumber ||
-      data.invoiceNumber ||
-      raw.billNumber ||
-      raw.invoiceNumber ||
+      data?.billNumber ||
+      data?.invoiceNumber ||
+      raw?.billNumber ||
+      raw?.invoiceNumber ||
       null,
-    expiresAt: data.expiresAt || raw.expiresAt || null,
-    paidAt: data.paidAt || raw.paidAt || null,
-    createdAt: data.createdAt || raw.createdAt || null,
-    merchantName: data.merchantName || raw.merchantName || null,
-    deeplinkUrl: data.deeplinkUrl || raw.deeplinkUrl || null,
-    message: data.message || raw.message || null,
+    expiresAt: data?.expiresAt || raw?.expiresAt || null,
+    paidAt: data?.paidAt || raw?.paidAt || null,
+    createdAt: data?.createdAt || raw?.createdAt || null,
+    merchantName: data?.merchantName || raw?.merchantName || null,
+    deeplinkUrl: data?.deeplinkUrl || raw?.deeplinkUrl || null,
+    message: data?.message || raw?.message || null,
     raw,
   };
 }
@@ -128,47 +173,79 @@ export const salePaymentApi = {
 
   /**
    * Check & verify payment status with Bakong.
-   * Prioritizes active gateway verification endpoint:
-   * GET /api/v1/sales/{saleId}/payment/status (actively verifies with Bakong API)
-   * Falls back to GET /api/mart/sales/{saleId}/payment-status only if primary route fails.
+   * 1. Primary: GET /api/v1/sales/{saleId}/payment/status (actively triggers Bakong gateway check)
+   * 2. Secondary: GET /api/mart/sales/{saleId}/payment-status (POS payment status route)
+   * 3. Tertiary: GET /sales/{saleId} (checks if Sale entity was updated to PAID/COMPLETED by gateway/webhook)
    */
   checkStatus: async (saleId) => {
+    let paymentStatusRes = null;
+
+    // 1. Primary active gateway verification endpoint:
+    // GET /api/v1/sales/{saleId}/payment/status
     try {
-      console.log(`[Payment] Checking payment status for sale: ${saleId}`);
       const res = await apiClient.get(`/api/v1/sales/${saleId}/payment/status`);
-      const normalized = normalizePaymentResponse(res.data, saleId);
-      console.log(`[Payment] Payment API response:`, {
-        saleId,
-        endpoint: `/api/v1/sales/${saleId}/payment/status`,
-        httpStatus: res.status,
-        normalizedStatus: normalized?.status,
-        paid: normalized?.paid,
-      });
-      return normalized;
+      paymentStatusRes = normalizePaymentResponse(res.data, saleId);
+      if (paymentStatusRes?.paid || paymentStatusRes?.status === 'PAID') {
+        return paymentStatusRes;
+      }
     } catch (primaryErr) {
-      const httpStatus = primaryErr?.response?.status;
       console.warn(
-        `[Payment] Active payment/status verification notice for sale ${saleId}:`,
-        httpStatus,
+        `[Payment] Active payment/status notice for sale ${saleId}:`,
+        primaryErr?.response?.status,
         primaryErr?.message
       );
-
-      // Fallback only if active verification endpoint fails
-      try {
-        const fallbackRes = await apiClient.get(`/api/mart/sales/${saleId}/payment-status`);
-        const fallbackNormalized = normalizePaymentResponse(fallbackRes.data, saleId);
-        console.log(`[Payment] Fallback payment-status response:`, {
-          saleId,
-          endpoint: `/api/mart/sales/${saleId}/payment-status`,
-          httpStatus: fallbackRes.status,
-          normalizedStatus: fallbackNormalized?.status,
-          paid: fallbackNormalized?.paid,
-        });
-        return fallbackNormalized;
-      } catch (fallbackErr) {
-        throw primaryErr;
-      }
     }
+
+    // 2. Secondary POS route:
+    // GET /api/mart/sales/{saleId}/payment-status
+    try {
+      const fallbackRes = await apiClient.get(`/api/mart/sales/${saleId}/payment-status`);
+      const fallbackNorm = normalizePaymentResponse(fallbackRes.data, saleId);
+      if (fallbackNorm?.paid || fallbackNorm?.status === 'PAID') {
+        return fallbackNorm;
+      }
+      if (!paymentStatusRes) {
+        paymentStatusRes = fallbackNorm;
+      }
+    } catch {
+      // ignore
+    }
+
+    // 3. Tertiary check: Verified Sale entity state:
+    // GET /sales/{saleId} (or /api/v1/sales/{saleId})
+    try {
+      const saleRes = await apiClient.get(`/sales/${saleId}`);
+      const rawSale = saleRes.data;
+      const saleData =
+        rawSale?.data && typeof rawSale.data === 'object' ? rawSale.data : rawSale;
+      const salePaymentStatus = String(saleData?.paymentStatus || '').toUpperCase();
+      const saleStatus = String(saleData?.status || '').toUpperCase();
+      if (
+        salePaymentStatus === 'PAID' ||
+        salePaymentStatus === 'SUCCESS' ||
+        salePaymentStatus === 'COMPLETED' ||
+        saleStatus === 'COMPLETED' ||
+        saleData?.paid === true
+      ) {
+        return {
+          ...(paymentStatusRes || {}),
+          saleId,
+          status: 'PAID',
+          paymentStatus: 'PAID',
+          paid: true,
+          amount:
+            saleData?.total != null
+              ? Number(saleData.total)
+              : paymentStatusRes?.amount,
+          invoiceNumber:
+            saleData?.invoiceNumber || paymentStatusRes?.invoiceNumber,
+        };
+      }
+    } catch {
+      // ignore
+    }
+
+    return paymentStatusRes;
   },
 
   /**

@@ -18,6 +18,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const [finishing, setFinishing] = useState(false);
   const [finishError, setFinishError] = useState('');
   const [isExpiredLocal, setIsExpiredLocal] = useState(false);
+  const [manualChecking, setManualChecking] = useState(false);
+  const [manualCheckMsg, setManualCheckMsg] = useState('');
 
   const { payment, error: pollError, setPayment, stop: stopPolling } =
     useSalePaymentPolling(sale.id, pollingEnabled);
@@ -198,6 +200,49 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     }
     completeSale();
   }, [isPaid, completeSale]);
+
+  // Instant Manual Status Verification (triggers active backend gateway check)
+  const handleManualCheck = useCallback(async () => {
+    if (manualChecking || finalizedRef.current || isPaid) return;
+    setManualChecking(true);
+    setManualCheckMsg('');
+    try {
+      const res = await salePaymentApi.checkStatus(sale.id);
+      if (!mountedRef.current) return;
+      if (res) {
+        setPayment((prev) => ({
+          ...(prev || {}),
+          ...res,
+          qrString: prev?.qrString || res.qrString || null,
+          qr: prev?.qr || res.qr || null,
+          billNumber: prev?.billNumber || res.billNumber || null,
+          invoiceNumber: prev?.invoiceNumber || res.invoiceNumber || null,
+        }));
+        const statusUpper = String(res.status || '').toUpperCase();
+        const paymentStatusUpper = String(res.paymentStatus || '').toUpperCase();
+        const isSuccess =
+          res.paid === true ||
+          ['PAID', 'SUCCESS', 'COMPLETED'].includes(statusUpper) ||
+          ['PAID', 'SUCCESS', 'COMPLETED'].includes(paymentStatusUpper);
+        if (isSuccess) {
+          return;
+        } else {
+          setManualCheckMsg('ធនាគារមិនទាន់បានបញ្ជាក់ការទូទាត់នៅឡើយទេ (Waiting for bank confirmation)');
+          setTimeout(() => {
+            if (mountedRef.current) setManualCheckMsg('');
+          }, 3500);
+        }
+      }
+    } catch (err) {
+      if (mountedRef.current) {
+        setManualCheckMsg(getErrorMessage(err));
+      }
+    } finally {
+      if (mountedRef.current) {
+        setManualChecking(false);
+      }
+    }
+  }, [manualChecking, isPaid, sale.id, setPayment]);
 
   // Regenerate / Retry QR
   const regenerateQr = useCallback(async () => {
@@ -506,6 +551,32 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                       សូមស្កេន KHQR ដើម្បីបង់ប្រាក់ (Please scan the KHQR and complete payment.)
                     </p>
                   </div>
+                )}
+
+                {/* Instant Verification Check Button */}
+                <button
+                  type="button"
+                  onClick={handleManualCheck}
+                  disabled={manualChecking || canceling}
+                  className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-600/30 bg-emerald-50/70 dark:bg-emerald-950/40 py-2.5 px-3 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition cursor-pointer disabled:opacity-50"
+                >
+                  {manualChecking ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin text-emerald-600" />
+                      <span>កំពុងពិនិត្យ... (Checking payment...)</span>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw size={14} className="text-emerald-600" />
+                      <span>ពិនិត្យស្ថានភាពទូទាត់ (Check Payment Status)</span>
+                    </>
+                  )}
+                </button>
+
+                {manualCheckMsg && (
+                  <p className="mt-1 text-center text-[11px] text-amber-600 dark:text-amber-400 font-medium animate-fade-in">
+                    {manualCheckMsg}
+                  </p>
                 )}
 
                 {payment?.deeplinkUrl && (
