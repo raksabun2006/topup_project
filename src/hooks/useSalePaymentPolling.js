@@ -6,34 +6,32 @@ import { env } from '../config/env';
 const TERMINAL_SUCCESS = ['PAID', 'SUCCESS', 'COMPLETED'];
 const TERMINAL_FAILURE = ['FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'];
 
-export function useSalePaymentPolling(saleId, enabled) {
+export function useSalePaymentPolling(saleId, enabled, options = {}) {
   const [payment, setPayment] = useState(null);
   const [error, setError] = useState('');
 
-  const timerRef = useRef(null);
+  const intervalRef = useRef(null);
   const aliveRef = useRef(false);
   const inFlightRef = useRef(false);
-
-  const clearTimer = useCallback(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
   const stop = useCallback(() => {
     aliveRef.current = false;
     inFlightRef.current = false;
-    clearTimer();
-  }, [clearTimer]);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
 
-  const poll = useCallback(async () => {
+  const checkPayment = useCallback(async () => {
     if (!aliveRef.current || inFlightRef.current || !saleId) return;
     inFlightRef.current = true;
 
     try {
       console.log(`[useSalePaymentPolling] Polling payment status for saleId:`, saleId);
-      const result = await salePaymentApi.checkStatus(saleId);
+      const result = await salePaymentApi.checkStatus(saleId, optionsRef.current);
       if (!aliveRef.current) return;
 
       if (result) {
@@ -42,6 +40,7 @@ export function useSalePaymentPolling(saleId, enabled) {
           saleIdFromBackend: result.saleId,
           paymentIdFromBackend: result.paymentId,
           status: result.status,
+          paymentStatus: result.paymentStatus,
           paid: result.paid,
         });
 
@@ -66,57 +65,42 @@ export function useSalePaymentPolling(saleId, enabled) {
         });
         setError('');
 
-        const statusUpper = String(result.status || '').toUpperCase();
-        const paymentStatusUpper = String(result.paymentStatus || '').toUpperCase();
+        const statusUpper = String(
+          result.paymentStatus ||
+          result.status ||
+          (typeof result.getPaymentStatus === 'function' ? result.getPaymentStatus() : '') ||
+          ''
+        ).toUpperCase();
+
         const isPaid =
           result.paid === true ||
-          TERMINAL_SUCCESS.includes(statusUpper) ||
-          TERMINAL_SUCCESS.includes(paymentStatusUpper);
-        const isFailure =
-          TERMINAL_FAILURE.includes(statusUpper) ||
-          TERMINAL_FAILURE.includes(paymentStatusUpper);
+          (typeof result.isPaid === 'function' && result.isPaid()) ||
+          TERMINAL_SUCCESS.includes(statusUpper);
+
+        const isFailure = TERMINAL_FAILURE.includes(statusUpper);
 
         // Stop polling immediately on terminal states
         if (isPaid || isFailure) {
-          console.log(`[useSalePaymentPolling] Terminal status reached (${statusUpper || paymentStatusUpper}), stopping.`);
+          console.log(`[useSalePaymentPolling] Terminal status reached (${statusUpper}), stopping.`);
           stop();
           return;
         }
-      }
-
-      // Schedule next check only after current response has completed
-      if (aliveRef.current) {
-        clearTimer();
-        const interval = env.paymentPollIntervalMs || 3000;
-        timerRef.current = setTimeout(() => {
-          poll();
-        }, interval);
       }
     } catch (err) {
       if (!aliveRef.current) return;
       const httpStatus = err?.response?.status;
       console.warn(`[useSalePaymentPolling] Notice for saleId ${saleId}:`, httpStatus, err?.message);
 
-      // Stop polling only on explicit authentication or forbidden errors
+      // Stop polling on authentication or forbidden errors
       if (httpStatus === 401 || httpStatus === 403) {
         setError(getErrorMessage(err));
         stop();
         return;
       }
-
-      // For temporary errors (network glitch, timeouts, 404 while DB initializes, 5xx):
-      // Keep state as PENDING and schedule next poll
-      if (aliveRef.current) {
-        clearTimer();
-        const interval = env.paymentPollIntervalMs || 3000;
-        timerRef.current = setTimeout(() => {
-          poll();
-        }, interval);
-      }
     } finally {
       inFlightRef.current = false;
     }
-  }, [saleId, stop, clearTimer]);
+  }, [saleId, stop]);
 
   useEffect(() => {
     if (!enabled || !saleId) {
@@ -124,16 +108,32 @@ export function useSalePaymentPolling(saleId, enabled) {
       return;
     }
 
+    // Clean up any existing interval before starting a new one
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
     aliveRef.current = true;
     inFlightRef.current = false;
-    poll();
+
+    // Check payment immediately
+    checkPayment();
+
+    // Polling every 2.5–3 seconds using exactly ONE interval
+    const pollInterval = env.paymentPollIntervalMs || 2500;
+    const interval = setInterval(checkPayment, pollInterval);
+    intervalRef.current = interval;
 
     return () => {
-      stop();
+      clearInterval(interval);
+      if (intervalRef.current === interval) {
+        intervalRef.current = null;
+      }
+      aliveRef.current = false;
+      inFlightRef.current = false;
     };
-  }, [enabled, saleId, poll, stop]);
+  }, [enabled, saleId, checkPayment, stop]);
 
   return { payment, error, setPayment, stop };
 }
-
-

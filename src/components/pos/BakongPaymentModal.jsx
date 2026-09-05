@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import {
   Loader2, CheckCircle, XCircle, Clock, AlertCircle, X, RefreshCw, Smartphone,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import { salePaymentApi } from '../../api/salePaymentApi';
 import { useSalePaymentPolling } from '../../hooks/useSalePaymentPolling';
 import { saleApi } from '../../api/saleApi';
@@ -10,6 +11,9 @@ import { getErrorMessage } from '../../api/client';
 import { formatCurrency, parseBackendDate, formatCountdown } from '../../utils/format';
 
 export default function BakongPaymentModal({ sale, onPaid, onClose }) {
+  const { isAuthenticated } = useAuth();
+  const isGuest = Boolean(sale?.isGuest ?? !isAuthenticated);
+
   // 1. Resolve and strictly lock the original Sale ID from sale creation
   const originalSaleId = useRef(
     (typeof sale === 'string' ? sale : null) ||
@@ -19,11 +23,16 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     sale?.id ||
     sale?.data?.id ||
     sale?.data?.saleId ||
+    (typeof sale?.getSaleId === 'function' ? sale.getSaleId() : null) ||
     null
   ).current;
 
   // 2. Track paymentId separately from saleId
-  const paymentIdRef = useRef(sale?.paymentId || null);
+  const paymentIdRef = useRef(
+    sale?.paymentId ||
+    (typeof sale?.getPaymentId === 'function' ? sale.getPaymentId() : null) ||
+    null
+  );
 
   const [creating, setCreating] = useState(true);
   const [createError, setCreateError] = useState('');
@@ -31,20 +40,32 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const [regenerating, setRegenerating] = useState(false);
   const [canceling, setCanceling] = useState(false);
   const [finishing, setFinishing] = useState(false);
-  const [finishError, setFinishError] = useState('');
   const [isExpiredLocal, setIsExpiredLocal] = useState(false);
   const [manualChecking, setManualChecking] = useState(false);
   const [manualCheckMsg, setManualCheckMsg] = useState('');
 
-  // Payment polling always uses originalSaleId
+  // Payment polling always uses originalSaleId and options
+  const pollingOptions = useRef({ isGuest });
+  pollingOptions.current = { isGuest };
   const { payment, error: pollError, setPayment, stop: stopPolling } =
-    useSalePaymentPolling(originalSaleId, pollingEnabled);
+    useSalePaymentPolling(originalSaleId, pollingEnabled, pollingOptions.current);
 
   // Normalize status string from backend
-  const statusUpper = String(payment?.status || '').toUpperCase();
-  const paymentStatusUpper = String(payment?.paymentStatus || '').toUpperCase();
+  const statusUpper = String(
+    payment?.status ||
+    (typeof payment?.getStatus === 'function' ? payment.getStatus() : '') ||
+    ''
+  ).toUpperCase();
+
+  const paymentStatusUpper = String(
+    payment?.paymentStatus ||
+    (typeof payment?.getPaymentStatus === 'function' ? payment.getPaymentStatus() : '') ||
+    ''
+  ).toUpperCase();
+
   const isPaid =
     payment?.paid === true ||
+    (typeof payment?.isPaid === 'function' && payment.isPaid()) ||
     ['PAID', 'SUCCESS', 'COMPLETED'].includes(statusUpper) ||
     ['PAID', 'SUCCESS', 'COMPLETED'].includes(paymentStatusUpper);
 
@@ -79,20 +100,19 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     setPollingEnabled(false);
     stopPolling();
     setFinishing(true);
-    setFinishError('');
 
     try {
       // 1. Fetch latest verified sale entity from backend using originalSaleId
       let updatedSale = null;
       try {
         console.log(`[BakongPaymentModal] Completing sale: fetching sale with originalSaleId:`, originalSaleId);
-        updatedSale = await saleApi.getById(originalSaleId);
+        updatedSale = await saleApi.getById(originalSaleId, { isGuest });
       } catch (err) {
         console.warn('Notice fetching sale by ID:', err);
       }
 
-      // Brief visual confirmation of payment success before transitioning to receipt
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      // Visual confirmation of payment success before transitioning to receipt
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
       if (!mountedRef.current) return;
 
@@ -108,7 +128,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         setFinishing(false);
       }
     }
-  }, [originalSaleId, sale, onPaid, stopPolling]);
+  }, [originalSaleId, sale, onPaid, stopPolling, isGuest]);
 
   // Initial Check & Create (handles refresh, reopen, and already-paid states safely)
   useEffect(() => {
@@ -121,10 +141,54 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
       try {
         console.log(`[BakongPaymentModal] Mounted with originalSaleId:`, originalSaleId);
 
-        // Step 1: First check if payment already exists via GET /sales/{saleId}/payment (contains qrString)
+        // Step 1: ALWAYS check payment status FIRST using GET /sales/{saleId}/payment/status
+        // If payment is already PAID or exists, DO NOT create a new payment!
+        let statusCheck = null;
+        try {
+          statusCheck = await salePaymentApi.checkStatus(originalSaleId, { isGuest });
+          if (statusCheck?.paymentId) {
+            paymentIdRef.current = statusCheck.paymentId;
+          }
+        } catch {
+          // Status endpoint might return 404 if payment hasn't been created yet
+        }
+
+        if (!isMounted) return;
+
+        // If statusCheck returned a result:
+        if (statusCheck) {
+          const isCheckPaid =
+            statusCheck.paid === true ||
+            (typeof statusCheck.isPaid === 'function' && statusCheck.isPaid()) ||
+            statusCheck.paymentStatus === 'PAID' ||
+            statusCheck.status === 'PAID';
+
+          if (isCheckPaid) {
+            // Already paid!
+            // 1. Keep existing saleId
+            // 2. Keep existing paymentId
+            // 3. Immediately show success, stop polling, complete UI
+            setPayment(statusCheck);
+            setPollingEnabled(false);
+            stopPolling();
+            setCreating(false);
+            return;
+          }
+
+          // If pending and has QR, use existing payment and start polling
+          if (statusCheck.qr || statusCheck.qrString) {
+            setPayment(statusCheck);
+            setIsExpiredLocal(false);
+            setPollingEnabled(true);
+            setCreating(false);
+            return;
+          }
+        }
+
+        // Step 2: If status check didn't have QR, check GET /sales/{saleId}/payment
         let existing = null;
         try {
-          existing = await salePaymentApi.get(originalSaleId);
+          existing = await salePaymentApi.get(originalSaleId, { isGuest });
           if (existing?.paymentId) {
             paymentIdRef.current = existing.paymentId;
           }
@@ -134,20 +198,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
         if (!isMounted) return;
 
-        // Step 2: If existing payment found, check latest status and display existing QR
         if (existing) {
-          let statusCheck = null;
-          try {
-            console.log(`[BakongPaymentModal] Existing payment found. Checking status for originalSaleId:`, originalSaleId);
-            statusCheck = await salePaymentApi.checkStatus(originalSaleId);
-          } catch {
-            // ignore
-          }
-
-          if (statusCheck?.paymentId) {
-            paymentIdRef.current = statusCheck.paymentId;
-          }
-
           const combined = {
             ...existing,
             ...(statusCheck || {}),
@@ -160,14 +211,20 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
           setPayment(combined);
 
-          if (combined.paid || combined.status === 'PAID') {
-            // Already paid! Do not generate a new QR or create another payment
+          const isExistingPaid =
+            combined.paid === true ||
+            (typeof combined.isPaid === 'function' && combined.isPaid()) ||
+            combined.paymentStatus === 'PAID' ||
+            combined.status === 'PAID';
+
+          if (isExistingPaid) {
+            setPollingEnabled(false);
+            stopPolling();
             setCreating(false);
             return;
           }
 
           if (combined.qrString || combined.qr) {
-            // Existing pending QR available, start polling
             setIsExpiredLocal(false);
             setPollingEnabled(true);
             setCreating(false);
@@ -175,9 +232,9 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
           }
         }
 
-        // Step 3: No existing payment found, create payment QR via POST /api/v1/sales/{saleId}/payment
-        console.log(`[BakongPaymentModal] Creating payment for originalSaleId:`, originalSaleId);
-        const created = await salePaymentApi.create(originalSaleId, 'BAKONG');
+        // Step 3: ONLY create payment if NO existing payment exists
+        console.log(`[BakongPaymentModal] No existing payment found. Creating payment for originalSaleId:`, originalSaleId);
+        const created = await salePaymentApi.create(originalSaleId, 'BAKONG', { isGuest });
         if (!isMounted) return;
 
         if (created?.paymentId) {
@@ -192,24 +249,59 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
         setPayment(created);
         setIsExpiredLocal(false);
-        setPollingEnabled(created?.status === 'PENDING' && !created?.paid);
+
+        const isCreatedPaid =
+          created?.paid === true ||
+          (typeof created?.isPaid === 'function' && created.isPaid()) ||
+          created?.paymentStatus === 'PAID' ||
+          created?.status === 'PAID';
+
+        if (isCreatedPaid) {
+          setPollingEnabled(false);
+          stopPolling();
+        } else {
+          setPollingEnabled(true);
+        }
       } catch (err) {
         if (!isMounted) return;
 
         // If backend returned 409 Conflict (payment already created for this sale)
         if (err?.response?.status === 409) {
           try {
-            const fallback = await salePaymentApi.get(originalSaleId);
+            const fallbackStatus = await salePaymentApi.checkStatus(originalSaleId, { isGuest });
             if (!isMounted) return;
-            if (fallback?.paymentId) {
-              paymentIdRef.current = fallback.paymentId;
+            if (fallbackStatus?.paymentId) {
+              paymentIdRef.current = fallbackStatus.paymentId;
             }
-            setPayment(fallback);
+            setPayment(fallbackStatus);
             setIsExpiredLocal(false);
-            setPollingEnabled(fallback?.status === 'PENDING' && !fallback?.paid);
+            const isFallbackPaid =
+              fallbackStatus?.paid === true ||
+              (typeof fallbackStatus?.isPaid === 'function' && fallbackStatus.isPaid()) ||
+              fallbackStatus?.paymentStatus === 'PAID' ||
+              fallbackStatus?.status === 'PAID';
+
+            if (isFallbackPaid) {
+              setPollingEnabled(false);
+              stopPolling();
+            } else {
+              setPollingEnabled(true);
+            }
             return;
           } catch {
-            // ignore
+            try {
+              const fallbackGet = await salePaymentApi.get(originalSaleId, { isGuest });
+              if (!isMounted) return;
+              if (fallbackGet?.paymentId) {
+                paymentIdRef.current = fallbackGet.paymentId;
+              }
+              setPayment(fallbackGet);
+              setIsExpiredLocal(false);
+              setPollingEnabled(true);
+              return;
+            } catch {
+              // ignore
+            }
           }
         }
 
@@ -224,8 +316,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     return () => {
       isMounted = false;
     };
-  }, [originalSaleId, setPayment]);
-
+  }, [originalSaleId, isGuest, stopPolling, setPayment]);
 
   // Clean up polling timer when component unmounts
   useEffect(() => {
@@ -249,7 +340,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     setManualCheckMsg('');
     try {
       console.log(`[BakongPaymentModal.handleManualCheck] Checking status with originalSaleId:`, originalSaleId);
-      const res = await salePaymentApi.checkStatus(originalSaleId);
+      const res = await salePaymentApi.checkStatus(originalSaleId, { isGuest });
       if (!mountedRef.current) return;
       if (res) {
         if (res.paymentId) {
@@ -267,9 +358,13 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         const paymentStatusUpper = String(res.paymentStatus || '').toUpperCase();
         const isSuccess =
           res.paid === true ||
+          (typeof res.isPaid === 'function' && res.isPaid()) ||
           ['PAID', 'SUCCESS', 'COMPLETED'].includes(statusUpper) ||
           ['PAID', 'SUCCESS', 'COMPLETED'].includes(paymentStatusUpper);
+
         if (isSuccess) {
+          setPollingEnabled(false);
+          stopPolling();
           return;
         } else {
           setManualCheckMsg('ធនាគារមិនទាន់បានបញ្ជាក់ការទូទាត់នៅឡើយទេ (Waiting for bank confirmation)');
@@ -287,7 +382,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         setManualChecking(false);
       }
     }
-  }, [manualChecking, isPaid, originalSaleId, setPayment]);
+  }, [manualChecking, isPaid, originalSaleId, isGuest, stopPolling, setPayment]);
 
   // Regenerate / Retry QR
   const regenerateQr = useCallback(async () => {
@@ -297,31 +392,50 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     setCreateError('');
     setIsExpiredLocal(false);
     try {
+      // First check if payment was already completed before recreating
+      try {
+        const check = await salePaymentApi.checkStatus(originalSaleId, { isGuest });
+        if (check?.paid || check?.paymentStatus === 'PAID' || check?.status === 'PAID') {
+          if (check.paymentId) paymentIdRef.current = check.paymentId;
+          setPayment(check);
+          setPollingEnabled(false);
+          stopPolling();
+          return;
+        }
+      } catch {
+        // continue
+      }
+
       console.log(`[BakongPaymentModal.regenerateQr] Creating new payment QR with originalSaleId:`, originalSaleId);
-      const created = await salePaymentApi.create(originalSaleId, 'BAKONG');
+      const created = await salePaymentApi.create(originalSaleId, 'BAKONG', { isGuest });
       if (created?.paymentId) {
         paymentIdRef.current = created.paymentId;
       }
       setPayment(created);
-      setPollingEnabled(created?.status === 'PENDING' && !created?.paid);
+      const isCreatedPaid =
+        created?.paid === true ||
+        created?.paymentStatus === 'PAID' ||
+        created?.status === 'PAID';
+      setPollingEnabled(!isCreatedPaid);
     } catch (err) {
       setCreateError(getErrorMessage(err));
     } finally {
       isRegeneratingRef.current = false;
       setRegenerating(false);
     }
-  }, [originalSaleId, isPaid, setPayment]);
+  }, [originalSaleId, isPaid, isGuest, stopPolling, setPayment]);
 
   // Dynamic Countdown calculation derived strictly from backend expiresAt
   const [secondsLeft, setSecondsLeft] = useState(null);
 
   useEffect(() => {
-    if (!payment?.qrString || status !== 'PENDING') {
+    const qrText = payment?.qrString || payment?.qr;
+    if (!qrText || status !== 'PENDING') {
       setSecondsLeft(null);
       return;
     }
 
-    const expiresDate = parseBackendDate(payment.expiresAt);
+    const expiresDate = parseBackendDate(payment?.expiresAt);
     if (!expiresDate) {
       setSecondsLeft(null);
       return;
@@ -344,7 +458,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [payment?.qrString, payment?.expiresAt, status, stopPolling]);
+  }, [payment?.qrString, payment?.qr, payment?.expiresAt, status, stopPolling]);
 
   const handleCancel = async () => {
     if (finalizedRef.current || isPaid) {
@@ -361,7 +475,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
     if (activePaymentId) {
       try {
-        await salePaymentApi.cancel(activePaymentId);
+        await salePaymentApi.cancel(activePaymentId, { isGuest });
       } catch (err) {
         console.warn('Notice canceling payment:', err?.message);
       }
@@ -369,7 +483,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
     try {
       if (originalSaleId) {
-        await saleApi.cancel(originalSaleId);
+        await saleApi.cancel(originalSaleId, { isGuest });
       }
     } catch {
       // Close modal regardless
@@ -385,11 +499,11 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const isExpired = status === 'EXPIRED';
   const isCancelled = status === 'CANCELLED';
 
-  const billNo = payment?.billNumber || payment?.invoiceNumber || sale.invoiceNumber || 'INV';
-  const paymentAmount = payment?.amount ?? sale.total;
+  const billNo = payment?.billNumber || payment?.invoiceNumber || sale?.invoiceNumber || 'INV';
+  const paymentAmount = payment?.amount ?? sale?.total;
   const paymentCurrency = payment?.currency || 'USD';
   const merchantDisplayName = payment?.merchantName || 'Mart System';
-  const qrValue = payment?.qrString || payment?.qr || null;
+  const qrValue = payment?.qrString || payment?.qr || (typeof payment?.getQr === 'function' ? payment.getQr() : null);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4 backdrop-blur-sm animate-fade-in">
@@ -442,38 +556,25 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
           </div>
         )}
 
-        {/* Payment Success State */}
+        {/* Payment Success State: Immediately show ✓ Payment Successful / Sale Completed */}
         {!creating && !createError && isSuccess && (
           <div className="flex flex-col items-center gap-3 py-12 px-6 text-center animate-fade-in">
-            {finishing ? (
-              <>
-                <Loader2 size={36} className="animate-spin text-emerald-600" />
-                <p className="text-base font-bold text-slate-900 dark:text-white">ការទូទាត់បានជោគជ័យ</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">កំពុងបញ្ចប់ការបញ្ជាទិញ...</p>
-              </>
-            ) : finishError ? (
-              <>
-                <AlertCircle size={36} className="text-amber-600" />
-                <p className="text-base font-bold text-slate-900 dark:text-white">ការទូទាត់បានជោគជ័យ</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{finishError}</p>
-              </>
-            ) : (
-              <>
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
-                  <CheckCircle size={38} />
-                </div>
-                <h4 className="text-xl font-black text-slate-900 dark:text-white">ការទូទាត់បានជោគជ័យ!</h4>
-                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                  Invoice: {billNo}
-                </p>
-                <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
-                  {formatCurrency(paymentAmount, paymentCurrency)} · បានទូទាត់រួចរាល់
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-[240px]">
-                  ការបញ្ជាទិញរបស់អ្នកត្រូវបានបញ្ជាក់។ សូមអរគុណសម្រាប់ការគាំទ្រ។
-                </p>
-              </>
-            )}
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle size={38} />
+            </div>
+            <h4 className="text-xl font-black text-slate-900 dark:text-white">✓ Payment Successful</h4>
+            <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Sale Completed</p>
+            <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              Invoice: {billNo}
+            </p>
+            <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
+              {formatCurrency(paymentAmount, paymentCurrency)} · បានទូទាត់រួចរាល់
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-[240px]">
+              {finishing
+                ? 'កំពុងរៀបចំវិក្កយបត្រ... (Preparing receipt...)'
+                : 'ការបញ្ជាទិញរបស់អ្នកត្រូវបានបញ្ជាក់។ សូមអរគុណសម្រាប់ការគាំទ្រ។'}
+            </p>
           </div>
         )}
 
@@ -509,7 +610,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                         {/* Dashed Separator */}
                         <div className="mx-4 border-t-2 border-dashed border-slate-200" />
 
-                        {/* Real KHQR QR Code rendered from backend data.qrString */}
+                        {/* Real KHQR QR Code rendered from backend data.qr / qrString */}
                         <div className="flex items-center justify-center p-4 sm:p-5 bg-white">
                           <QRCodeSVG
                             value={qrValue}
@@ -519,7 +620,6 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                             className="max-w-full h-auto"
                           />
                         </div>
-
 
                         {/* Acceptance Networks Footer */}
                         <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-3.5 sm:px-4 py-2 text-[9px] sm:text-[10px] text-slate-500">

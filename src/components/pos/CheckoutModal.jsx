@@ -40,6 +40,7 @@ export default function CheckoutModal({
     setSubmitting(true);
     setError('');
     try {
+      const isGuest = !isAuthenticated;
       const payload = isAuthenticated
         ? {
             customer: customer?.id || null,
@@ -62,11 +63,11 @@ export default function CheckoutModal({
             })),
           };
 
-      const sale = await saleApi.create(payload);
+      const sale = await saleApi.create(payload, { isGuest });
 
       // Customer checkout or Bakong KHQR proceeds to polling QR modal
       if (!isAuthenticated || method === 'BAKONG') {
-        setPendingSale(sale);
+        setPendingSale({ ...sale, isGuest });
       } else {
         // CASH or CARD payments are marked as PAID immediately
         if (method === 'CASH' || method === 'CARD' || method === 'PAID') {

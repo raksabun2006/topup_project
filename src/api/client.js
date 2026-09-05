@@ -22,6 +22,16 @@ apiClient.interceptors.request.use(async (config) => {
       }
     }
 
+    // Guest checkout: Do NOT attach Authorization header
+    if (config.isGuest || config.headers?.isGuest || config.skipAuth) {
+      if (config.headers) {
+        delete config.headers.Authorization;
+        delete config.headers.authorization;
+        delete config.headers.isGuest;
+      }
+      return config;
+    }
+
     const token =
       (await authClient.ensureFreshToken()) ||
       authClient.getAccessToken() ||
@@ -29,8 +39,11 @@ apiClient.interceptors.request.use(async (config) => {
       localStorage.getItem('pos_access_token') ||
       localStorage.getItem('token');
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (token && typeof token === 'string' && token !== 'null' && token !== 'undefined' && token.trim().length > 10) {
+      config.headers.Authorization = `Bearer ${token.trim()}`;
+    } else if (config.headers) {
+      delete config.headers.Authorization;
+      delete config.headers.authorization;
     }
   } catch (err) {
     console.warn('Token check notice:', err);

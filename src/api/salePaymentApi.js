@@ -1,10 +1,32 @@
 import { apiClient } from './client';
 
 /**
+ * Safely invokes a getter function or reads a property
+ */
+function readPropOrGetter(obj, getterName, ...propNames) {
+  if (!obj || typeof obj !== 'object') return undefined;
+  if (typeof obj[getterName] === 'function') {
+    try {
+      const val = obj[getterName]();
+      if (val !== undefined && val !== null) return val;
+    } catch {
+      // ignore
+    }
+  }
+  for (const prop of propNames) {
+    if (obj[prop] !== undefined && obj[prop] !== null) {
+      return obj[prop];
+    }
+  }
+  return undefined;
+}
+
+/**
  * Normalizes payment response across:
- * - Wrapped ApiResponsePaymentResponse: { success, message, data: { status, paymentStatus, paid, qrString, ... } }
+ * - Wrapped ApiResponsePaymentResponse: { success, message, data: { status, paymentStatus, paid, qr, ... } }
  * - Direct SalePaymentStatusResponse / DTO: { paid: true, paymentStatus: 'PAID', saleId, invoiceNumber, amount, currency, ... }
  * - Direct PaymentResponse: { paymentId, orderId, qrString, md5, amount, currency, status: 'PAID', billNumber, ... }
+ * - Objects with getters: getSaleId(), getQr(), getPaymentStatus(), isPaid(), getAmount()
  * - String or primitive status responses
  */
 export function normalizePaymentResponse(raw, fallbackSaleId = null) {
@@ -18,10 +40,20 @@ export function normalizePaymentResponse(raw, fallbackSaleId = null) {
     const isSuccess = ['PAID', 'SUCCESS', 'COMPLETED'].includes(rawUpper);
     return {
       saleId: fallbackSaleId,
+      paymentId: null,
       status: isSuccess ? 'PAID' : rawUpper,
       paymentStatus: isSuccess ? 'PAID' : rawUpper,
       paid: isSuccess,
+      amount: null,
+      currency: 'USD',
+      qr: null,
+      qrString: null,
       raw,
+      getSaleId: () => fallbackSaleId,
+      getQr: () => null,
+      getPaymentStatus: () => (isSuccess ? 'PAID' : rawUpper),
+      isPaid: () => isSuccess,
+      getAmount: () => null,
     };
   }
 
@@ -42,47 +74,57 @@ export function normalizePaymentResponse(raw, fallbackSaleId = null) {
   if (typeof data === 'string') {
     const dataUpper = data.trim().toUpperCase();
     const isSuccess = ['PAID', 'SUCCESS', 'COMPLETED'].includes(dataUpper);
+    const saleIdVal = readPropOrGetter(raw, 'getSaleId', 'saleId', 'orderId') || fallbackSaleId;
     return {
-      saleId: raw.saleId || raw.orderId || fallbackSaleId,
+      saleId: saleIdVal,
+      paymentId: readPropOrGetter(raw, 'getPaymentId', 'paymentId'),
       status: isSuccess ? 'PAID' : dataUpper,
       paymentStatus: isSuccess ? 'PAID' : dataUpper,
       paid: isSuccess,
+      amount: null,
+      currency: 'USD',
+      qr: null,
+      qrString: null,
       raw,
+      getSaleId: () => saleIdVal,
+      getQr: () => null,
+      getPaymentStatus: () => (isSuccess ? 'PAID' : dataUpper),
+      isPaid: () => isSuccess,
+      getAmount: () => null,
     };
   }
 
   // Collect all potential status strings from both inner data and outer envelope
   const candidateStrings = [
-    data?.paymentStatus,
-    data?.status,
-    data?.payment_status,
-    data?.orderStatus,
-    data?.saleStatus,
-    data?.transactionStatus,
-    data?.txnStatus,
-    data?.state,
-    raw?.paymentStatus,
-    raw?.status,
-    raw?.payment_status,
-    raw?.orderStatus,
-    raw?.saleStatus,
-    raw?.transactionStatus,
-    raw?.txnStatus,
-    raw?.state,
+    readPropOrGetter(data, 'getPaymentStatus', 'paymentStatus'),
+    readPropOrGetter(data, 'getStatus', 'status'),
+    readPropOrGetter(data, 'getPayment_status', 'payment_status'),
+    readPropOrGetter(data, 'getOrderStatus', 'orderStatus'),
+    readPropOrGetter(data, 'getSaleStatus', 'saleStatus'),
+    readPropOrGetter(data, 'getTransactionStatus', 'transactionStatus'),
+    readPropOrGetter(data, 'getTxnStatus', 'txnStatus'),
+    readPropOrGetter(data, 'getState', 'state'),
+    readPropOrGetter(raw, 'getPaymentStatus', 'paymentStatus'),
+    readPropOrGetter(raw, 'getStatus', 'status'),
+    readPropOrGetter(raw, 'getPayment_status', 'payment_status'),
+    readPropOrGetter(raw, 'getOrderStatus', 'orderStatus'),
+    readPropOrGetter(raw, 'getSaleStatus', 'saleStatus'),
+    readPropOrGetter(raw, 'getTransactionStatus', 'transactionStatus'),
+    readPropOrGetter(raw, 'getTxnStatus', 'txnStatus'),
+    readPropOrGetter(raw, 'getState', 'state'),
   ]
     .filter((s) => typeof s === 'string' && s.trim())
     .map((s) => s.trim().toUpperCase());
 
   // Boolean paid check: explicit boolean flags or terminal success status strings
+  const isPaidData = readPropOrGetter(data, 'isPaid', 'paid', 'is_paid');
+  const isPaidRaw = readPropOrGetter(raw, 'isPaid', 'paid', 'is_paid');
+
   const explicitPaid =
-    data?.paid === true ||
-    data?.paid === 'true' ||
-    raw?.paid === true ||
-    raw?.paid === 'true' ||
-    data?.isPaid === true ||
-    raw?.isPaid === true ||
-    data?.is_paid === true ||
-    raw?.is_paid === true;
+    isPaidData === true ||
+    isPaidData === 'true' ||
+    isPaidRaw === true ||
+    isPaidRaw === 'true';
 
   const hasTerminalSuccess = candidateStrings.some((s) =>
     ['PAID', 'SUCCESS', 'COMPLETED'].includes(s)
@@ -106,20 +148,28 @@ export function normalizePaymentResponse(raw, fallbackSaleId = null) {
 
   // Strictly separate paymentId and saleId
   const rawPaymentId =
-    data?.paymentId ||
-    raw?.paymentId ||
+    readPropOrGetter(data, 'getPaymentId', 'paymentId') ||
+    readPropOrGetter(raw, 'getPaymentId', 'paymentId') ||
     (data?.id && data.id !== fallbackSaleId ? data.id : null) ||
     (raw?.id && raw.id !== fallbackSaleId ? raw.id : null) ||
     null;
 
   const rawSaleId =
-    data?.saleId ||
-    data?.orderId ||
-    data?.entityId ||
-    raw?.saleId ||
-    raw?.orderId ||
-    raw?.entityId ||
+    readPropOrGetter(data, 'getSaleId', 'saleId', 'orderId', 'entityId') ||
+    readPropOrGetter(raw, 'getSaleId', 'saleId', 'orderId', 'entityId') ||
     fallbackSaleId ||
+    null;
+
+  const rawAmountVal =
+    readPropOrGetter(data, 'getAmount', 'amount') ??
+    readPropOrGetter(raw, 'getAmount', 'amount');
+  const rawAmount = rawAmountVal != null ? Number(rawAmountVal) : null;
+
+  const qrValue =
+    readPropOrGetter(data, 'getQr', 'qr', 'qrString', 'qr_string') ||
+    readPropOrGetter(data, 'getQrString', 'qrString', 'qr', 'qr_string') ||
+    readPropOrGetter(raw, 'getQr', 'qr', 'qrString', 'qr_string') ||
+    readPropOrGetter(raw, 'getQrString', 'qrString', 'qr', 'qr_string') ||
     null;
 
   return {
@@ -128,15 +178,10 @@ export function normalizePaymentResponse(raw, fallbackSaleId = null) {
     status: finalStatus,
     paymentStatus: finalStatus,
     paid: isPaid,
-    amount:
-      data?.amount != null
-        ? Number(data.amount)
-        : raw?.amount != null
-        ? Number(raw.amount)
-        : null,
+    amount: rawAmount,
     currency: data?.currency || raw?.currency || 'USD',
-    qrString: data?.qrString || data?.qr || raw?.qrString || raw?.qr || null,
-    qr: data?.qr || data?.qrString || raw?.qr || raw?.qrString || null,
+    qr: qrValue,
+    qrString: qrValue,
     md5: data?.md5 || raw?.md5 || null,
     invoiceNumber:
       data?.invoiceNumber ||
@@ -157,6 +202,12 @@ export function normalizePaymentResponse(raw, fallbackSaleId = null) {
     deeplinkUrl: data?.deeplinkUrl || raw?.deeplinkUrl || null,
     message: data?.message || raw?.message || null,
     raw,
+    // Method getters for full compatibility
+    getSaleId: () => rawSaleId,
+    getQr: () => qrValue,
+    getPaymentStatus: () => finalStatus,
+    isPaid: () => isPaid,
+    getAmount: () => rawAmount,
   };
 }
 
@@ -165,11 +216,13 @@ export const salePaymentApi = {
    * Create payment QR. Expiration (+15 min) is controlled entirely by backend.
    * POST /api/v1/sales/{saleId}/payment
    */
-  create: async (saleId, provider = 'BAKONG') => {
+  create: async (saleId, provider = 'BAKONG', config = {}) => {
     console.log(`[salePaymentApi.create] Creating payment for saleId:`, saleId);
-    const res = await apiClient.post(`/api/v1/sales/${saleId}/payment`, {
-      provider,
-    });
+    const res = await apiClient.post(
+      `/api/v1/sales/${saleId}/payment`,
+      { provider },
+      config
+    );
     const normalized = normalizePaymentResponse(res.data, saleId);
     console.log(`[salePaymentApi.create] Payment created:`, {
       saleId: normalized?.saleId,
@@ -183,9 +236,9 @@ export const salePaymentApi = {
    * Retrieve existing QR and payment info without re-triggering Bakong gateway.
    * GET /api/v1/sales/{saleId}/payment
    */
-  get: async (saleId) => {
+  get: async (saleId, config = {}) => {
     console.log(`[salePaymentApi.get] Fetching payment for saleId:`, saleId);
-    const res = await apiClient.get(`/api/v1/sales/${saleId}/payment`);
+    const res = await apiClient.get(`/api/v1/sales/${saleId}/payment`, config);
     return normalizePaymentResponse(res.data, saleId);
   },
 
@@ -194,9 +247,9 @@ export const salePaymentApi = {
    * Active verification endpoint:
    * GET /api/v1/sales/{saleId}/payment/status (expects SALE ID)
    */
-  checkStatus: async (saleId) => {
+  checkStatus: async (saleId, config = {}) => {
     console.log(`[salePaymentApi.checkStatus] GET /api/v1/sales/${saleId}/payment/status (using saleId: ${saleId})`);
-    const res = await apiClient.get(`/api/v1/sales/${saleId}/payment/status`);
+    const res = await apiClient.get(`/api/v1/sales/${saleId}/payment/status`, config);
     const normalized = normalizePaymentResponse(res.data, saleId);
     console.log(`[salePaymentApi.checkStatus] Result:`, {
       saleId,
@@ -211,13 +264,13 @@ export const salePaymentApi = {
    * Cancel payment on backend.
    * POST /api/v1/sales/payment/{paymentId}/cancel (expects PAYMENT ID)
    */
-  cancel: async (paymentId) => {
+  cancel: async (paymentId, config = {}) => {
     console.log(`[salePaymentApi.cancel] POST /api/v1/sales/payment/${paymentId}/cancel (using paymentId: ${paymentId})`);
     try {
-      const res = await apiClient.post(`/api/v1/sales/payment/${paymentId}/cancel`);
+      const res = await apiClient.post(`/api/v1/sales/payment/${paymentId}/cancel`, undefined, config);
       return normalizePaymentResponse(res.data);
     } catch {
-      const res = await apiClient.post(`/sales/payment/${paymentId}/cancel`);
+      const res = await apiClient.post(`/sales/payment/${paymentId}/cancel`, undefined, config);
       return normalizePaymentResponse(res.data);
     }
   },
