@@ -87,8 +87,8 @@ export function useSalePaymentPolling(saleId, enabled) {
       const httpStatus = err?.response?.status;
       console.warn('Payment polling notice:', httpStatus, err?.message);
 
-      // Stop polling on explicit authentication or forbidden errors
-      if (httpStatus === 401 || httpStatus === 403) {
+      // Stop polling on explicit authentication, forbidden, or not found errors
+      if (httpStatus === 401 || httpStatus === 403 || httpStatus === 404) {
         setError(getErrorMessage(err));
         stop();
         return;

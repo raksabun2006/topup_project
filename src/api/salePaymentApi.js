@@ -173,79 +173,12 @@ export const salePaymentApi = {
 
   /**
    * Check & verify payment status with Bakong.
-   * 1. Primary: GET /api/v1/sales/{saleId}/payment/status (actively triggers Bakong gateway check)
-   * 2. Secondary: GET /api/mart/sales/{saleId}/payment-status (POS payment status route)
-   * 3. Tertiary: GET /sales/{saleId} (checks if Sale entity was updated to PAID/COMPLETED by gateway/webhook)
+   * Active verification endpoint:
+   * GET /api/v1/sales/{saleId}/payment/status
    */
   checkStatus: async (saleId) => {
-    let paymentStatusRes = null;
-
-    // 1. Primary active gateway verification endpoint:
-    // GET /api/v1/sales/{saleId}/payment/status
-    try {
-      const res = await apiClient.get(`/api/v1/sales/${saleId}/payment/status`);
-      paymentStatusRes = normalizePaymentResponse(res.data, saleId);
-      if (paymentStatusRes?.paid || paymentStatusRes?.status === 'PAID') {
-        return paymentStatusRes;
-      }
-    } catch (primaryErr) {
-      console.warn(
-        `[Payment] Active payment/status notice for sale ${saleId}:`,
-        primaryErr?.response?.status,
-        primaryErr?.message
-      );
-    }
-
-    // 2. Secondary POS route:
-    // GET /api/mart/sales/{saleId}/payment-status
-    try {
-      const fallbackRes = await apiClient.get(`/api/mart/sales/${saleId}/payment-status`);
-      const fallbackNorm = normalizePaymentResponse(fallbackRes.data, saleId);
-      if (fallbackNorm?.paid || fallbackNorm?.status === 'PAID') {
-        return fallbackNorm;
-      }
-      if (!paymentStatusRes) {
-        paymentStatusRes = fallbackNorm;
-      }
-    } catch {
-      // ignore
-    }
-
-    // 3. Tertiary check: Verified Sale entity state:
-    // GET /sales/{saleId} (or /api/v1/sales/{saleId})
-    try {
-      const saleRes = await apiClient.get(`/sales/${saleId}`);
-      const rawSale = saleRes.data;
-      const saleData =
-        rawSale?.data && typeof rawSale.data === 'object' ? rawSale.data : rawSale;
-      const salePaymentStatus = String(saleData?.paymentStatus || '').toUpperCase();
-      const saleStatus = String(saleData?.status || '').toUpperCase();
-      if (
-        salePaymentStatus === 'PAID' ||
-        salePaymentStatus === 'SUCCESS' ||
-        salePaymentStatus === 'COMPLETED' ||
-        saleStatus === 'COMPLETED' ||
-        saleData?.paid === true
-      ) {
-        return {
-          ...(paymentStatusRes || {}),
-          saleId,
-          status: 'PAID',
-          paymentStatus: 'PAID',
-          paid: true,
-          amount:
-            saleData?.total != null
-              ? Number(saleData.total)
-              : paymentStatusRes?.amount,
-          invoiceNumber:
-            saleData?.invoiceNumber || paymentStatusRes?.invoiceNumber,
-        };
-      }
-    } catch {
-      // ignore
-    }
-
-    return paymentStatusRes;
+    const res = await apiClient.get(`/api/v1/sales/${saleId}/payment/status`);
+    return normalizePaymentResponse(res.data, saleId);
   },
 
   /**
@@ -262,4 +195,3 @@ export const salePaymentApi = {
     }
   },
 };
-
