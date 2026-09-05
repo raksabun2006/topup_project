@@ -3,20 +3,23 @@ import { Minus, Plus, Trash2, Package, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 
 export default function CartItem({ item, onSetQuantity, onRemove }) {
+  const [imageBroken, setImageBroken] = useState(false);
+
+  useEffect(() => {
+    setImageBroken(false);
+  }, [item?.product?.imageUrl]);
+
   if (!item || !item.product) return null;
   const { product, quantity = 1 } = item;
   const unitPrice = Number(product.price) || 0;
   const lineTotal = unitPrice * quantity - (item.discount || 0);
   const maxStock = product.stockQuantity ?? Infinity;
   const atMaxStock = quantity >= maxStock;
-  const [imageBroken, setImageBroken] = useState(false);
-
-  useEffect(() => setImageBroken(false), [product?.imageUrl]);
 
   return (
-    <div className="group relative flex items-center gap-2.5 py-2.5 sm:py-3 transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/60 -mx-1.5 px-2 rounded-xl border-b border-slate-100 dark:border-slate-800/80 last:border-0">
+    <div className="group relative flex items-center gap-2.5 py-2.5 px-2.5 rounded-xl border-b border-slate-100 dark:border-slate-800/80 last:border-0 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
       {/* Product thumbnail */}
-      <div className="relative flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 p-1 shadow-2xs">
+      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 p-1 shadow-2xs">
         {product.imageUrl && !imageBroken ? (
           <img
             src={product.imageUrl}
@@ -32,13 +35,13 @@ export default function CartItem({ item, onSetQuantity, onRemove }) {
       {/* Product info (Receipt Style) */}
       <div className="min-w-0 flex-1">
         <h4
-          className="truncate text-xs sm:text-[13px] font-bold text-[#172033] dark:text-slate-100 leading-tight"
+          className="truncate text-xs sm:text-[13px] font-bold text-[#0F172A] dark:text-slate-100 leading-tight"
           title={product.name}
         >
           {product.name}
         </h4>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[11px] font-medium text-[#667085] dark:text-slate-400">
+          <span className="text-[11px] font-medium text-[#64748B] dark:text-slate-400">
             {formatCurrency(product.price)}
           </span>
           {atMaxStock && (
@@ -49,8 +52,8 @@ export default function CartItem({ item, onSetQuantity, onRemove }) {
         </div>
       </div>
 
-      {/* Touch-friendly Quantity selector */}
-      <div className="flex shrink-0 items-center gap-1 bg-slate-100/90 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200/70 dark:border-slate-700">
+      {/* Tactile Quantity selector */}
+      <div className="flex shrink-0 items-center gap-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200 dark:border-slate-700">
         <button
           type="button"
           onClick={() => {
@@ -61,13 +64,13 @@ export default function CartItem({ item, onSetQuantity, onRemove }) {
             }
           }}
           className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-md bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-2xs transition hover:bg-slate-100 dark:hover:bg-slate-600 active:scale-90 cursor-pointer"
-          title={quantity === 1 ? 'លុបទំនិញ' : 'បន្ថយចំនួន'}
+          title={quantity === 1 ? 'ដកចេញពីរទេះ' : 'បន្ថយចំនួន'}
           aria-label="Decrease quantity"
         >
           <Minus size={12} />
         </button>
 
-        <span className="w-5 sm:w-6 text-center text-xs font-bold text-[#172033] dark:text-white select-none">
+        <span className="w-5 sm:w-6 text-center text-xs font-bold text-[#0F172A] dark:text-white select-none">
           {quantity}
         </span>
 
@@ -84,7 +87,7 @@ export default function CartItem({ item, onSetQuantity, onRemove }) {
       </div>
 
       {/* Line Total */}
-      <div className="w-16 sm:w-20 shrink-0 text-right">
+      <div className="w-14 sm:w-16 shrink-0 text-right">
         <span className="text-xs sm:text-[13px] font-black text-[#009F6B] dark:text-emerald-400">
           {formatCurrency(lineTotal)}
         </span>
@@ -98,7 +101,7 @@ export default function CartItem({ item, onSetQuantity, onRemove }) {
         title="លុបចេញ"
         aria-label="Remove item"
       >
-        <Trash2 size={14} />
+        <Trash2 size={13} />
       </button>
     </div>
   );

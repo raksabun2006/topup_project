@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Receipt, DollarSign, Clock, AlertTriangle,
   AlertCircle, RefreshCw, Boxes, UserCheck, CheckCircle2, Search,
-  ArrowRight, X, ShoppingCart, Plus
+  ArrowRight, X, ShoppingCart, Plus, Calendar
 } from 'lucide-react';
 import { useSales } from '../../hooks/useSales';
 import { useLowStockInventory } from '../../hooks/useInventory';
@@ -118,33 +118,45 @@ export default function AdminDashboard() {
         robots="noindex, nofollow"
       />
 
-      {/* Quick Actions Bar */}
-      <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-2.5">
-        <Link
-          to="/pos"
-          className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow-md shadow-emerald-600/25 transition-all hover:from-emerald-500 hover:to-emerald-600 active:scale-95"
-        >
-          <ShoppingCart size={17} />
-          <span>បើក POS</span>
-        </Link>
-
-        <Link
-          to="/dashboard/products"
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 active:scale-95"
-        >
-          <Plus size={16} className="text-emerald-600 dark:text-emerald-400" />
-          <span>ផលិតផលថ្មី</span>
-        </Link>
-
-        <button
-          onClick={reload}
-          disabled={loading}
-          className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition active:scale-95 disabled:opacity-50"
-          title="ទាញយកឡើងវិញ"
-        >
-          <RefreshCw size={16} className={loading ? 'animate-spin text-emerald-600' : ''} />
-        </button>
+      {/* Header Greeting & Quick Actions Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            សួស្តី, សូមស្វាគមន៍មកកាន់ Mart System
+          </h1>
+          <p className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+            <Calendar size={13} className="text-emerald-600 dark:text-emerald-400" />
+            <span>{new Date().toLocaleDateString('km-KH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+          </p>
         </div>
+
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          <Link
+            to="/pos"
+            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition-all active:scale-95"
+          >
+            <ShoppingCart size={17} />
+            <span>បើក POS</span>
+          </Link>
+
+          <Link
+            to="/dashboard/products"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 active:scale-95"
+          >
+            <Plus size={16} className="text-emerald-600 dark:text-emerald-400" />
+            <span>ផលិតផលថ្មី</span>
+          </Link>
+
+          <button
+            onClick={reload}
+            disabled={loading}
+            className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition active:scale-95 disabled:opacity-50 cursor-pointer"
+            title="ទាញយកឡើងវិញ"
+          >
+            <RefreshCw size={16} className={loading ? 'animate-spin text-emerald-600' : ''} />
+          </button>
+        </div>
+      </div>
 
       {error && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4 text-xs sm:text-sm text-rose-700 dark:text-rose-400 animate-fade-in">

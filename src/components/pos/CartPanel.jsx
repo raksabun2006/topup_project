@@ -8,7 +8,6 @@ import {
   Trash2,
   ArrowRight,
   PauseCircle,
-  XCircle,
   Percent,
   ShoppingBag,
 } from 'lucide-react';
@@ -129,7 +128,7 @@ export default function CartPanel({
   };
 
   return (
-    <div className="flex flex-col rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden transition-all duration-200 lg:h-full lg:min-h-0">
+    <div className="flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden transition-all duration-150 lg:h-full lg:min-h-0">
       {/* Top Single Header */}
       <div className="flex shrink-0 items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 sm:px-4 py-2.5 sm:py-3">
         <div className="flex items-center gap-2">
@@ -137,14 +136,12 @@ export default function CartPanel({
             <ShoppingBag size={16} />
           </div>
           <div className="flex items-center gap-1.5">
-            <h2 className="text-sm font-bold text-[#172033] dark:text-white">
-              {isAuthenticated ? 'រទេះទំនិញ (POS)' : 'រទេះទំនិញ'}
+            <h2 className="text-sm font-bold text-[#0F172A] dark:text-white">
+              {isAuthenticated ? 'ការលក់បច្ចុប្បន្ន (Current Order)' : 'រទេះទំនិញ (Cart)'}
             </h2>
-            {items.length > 0 && (
-              <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[11px] font-bold text-[#009F6B] dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
-                {totalItemCount}
-              </span>
-            )}
+            <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[11px] font-bold text-[#009F6B] dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
+              {totalItemCount} {items.length === 1 ? 'item' : 'items'}
+            </span>
           </div>
         </div>
 
@@ -187,7 +184,7 @@ export default function CartPanel({
       <div className={`${items.length === 0 ? 'py-10 lg:flex-1 lg:flex lg:flex-col lg:justify-center' : 'flex-1 min-h-0 overflow-y-auto px-3.5 sm:px-4 py-1 divide-y divide-slate-100 dark:divide-slate-800'}`}>
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-6 text-center animate-fade-in">
-            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
+            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
               <ShoppingCart size={28} />
             </div>
 
@@ -299,11 +296,11 @@ export default function CartPanel({
               )}
             </div>
 
-            {/* Calculations Breakdown (Receipt Summary) */}
-            <div className="space-y-1.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-800/80 p-3 text-xs">
-              <div className="flex items-center justify-between text-[#667085] dark:text-slate-400">
-                <span>សរុបរង</span>
-                <span className="font-semibold text-[#172033] dark:text-slate-200">{formatCurrency(subtotal)}</span>
+            {/* Calculations Breakdown (Smart Receipt Summary) */}
+            <div className="space-y-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/80 p-3 text-xs">
+              <div className="flex items-center justify-between text-[#64748B] dark:text-slate-400">
+                <span>សរុបរង (Subtotal)</span>
+                <span className="font-semibold text-[#0F172A] dark:text-slate-200">{formatCurrency(subtotal)}</span>
               </div>
 
               {discountAmount > 0 && (
@@ -313,7 +310,7 @@ export default function CartPanel({
                 </div>
               )}
 
-              <div className="flex items-center justify-between text-[#667085] dark:text-slate-400">
+              <div className="flex items-center justify-between text-[#64748B] dark:text-slate-400">
                 <span className="flex items-center gap-1.5">
                   <span>ពន្ធ (Tax)</span>
                   <span className="inline-flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
@@ -329,12 +326,12 @@ export default function CartPanel({
                     %
                   </span>
                 </span>
-                <span className="font-semibold text-[#172033] dark:text-slate-200">{formatCurrencyPrecise(taxAmount)}</span>
+                <span className="font-semibold text-[#0F172A] dark:text-slate-200">{formatCurrencyPrecise(taxAmount)}</span>
               </div>
 
-              {/* Grand Total Row */}
-              <div className="flex items-baseline justify-between border-t border-dashed border-slate-200 dark:border-slate-700 pt-2 text-sm font-bold text-[#172033] dark:text-white">
-                <span className="text-sm font-bold">សរុបត្រូវបង់</span>
+              {/* Grand Total Row (Strongest visual element in cart) */}
+              <div className="flex items-baseline justify-between border-t border-dashed border-slate-200 dark:border-slate-700 pt-2 text-sm font-bold text-[#0F172A] dark:text-white">
+                <span className="text-sm font-bold">សរុបត្រូវបង់ (TOTAL)</span>
                 <span className="text-xl sm:text-2xl font-black text-[#009F6B] dark:text-emerald-400 tracking-tight">
                   {formatCurrency(total)}
                 </span>
@@ -347,7 +344,7 @@ export default function CartPanel({
                 <button
                   type="button"
                   onClick={onHold}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100/90 dark:hover:bg-slate-700 active:scale-95 transition cursor-pointer"
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition cursor-pointer"
                 >
                   <PauseCircle size={14} className="text-amber-600 dark:text-amber-400" />
                   <span>ផ្អាកការលក់នេះសិន (Hold Order)</span>
@@ -358,10 +355,10 @@ export default function CartPanel({
         ) : (
           /* Customer / Guest Checkout Summary */
           <div className="space-y-2">
-            <div className="flex items-center justify-between rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-800 p-3 shadow-2xs">
+            <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 p-3 shadow-2xs">
               <div>
-                <span className="text-xs font-bold text-[#172033] dark:text-slate-200">សរុបត្រូវបង់</span>
-                <p className="text-[10px] text-[#667085] dark:text-slate-400">({totalItemCount} មុខទំនិញ)</p>
+                <span className="text-xs font-bold text-[#0F172A] dark:text-slate-200">សរុបត្រូវបង់ (TOTAL)</span>
+                <p className="text-[10px] text-[#64748B] dark:text-slate-400">({totalItemCount} មុខទំនិញ)</p>
               </div>
               <span className="text-xl sm:text-2xl font-black text-[#009F6B] dark:text-emerald-400">{formatCurrency(total)}</span>
             </div>
@@ -376,10 +373,10 @@ export default function CartPanel({
               type="button"
               onClick={onCheckout}
               disabled={items.length === 0}
-              className="group flex h-13 sm:h-14 w-full items-center justify-between rounded-2xl bg-[#009F6B] px-5 text-sm sm:text-base font-extrabold text-white shadow-lg shadow-[#009F6B]/25 hover:bg-[#00845A] hover:shadow-xl hover:shadow-[#009F6B]/30 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 disabled:shadow-none cursor-pointer"
+              className="group flex h-13 sm:h-14 w-full items-center justify-between rounded-2xl bg-[#009F6B] px-5 text-sm sm:text-base font-extrabold text-white shadow-lg shadow-[#009F6B]/20 hover:bg-[#00845A] hover:shadow-xl transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 disabled:shadow-none cursor-pointer"
             >
               <div className="flex items-center gap-2">
-                <span>បង់ប្រាក់</span>
+                <span>គិតលុយ / បង់ប្រាក់</span>
                 <kbd className="hidden sm:inline-block rounded bg-white/20 px-1.5 py-0.5 text-[10px] font-bold text-white/90">
                   F9
                 </kbd>

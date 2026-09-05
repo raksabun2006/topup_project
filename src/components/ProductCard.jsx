@@ -17,13 +17,16 @@ export default function ProductCard({
   onRemove,
   cartQuantity = 0,
 }) {
+  const [imageBroken, setImageBroken] = useState(false);
+
+  useEffect(() => {
+    setImageBroken(false);
+  }, [product?.imageUrl]);
+
   if (!product) return null;
   const available = (product.stockQuantity ?? 0) - cartQuantity;
   const outOfStock = (product.stockQuantity ?? 0) <= 0;
   const atMaxStock = available <= 0 && cartQuantity > 0;
-  const [imageBroken, setImageBroken] = useState(false);
-
-  useEffect(() => setImageBroken(false), [product?.imageUrl]);
 
   const handleCardClick = () => {
     if (outOfStock) return;
@@ -57,37 +60,37 @@ export default function ProductCard({
   return (
     <div
       onClick={handleCardClick}
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-200 select-none ${
+      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-150 select-none ${
         outOfStock
           ? 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 opacity-60 cursor-not-allowed'
           : isSelected
           ? 'border-[#009F6B] bg-[#E8F8F2]/60 dark:bg-emerald-950/30 ring-1 ring-[#009F6B]/30 shadow-xs'
-          : 'border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:border-[#009F6B]/50 hover:shadow-md cursor-pointer hover:-translate-y-0.5'
+          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:border-[#009F6B]/60 hover:shadow-sm cursor-pointer'
       }`}
     >
       {/* Product Image Area */}
-      <div className="relative flex aspect-[4/3] max-h-24 sm:max-h-28 w-full shrink-0 items-center justify-center bg-slate-50/90 dark:bg-slate-800/60 p-2 overflow-hidden">
+      <div className="relative flex aspect-[4/3] max-h-24 sm:max-h-28 w-full shrink-0 items-center justify-center bg-slate-50 dark:bg-slate-800/60 p-2 overflow-hidden border-b border-slate-100 dark:border-slate-800/80">
         {product.imageUrl && !imageBroken ? (
           <img
             src={product.imageUrl}
             alt={`${product.name} - Mart System`}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-contain transition-transform duration-200 group-hover:scale-105"
+            className="h-full w-full object-contain transition-transform duration-150 group-hover:scale-105"
             onError={() => setImageBroken(true)}
           />
         ) : (
-          <Package size={26} className="text-slate-300 dark:text-slate-600" />
+          <Package size={28} className="text-slate-300 dark:text-slate-600" />
         )}
 
         {/* Stock / Out of Stock pill */}
         <div className="absolute top-1.5 left-1.5 flex items-center gap-1">
           {outOfStock ? (
-            <span className="rounded-md bg-rose-500/90 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-2xs">
+            <span className="rounded-md bg-rose-500 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-2xs">
               អស់ស្តុក
             </span>
           ) : product.stockQuantity !== undefined && product.stockQuantity <= 5 ? (
-            <span className="rounded-md bg-amber-500/90 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-2xs">
+            <span className="rounded-md bg-amber-500 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-2xs">
               នៅសល់ {available}
             </span>
           ) : null}
@@ -101,15 +104,15 @@ export default function ProductCard({
             className={`line-clamp-2 text-xs sm:text-[13px] font-bold leading-snug transition-colors ${
               isSelected
                 ? 'text-[#00845A] dark:text-emerald-300'
-                : 'text-[#172033] dark:text-slate-100 group-hover:text-[#009F6B] dark:group-hover:text-emerald-400'
+                : 'text-[#0F172A] dark:text-slate-100 group-hover:text-[#009F6B] dark:group-hover:text-emerald-400'
             }`}
             title={product.name}
           >
             {product.name}
           </h3>
 
-          {/* Secondary SKU metadata (not visually emphasized) */}
-          <p className="mt-0.5 truncate text-[10px] text-[#667085] dark:text-slate-500">
+          {/* Secondary SKU metadata */}
+          <p className="mt-0.5 truncate text-[10px] text-[#64748B] dark:text-slate-500">
             {product.sku ? `SKU: ${product.sku}` : product.barcode ? `BAR: ${product.barcode}` : '\u00A0'}
           </p>
         </div>
@@ -120,8 +123,8 @@ export default function ProductCard({
             {formatCurrency(product.price)}
           </span>
           {!outOfStock && product.stockQuantity !== undefined && product.stockQuantity > 5 && (
-            <span className="text-[10px] font-medium text-[#667085] dark:text-slate-400">
-              ស្តុក: {available}
+            <span className="text-[10px] font-medium text-[#64748B] dark:text-slate-400">
+              ស្តុក {available}
             </span>
           )}
         </div>
@@ -133,7 +136,7 @@ export default function ProductCard({
               អស់ពីស្តុក
             </div>
           ) : isSelected ? (
-            /* Selected State: Inline Stepper for Cashier Speed */
+            /* Selected State: Inline Stepper for Fast Cashier Speed */
             <div
               className="flex h-8 sm:h-9 w-full items-center justify-between rounded-xl bg-white dark:bg-slate-800 border border-[#009F6B] p-0.5 shadow-2xs"
               onClick={(e) => e.stopPropagation()}
@@ -164,7 +167,7 @@ export default function ProductCard({
               </button>
             </div>
           ) : (
-            /* Unselected State: Clean Add Button */
+            /* Unselected State: Clean Add to Cart Button */
             <button
               type="button"
               onClick={(e) => {
@@ -174,7 +177,7 @@ export default function ProductCard({
               className="flex h-8 sm:h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-[#009F6B] text-xs font-bold text-white shadow-2xs hover:bg-[#00845A] transition-all active:scale-95 cursor-pointer"
             >
               <Plus size={14} />
-              <span>បន្ថែម</span>
+              <span>បន្ថែមក្នុងរទេះ</span>
             </button>
           )}
         </div>

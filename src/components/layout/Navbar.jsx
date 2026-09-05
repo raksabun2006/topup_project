@@ -25,6 +25,7 @@ export default function Navbar() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [logoError, setLogoError] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -49,8 +50,17 @@ export default function Navbar() {
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
 
-          <Link to="/pos" className="flex items-center gap-2">
-            <Store size={24} className="text-white dark:text-emerald-400" />
+          <Link to="/pos" className="flex items-center gap-2 sm:gap-2.5 group">
+            {!logoError ? (
+              <img
+                src="/mart.jpg"
+                alt={env.appName || 'Mart Logo'}
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl object-cover transition duration-200 group-hover:scale-105"
+                onError={() => setLogoError(true)}
+              />
+            ) : (
+              <Store size={24} className="text-white dark:text-emerald-400" />
+            )}
             <span className="text-lg font-bold text-white tracking-tight">{env.appName}</span>
           </Link>
         </div>

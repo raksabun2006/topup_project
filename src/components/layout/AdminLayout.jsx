@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingCart, Receipt as ReceiptIcon, Package, Users, User, LogOut,
-  Menu, X, Store, Sparkles, ChevronRight, BarChart3, WalletCards
+  Menu, X, Sparkles, ChevronRight, BarChart3, WalletCards
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../ui/ThemeToggle';
@@ -60,15 +60,20 @@ export default function AdminLayout() {
         }`}
       >
         {/* Brand Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4 bg-gradient-to-r from-emerald-600/10 via-emerald-600/5 to-transparent">
-          <Link to="/dashboard" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-2.5 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/30 group-hover:scale-105 transition">
-              <Store size={22} />
-            </div>
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
+          <Link to="/dashboard" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 group">
+            <img
+              src="/mart.jpg"
+              alt={env.appName || 'Mart Logo'}
+              className="h-10 w-10 rounded-xl object-cover transition duration-200 group-hover:scale-105 shadow-xs"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-base font-black text-slate-900 dark:text-white tracking-tight">{env.appName}</span>
-                <span className="rounded-md bg-emerald-600 px-1.5 py-0.2 text-[9px] font-black uppercase text-white shadow-2xs">
+                <span className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">{env.appName}</span>
+                <span className="rounded-md bg-emerald-600 px-1.5 py-0.5 text-[9px] font-black uppercase text-white shadow-2xs">
                   ADMIN
                 </span>
               </div>
@@ -81,7 +86,7 @@ export default function AdminLayout() {
 
           <button
             onClick={() => setMobileNavOpen(false)}
-            className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 lg:hidden"
+            className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 lg:hidden cursor-pointer"
             aria-label="បិទម៉ឺនុយ"
           >
             <X size={18} />
@@ -119,12 +124,10 @@ export default function AdminLayout() {
               className={({ isActive }) =>
                 `group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-bold transition-all duration-150 ${
                   isActive
-                    ? isPos
-                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/30 translate-x-0.5'
-                      : 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-md shadow-emerald-600/25 translate-x-0.5'
+                    ? 'bg-emerald-600/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
                     : isPos
-                    ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-950/40 hover:bg-emerald-500/20'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-emerald-50/80 dark:hover:bg-emerald-950/30 hover:text-emerald-700 dark:hover:text-emerald-400'
+                    ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 dark:bg-emerald-950/30 hover:bg-emerald-500/15'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white'
                 }`
               }
             >

@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
 import {
-  Search, Loader2, AlertCircle, ChevronLeft, ChevronRight, PackageX, Plus,
+  Search, AlertCircle, ChevronLeft, ChevronRight, PackageX, Plus,
   ScanBarcode, X, CheckCircle2,
 } from 'lucide-react';
 import ProductCard from '../ProductCard';
@@ -294,16 +294,16 @@ export default function ProductGrid({
           )}
         </div>
 
-        {/* Integrated Category Navigation (Directly below search) */}
+        {/* Integrated Category Navigation (Sleek horizontal pills) */}
         {Array.isArray(categories) && categories.length > 0 && onSelectCategory && (
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none touch-scroll">
             <button
               type="button"
               onClick={() => onSelectCategory('')}
               className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95 cursor-pointer ${
                 !category
                   ? 'bg-[#009F6B] text-white shadow-xs'
-                  : 'border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800 text-[#667085] dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-[#172033] dark:hover:text-white'
+                  : 'border border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-800/80 text-[#64748B] dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-700 hover:text-[#0F172A] dark:hover:text-white'
               }`}
             >
               <AllCategoriesIcon size={14} />
@@ -324,7 +324,7 @@ export default function ProductGrid({
                   className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95 cursor-pointer ${
                     active
                       ? 'bg-[#009F6B] text-white shadow-xs'
-                      : 'border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800 text-[#667085] dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-[#172033] dark:hover:text-white'
+                      : 'border border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-800/80 text-[#64748B] dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-700 hover:text-[#0F172A] dark:hover:text-white'
                   }`}
                 >
                   <Icon size={14} />
@@ -345,11 +345,27 @@ export default function ProductGrid({
       </div>
 
       {/* Main Catalog Content */}
-      <div className="mt-2.5 sm:mt-3 flex-1 min-h-0 overflow-y-auto pr-0.5 pb-2 touch-scroll">
+      <div className="mt-2 sm:mt-2.5 flex-1 min-h-0 overflow-y-auto pr-0.5 pb-2 touch-scroll">
+        {/* Modern Skeleton Loading State */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
-            <Loader2 size={32} className="animate-spin text-[#009F6B] mb-2.5" />
-            <p className="text-sm font-medium text-[#667085] dark:text-slate-400">កំពុងទាញយកទំនិញ...</p>
+          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3">
+            {[...Array(12)].map((_, i) => (
+              <div
+                key={i}
+                className="flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 space-y-2 animate-pulse"
+              >
+                <div className="aspect-[4/3] w-full rounded-xl bg-slate-100 dark:bg-slate-800" />
+                <div className="space-y-1.5">
+                  <div className="h-3.5 w-3/4 rounded bg-slate-100 dark:bg-slate-800" />
+                  <div className="h-2.5 w-1/2 rounded bg-slate-100 dark:bg-slate-800" />
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <div className="h-4 w-12 rounded bg-slate-100 dark:bg-slate-800" />
+                  <div className="h-3 w-10 rounded bg-slate-100 dark:bg-slate-800" />
+                </div>
+                <div className="h-8 w-full rounded-xl bg-slate-100 dark:bg-slate-800" />
+              </div>
+            ))}
           </div>
         )}
 
@@ -368,17 +384,35 @@ export default function ProductGrid({
           </div>
         )}
 
+        {/* Polished Empty State */}
         {!loading && !error && filtered.length === 0 && (
-          <div className="flex flex-col items-center gap-2.5 py-16 sm:py-20 text-center animate-fade-in">
-            <PackageX size={36} className="text-slate-300 dark:text-slate-600" />
-            <p className="text-sm font-medium text-[#667085] dark:text-slate-400">
-              {search ? 'មិនមានទំនិញត្រូវនឹងលក្ខខណ្ឌស្វែងរកនេះទេ' : 'មិនទាន់មានទំនិញ'}
-            </p>
+          <div className="flex flex-col items-center justify-center gap-3 py-16 sm:py-20 text-center animate-fade-in">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
+              <PackageX size={32} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">រកមិនឃើញទំនិញឡើយ</h3>
+              <p className="mt-1 text-xs text-slate-400 max-w-xs">
+                {search ? `រកមិនឃើញទំនិញណាត្រូវនឹង "${search}" ឡើយ។` : 'មិនទាន់មានទំនិញក្នុងប្រភេទទំនិញនេះទេ។'}
+              </p>
+            </div>
+            {(search || category) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('');
+                  if (onSelectCategory) onSelectCategory('');
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-bold text-[#009F6B] dark:text-emerald-400 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+              >
+                <span>សម្អាតការស្វែងរក / តម្រង</span>
+              </button>
+            )}
           </div>
         )}
 
         {!loading && !error && filtered && filtered.length > 0 && (
-          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3">
+          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3">
             {filtered.filter(Boolean).map((product) => (
               <ProductCard
                 key={product?.id || product?.sku || Math.random()}

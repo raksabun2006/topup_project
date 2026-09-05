@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Siemreap&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Siemreap&display=swap');
 @import "tailwindcss";
 
 /* Manual class-based dark mode variant for Tailwind CSS v4 */
@@ -6,13 +6,13 @@
 
 /**
  * Global Color Tokens & Theming for Mart System:
- * - Light: Clean white & slate surfaces with crisp contrasts.
- * - Dark: Rich slate/zinc surfaces (no harsh pure-black).
+ * - Light: Clean white & slate-50 surfaces with soft borders and crisp contrasts.
+ * - Dark: Premium dark slate surfaces (#0f172a, #1e293b) with clear separation.
  */
 :root {
-  --color-ink-950: #f8f7fb;
+  --color-ink-950: #f8fafc;
   --color-ink-900: #ffffff;
-  --color-ink-800: #f1f0f6;
+  --color-ink-800: #f1f5f9;
   --color-ink-700: #e2e8f0;
   --color-ink-600: #cbd5e1;
   color-scheme: light;
@@ -36,22 +36,30 @@
   --color-pos-primary: #009F6B;
   --color-pos-primary-hover: #00845A;
   --color-pos-primary-light: #E8F8F2;
-  --color-pos-bg: #F7F9FA;
+  --color-pos-bg: #F8FAFC;
   --color-pos-card: #FFFFFF;
-  --color-pos-border: #E5E7EB;
-  --color-pos-text-primary: #172033;
-  --color-pos-text-secondary: #667085;
-  --color-pos-success: #12B76A;
-  --color-pos-warning: #F79009;
-  --color-pos-error: #F04438;
-  --color-pos-info: #2E90FA;
-  --font-sans: 'Siemreap', ui-sans-serif, system-ui, sans-serif;
+  --color-pos-border: #E2E8F0;
+  --color-pos-text-primary: #0F172A;
+  --color-pos-text-secondary: #64748B;
+  --color-pos-success: #10B981;
+  --color-pos-warning: #F59E0B;
+  --color-pos-error: #EF4444;
+  --color-pos-info: #0EA5E9;
+  --font-sans: 'Plus Jakarta Sans', 'Siemreap', ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  font-family: 'Siemreap', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Siemreap', ui-sans-serif, system-ui, sans-serif;
   background-color: var(--color-ink-950);
+  color: #0F172A;
   transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dark body,
+.dark {
+  color: #F8FAFC;
 }
 
 /* Custom sleek scrollbar styling for product grids & panels */
