@@ -223,24 +223,27 @@ export default function Pos() {
   const isPosPage = pathname === '/pos';
   const isCheckoutFlow = pathname === '/cart' || pathname === '/checkout' || pathname.startsWith('/payment');
 
-  let pageTitle = 'Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើប';
+  let pageTitle = 'Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម';
   let pageDescription =
-    'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបបំផុតសម្រាប់អាជីវកម្មនៅកម្ពុជា។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស។';
-  let pageKeywords = 'Mart System, ប្រព័ន្ធគ្រប់គ្រងហាង, POS Cambodia, Point of Sale, KHQR POS, Cloud POS';
+    'Mart System - ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព ។ ចំណុចលក់ (POS) • ទំនិញ (Products)។ ទំនាក់ទំនង: 0968782196, Email: raksabun2006@gmail.com';
+  let pageKeywords =
+    'Mart System, ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម, ចំណុចលក់ POS, ទំនិញ Products, គ្រប់គ្រងការលក់, គ្រប់គ្រងស្តុក, Bakong KHQR POS, POS System Cambodia';
   let pageCanonical = '/';
   let pageRobots = 'index, follow';
 
   if (isProductsPage) {
-    pageTitle = 'បញ្ជីទំនិញទាំងអស់ | Mart System POS';
-    pageDescription = 'មើលបញ្ជីទំនិញទាំងអស់នៅក្នុង Mart System រួមមានតម្លៃ ស្តុក និងប្រភេទផ្សេងៗ។';
-    pageKeywords = 'ទំនិញ, ស្តុក, Mart System Products, Catalog Cambodia';
+    pageTitle = 'ទំនិញ (Products) | Mart System POS';
+    pageDescription =
+      'មើលបញ្ជីទំនិញទាំងអស់នៅក្នុង Mart System — ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម រួមមានតម្លៃ ស្តុក និងប្រភេទផ្សេងៗ។';
+    pageKeywords = 'ទំនិញ, Products, ស្តុក, Mart System Products, Catalog Cambodia';
     pageCanonical = '/products';
   } else if (isPosPage) {
-    pageTitle = 'ផ្ទាំងគិតលុយ (POS) | Mart System';
-    pageDescription = 'ផ្ទាំងគិតលុយលឿនរហ័ស គាំទ្រការស្កេន Barcode បញ្ចុះតម្លៃ និងការទូទាត់តាម Bakong KHQR ផ្ទាល់។';
-    pageKeywords = 'POS Screen, Cashier Register, គិតលុយ, Bakong KHQR';
+    pageTitle = 'ចំណុចលក់ (POS) | Mart System';
+    pageDescription =
+      'ចំណុចលក់ (POS) ទំនើប គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព ។';
+    pageKeywords = 'ចំណុចលក់, POS, POS Screen, Cashier Register, គិតលុយ, Bakong KHQR';
     pageCanonical = '/pos';
-    pageRobots = 'noindex, nofollow';
+    pageRobots = 'index, follow';
   } else if (isCheckoutFlow) {
     pageTitle = 'ការទូទាត់ប្រាក់ (Checkout) | Mart System';
     pageDescription = 'ទូទាត់ប្រាក់ទំនិញរបស់អ្នកដោយសុវត្ថិភាពតាមរយៈ Bakong KHQR ឬសាច់ប្រាក់។';
@@ -256,9 +259,50 @@ export default function Pos() {
         '@id': `${env.siteUrl}/#website`,
         'url': env.siteUrl,
         'name': 'Mart System',
+        'alternateName': [
+          'ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម',
+          'Mart POS Cambodia'
+        ],
         'description': pageDescription,
         'inLanguage': 'km-KH',
       },
+      {
+        '@type': 'SoftwareApplication',
+        '@id': `${env.siteUrl}/#software`,
+        'name': 'Mart System',
+        'alternateName': 'ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម',
+        'applicationCategory': 'BusinessApplication',
+        'applicationSubCategory': 'Point of Sale & Inventory Management',
+        'operatingSystem': 'Web, iOS, Android, Windows, macOS',
+        'description':
+          'ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព ។',
+        'inLanguage': 'km-KH',
+        'featureList': [
+          'ចំណុចលក់ (POS)',
+          'ទំនិញ (Products)',
+          'គ្រប់គ្រងការលក់ និងស្តុកទំនិញ',
+          'ទូទាត់ប្រាក់តាម Bakong KHQR ស្វ័យប្រវត្តិ'
+        ],
+        'author': {
+          '@type': 'Person',
+          'name': 'Bun Raksa',
+          'email': 'raksabun2006@gmail.com',
+          'telephone': '0968782196'
+        }
+      },
+      {
+        '@type': 'LocalBusiness',
+        '@id': `${env.siteUrl}/#localbusiness`,
+        'name': 'Mart System',
+        'headline': 'ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម',
+        'description':
+          'ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព ។',
+        'telephone': '0968782196',
+        'email': 'raksabun2006@gmail.com',
+        'url': env.siteUrl,
+        'currenciesAccepted': 'USD, KHR',
+        'paymentAccepted': 'Cash, Bakong KHQR'
+      }
     ];
 
     if (isProductsPage || isPosPage) {
@@ -275,8 +319,8 @@ export default function Pos() {
           {
             '@type': 'ListItem',
             'position': 2,
-            'name': isProductsPage ? 'ទំនិញ' : 'ផ្ទាំងគិតលុយ',
-            'item': `${env.siteUrl}/pos`,
+            'name': isProductsPage ? 'ទំនិញ (Products)' : 'ចំណុចលក់ (POS)',
+            'item': `${env.siteUrl}${isProductsPage ? '/products' : '/pos'}`,
           },
         ],
       });
@@ -286,7 +330,7 @@ export default function Pos() {
       '@context': 'https://schema.org',
       '@graph': baseSchemaGraph,
     };
-  }, [isCheckoutFlow, isProductsPage, isPosPage, pageDescription]);
+  }, [isProductsPage, isPosPage, pageDescription]);
 
   return (
     <div
@@ -304,10 +348,11 @@ export default function Pos() {
       />
 
       <header className="sr-only">
-        <h1>Mart System — ប្រព័ន្ធគ្រប់គ្រងហាង និង POS</h1>
-        <h2>គ្រប់គ្រងការលក់បានងាយស្រួល</h2>
-        <h2>គ្រប់គ្រងទំនិញ និងស្តុក</h2>
-        <h2>ប្រព័ន្ធគ្រប់គ្រងសម្រាប់អាជីវកម្ម</h2>
+        <h1>Mart System — ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម</h1>
+        <p>គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព ។</p>
+        <h2>ចំណុចលក់ (POS)</h2>
+        <h2>ទំនិញ (Products)</h2>
+        <p>ទំនាក់ទំនងទូរស័ព្ទ: 0968782196 | អ៊ីមែល: raksabun2006@gmail.com</p>
       </header>
 
       {/* Main Responsive 2-Column POS Layout */}

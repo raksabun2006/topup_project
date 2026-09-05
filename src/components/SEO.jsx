@@ -7,9 +7,9 @@ import { env } from '../config/env';
  * Open Graph, Twitter cards, and Schema.org JSON-LD structured data.
  */
 export default function SEO({
-  title = 'Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS',
-  description = 'Mart System គឺជាប្រព័ន្ធគ្រប់គ្រងហាង និង POS សម្រាប់គ្រប់គ្រងការលក់ ទំនិញ ស្តុក ការបញ្ជាទិញ និងអាជីវកម្មបានយ៉ាងងាយស្រួល។',
-  keywords = 'Mart System, ប្រព័ន្ធគ្រប់គ្រងហាង, ប្រព័ន្ធ POS, ប្រព័ន្ធគ្រប់គ្រងការលក់, ប្រព័ន្ធគ្រប់គ្រងស្តុក, Bakong KHQR POS, POS System Cambodia',
+  title = 'Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម',
+  description = 'Mart System — ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព ។ ចំណុចលក់ (POS) • ទំនិញ (Products)។ ទំនាក់ទំនង: 0968782196, Email: raksabun2006@gmail.com',
+  keywords = 'Mart System, ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម, ប្រព័ន្ធគ្រប់គ្រងហាង, ប្រព័ន្ធ POS, ចំណុចលក់ POS, ទំនិញ Products, គ្រប់គ្រងការលក់, គ្រប់គ្រងស្តុក, Bakong KHQR POS, POS System Cambodia',
   canonical,
   ogTitle,
   ogDescription,

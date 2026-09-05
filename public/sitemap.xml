@@ -9,13 +9,13 @@
     <xhtml:link rel="alternate" hreflang="km" href="https://www.martsystemkh.software/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://www.martsystemkh.software/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.martsystemkh.software/" />
-    <lastmod>2026-08-31</lastmod>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://www.martsystemkh.software/og-image.png</image:loc>
-      <image:title>Mart System - ប្រព័ន្ធគ្រប់គ្រងហាង និង POS</image:title>
-      <image:caption>ប្រព័ន្ធគ្រប់គ្រងការលក់ POS ទំនិញ ស្តុក និងការទូទាត់តាម KHQR សម្រាប់អាជីវកម្មនៅកម្ពុជា</image:caption>
+      <image:title>Mart System — ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម</image:title>
+      <image:caption>គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព ។ ចំណុចលក់ (POS) • ទំនិញ (Products)</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://www.martsystemkh.software/favicon.svg</image:loc>
@@ -29,12 +29,13 @@
     <xhtml:link rel="alternate" hreflang="km" href="https://www.martsystemkh.software/products" />
     <xhtml:link rel="alternate" hreflang="en" href="https://www.martsystemkh.software/products" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.martsystemkh.software/products" />
-    <lastmod>2026-08-31</lastmod>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://www.martsystemkh.software/og-image.png</image:loc>
-      <image:title>Mart System Product Catalog</image:title>
+      <image:title>Mart System — ទំនិញ (Products)</image:title>
+      <image:caption>បញ្ជីទំនិញទាំងអស់ក្នុងប្រព័ន្ធគ្រប់គ្រងហាង Mart System</image:caption>
     </image:image>
   </url>
 
@@ -44,12 +45,13 @@
     <xhtml:link rel="alternate" hreflang="km" href="https://www.martsystemkh.software/pos" />
     <xhtml:link rel="alternate" hreflang="en" href="https://www.martsystemkh.software/pos" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.martsystemkh.software/pos" />
-    <lastmod>2026-08-31</lastmod>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://www.martsystemkh.software/og-image.png</image:loc>
-      <image:title>Mart System POS Terminal</image:title>
+      <image:title>Mart System — ចំណុចលក់ (POS)</image:title>
+      <image:caption>ចំណុចលក់ POS គិតលុយលឿនរហ័ស គាំទ្រ Bakong KHQR</image:caption>
     </image:image>
   </url>
 
