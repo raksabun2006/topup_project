@@ -76,21 +76,65 @@ export const salePaymentApi = {
 
   /**
    * Check & verify payment status with Bakong.
-   * Prefers dedicated Mart POS endpoint: GET /sales/{saleId}/payment-status
-   * Falls back to wrapped status endpoint: GET /sales/{saleId}/payment/status
+   * Primary: GET /sales/{saleId}/payment/status (actively verifies with Bakong API)
+   * Secondary: GET /sales/{saleId}/payment-status
+   * Tertiary: GET /sales/{saleId} (checks if sale entity was marked PAID)
    */
   checkStatus: async (saleId) => {
+    let paymentStatusRes = null;
+
+    // 1. Primary: GET /sales/{saleId}/payment/status
+    // This actively calls Bakong API (checkStatus with Bakong gateway)
     try {
-      const res = await apiClient.get(`/sales/${saleId}/payment-status`);
-      return normalizePaymentResponse(res.data, saleId);
-    } catch (err) {
-      if (err?.response?.status === 404) {
-        const res = await apiClient.get(`/sales/${saleId}/payment/status`);
-        return normalizePaymentResponse(res.data, saleId);
+      const res = await apiClient.get(`/sales/${saleId}/payment/status`);
+      paymentStatusRes = normalizePaymentResponse(res.data, saleId);
+      if (paymentStatusRes?.paid || paymentStatusRes?.status === 'PAID') {
+        return paymentStatusRes;
       }
-      throw err;
+    } catch (err) {
+      console.warn('Notice calling payment/status:', err?.response?.status, err?.message);
     }
+
+    // 2. Secondary: GET /sales/{saleId}/payment-status
+    try {
+      const directRes = await apiClient.get(`/sales/${saleId}/payment-status`);
+      const direct = normalizePaymentResponse(directRes.data, saleId);
+      if (direct?.paid || direct?.status === 'PAID') {
+        return direct;
+      }
+      if (!paymentStatusRes) {
+        paymentStatusRes = direct;
+      }
+    } catch (err) {
+      console.warn('Notice calling payment-status:', err?.response?.status, err?.message);
+    }
+
+    // 3. Tertiary: GET /sales/{saleId}
+    // Verifies whether the sale itself has transitioned to PAID / COMPLETED
+    try {
+      const saleRes = await apiClient.get(`/sales/${saleId}`);
+      const saleData = saleRes.data;
+      if (
+        saleData &&
+        (saleData.paymentStatus === 'PAID' || saleData.status === 'COMPLETED')
+      ) {
+        return {
+          ...(paymentStatusRes || {}),
+          saleId,
+          status: 'PAID',
+          paymentStatus: 'PAID',
+          paid: true,
+          amount: saleData.total,
+          invoiceNumber: saleData.invoiceNumber,
+        };
+      }
+    } catch {
+      // ignore
+    }
+
+    return paymentStatusRes;
   },
+
 
   /**
    * Cancel payment on backend.
