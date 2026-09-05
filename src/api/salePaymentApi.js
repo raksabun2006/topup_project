@@ -1,21 +1,10 @@
 import { apiClient } from './client';
 
-function extractStatusString(obj) {
-  if (!obj || typeof obj !== 'object') return '';
-  if (typeof obj.paymentStatus === 'string' && obj.paymentStatus.trim()) {
-    return obj.paymentStatus.trim();
-  }
-  if (typeof obj.status === 'string' && obj.status.trim()) {
-    return obj.status.trim();
-  }
-  return '';
-}
-
 /**
  * Normalizes payment response across:
- * - Wrapped response: { success, message, data: { status, paymentStatus, paid, qrString, ... } }
- * - Direct response: { paid: true, paymentStatus: 'PAID', ... }
- * - Fallback / Raw status responses
+ * - Wrapped ApiResponsePaymentResponse: { success, message, data: { status, paymentStatus, paid, qrString, ... } }
+ * - Direct SalePaymentStatusResponse / DTO: { paid: true, paymentStatus: 'PAID', saleId, invoiceNumber, amount, currency, ... }
+ * - Direct PaymentResponse: { paymentId, orderId, qrString, md5, amount, currency, status: 'PAID', billNumber, ... }
  */
 export function normalizePaymentResponse(raw, fallbackSaleId = null) {
   if (!raw || typeof raw !== 'object') {
@@ -25,38 +14,87 @@ export function normalizePaymentResponse(raw, fallbackSaleId = null) {
   // Unwrap envelope if present
   const data = raw.data && typeof raw.data === 'object' ? raw.data : raw;
 
-  // Extract status safely from paymentStatus or status
-  const rawStatus = extractStatusString(data) || extractStatusString(raw);
-  const normalizedStatus = rawStatus ? rawStatus.toUpperCase() : '';
+  // Collect all potential status strings from both inner data and outer envelope
+  const candidateStrings = [
+    data.paymentStatus,
+    data.status,
+    data.payment_status,
+    data.orderStatus,
+    data.saleStatus,
+    raw.paymentStatus,
+    raw.status,
+    raw.payment_status,
+    raw.orderStatus,
+    raw.saleStatus,
+  ]
+    .filter((s) => typeof s === 'string' && s.trim())
+    .map((s) => s.trim().toUpperCase());
 
-  // Boolean paid check: explicit paid flag or terminal success statuses
-  const isPaid =
+  // Boolean paid check: explicit boolean flags or terminal success status strings
+  const explicitPaid =
     data.paid === true ||
+    data.paid === 'true' ||
     raw.paid === true ||
-    ['PAID', 'SUCCESS', 'COMPLETED'].includes(normalizedStatus);
+    raw.paid === 'true' ||
+    data.isPaid === true ||
+    raw.isPaid === true;
+
+  const hasTerminalSuccess = candidateStrings.some((s) =>
+    ['PAID', 'SUCCESS', 'COMPLETED'].includes(s)
+  );
+
+  const isPaid = explicitPaid || hasTerminalSuccess;
 
   let finalStatus = 'PENDING';
   if (isPaid) {
     finalStatus = 'PAID';
-  } else if (['FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'].includes(normalizedStatus)) {
-    finalStatus = normalizedStatus;
-  } else if (normalizedStatus) {
-    finalStatus = normalizedStatus;
+  } else {
+    const terminalFailure = candidateStrings.find((s) =>
+      ['FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'].includes(s)
+    );
+    if (terminalFailure) {
+      finalStatus = terminalFailure;
+    } else if (candidateStrings.length > 0) {
+      finalStatus = candidateStrings[0];
+    }
   }
 
   return {
-    saleId: data.saleId || data.orderId || raw.saleId || raw.orderId || fallbackSaleId || null,
+    saleId:
+      data.saleId ||
+      data.orderId ||
+      data.entityId ||
+      raw.saleId ||
+      raw.orderId ||
+      raw.entityId ||
+      fallbackSaleId ||
+      null,
     paymentId: data.paymentId || data.id || raw.paymentId || raw.id || null,
     status: finalStatus,
     paymentStatus: finalStatus,
     paid: isPaid,
-    amount: data.amount != null ? Number(data.amount) : raw.amount != null ? Number(raw.amount) : null,
+    amount:
+      data.amount != null
+        ? Number(data.amount)
+        : raw.amount != null
+        ? Number(raw.amount)
+        : null,
     currency: data.currency || raw.currency || 'USD',
     qrString: data.qrString || data.qr || raw.qrString || raw.qr || null,
     qr: data.qr || data.qrString || raw.qr || raw.qrString || null,
     md5: data.md5 || raw.md5 || null,
-    invoiceNumber: data.invoiceNumber || data.billNumber || raw.invoiceNumber || raw.billNumber || null,
-    billNumber: data.billNumber || data.invoiceNumber || raw.billNumber || raw.invoiceNumber || null,
+    invoiceNumber:
+      data.invoiceNumber ||
+      data.billNumber ||
+      raw.invoiceNumber ||
+      raw.billNumber ||
+      null,
+    billNumber:
+      data.billNumber ||
+      data.invoiceNumber ||
+      raw.billNumber ||
+      raw.invoiceNumber ||
+      null,
     expiresAt: data.expiresAt || raw.expiresAt || null,
     paidAt: data.paidAt || raw.paidAt || null,
     createdAt: data.createdAt || raw.createdAt || null,
@@ -96,25 +134,42 @@ export const salePaymentApi = {
    */
   checkStatus: async (saleId) => {
     try {
+      console.log(`[Payment] Checking payment status for sale: ${saleId}`);
       const res = await apiClient.get(`/api/v1/sales/${saleId}/payment/status`);
-      return normalizePaymentResponse(res.data, saleId);
+      const normalized = normalizePaymentResponse(res.data, saleId);
+      console.log(`[Payment] Payment API response:`, {
+        saleId,
+        endpoint: `/api/v1/sales/${saleId}/payment/status`,
+        httpStatus: res.status,
+        normalizedStatus: normalized?.status,
+        paid: normalized?.paid,
+      });
+      return normalized;
     } catch (primaryErr) {
+      const httpStatus = primaryErr?.response?.status;
       console.warn(
-        'Notice calling active payment/status verification:',
-        primaryErr?.response?.status,
+        `[Payment] Active payment/status verification notice for sale ${saleId}:`,
+        httpStatus,
         primaryErr?.message
       );
 
       // Fallback only if active verification endpoint fails
       try {
         const fallbackRes = await apiClient.get(`/api/mart/sales/${saleId}/payment-status`);
-        return normalizePaymentResponse(fallbackRes.data, saleId);
+        const fallbackNormalized = normalizePaymentResponse(fallbackRes.data, saleId);
+        console.log(`[Payment] Fallback payment-status response:`, {
+          saleId,
+          endpoint: `/api/mart/sales/${saleId}/payment-status`,
+          httpStatus: fallbackRes.status,
+          normalizedStatus: fallbackNormalized?.status,
+          paid: fallbackNormalized?.paid,
+        });
+        return fallbackNormalized;
       } catch (fallbackErr) {
         throw primaryErr;
       }
     }
   },
-
 
   /**
    * Cancel payment on backend.

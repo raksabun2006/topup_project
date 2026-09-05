@@ -57,9 +57,15 @@ export function useSalePaymentPolling(saleId, enabled) {
         });
         setError('');
 
-        const status = (result.paymentStatus || result.status || '').toUpperCase();
-        const isPaid = result.paid === true || TERMINAL_SUCCESS.includes(status);
-        const isFailure = TERMINAL_FAILURE.includes(status);
+        const statusUpper = String(result.status || '').toUpperCase();
+        const paymentStatusUpper = String(result.paymentStatus || '').toUpperCase();
+        const isPaid =
+          result.paid === true ||
+          TERMINAL_SUCCESS.includes(statusUpper) ||
+          TERMINAL_SUCCESS.includes(paymentStatusUpper);
+        const isFailure =
+          TERMINAL_FAILURE.includes(statusUpper) ||
+          TERMINAL_FAILURE.includes(paymentStatusUpper);
 
         // Stop polling immediately on terminal states
         if (isPaid || isFailure) {

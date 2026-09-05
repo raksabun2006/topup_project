@@ -23,19 +23,24 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     useSalePaymentPolling(sale.id, pollingEnabled);
 
   // Normalize status string from backend
-  const rawStatus = payment?.status || payment?.paymentStatus || '';
-  const statusUpper = String(rawStatus).toUpperCase();
+  const statusUpper = String(payment?.status || '').toUpperCase();
+  const paymentStatusUpper = String(payment?.paymentStatus || '').toUpperCase();
   const isPaid =
     payment?.paid === true ||
-    statusUpper === 'PAID' ||
-    statusUpper === 'SUCCESS' ||
-    statusUpper === 'COMPLETED';
+    ['PAID', 'SUCCESS', 'COMPLETED'].includes(statusUpper) ||
+    ['PAID', 'SUCCESS', 'COMPLETED'].includes(paymentStatusUpper);
+
+  const isTerminalFailure =
+    ['FAILED', 'EXPIRED', 'CANCELLED'].includes(statusUpper) ||
+    ['FAILED', 'EXPIRED', 'CANCELLED'].includes(paymentStatusUpper);
 
   const status = isPaid
     ? 'PAID'
-    : isExpiredLocal && statusUpper === 'PENDING'
+    : isExpiredLocal && (statusUpper === 'PENDING' || paymentStatusUpper === 'PENDING')
     ? 'EXPIRED'
-    : statusUpper || 'PENDING';
+    : isTerminalFailure
+    ? (['FAILED', 'EXPIRED', 'CANCELLED'].includes(statusUpper) ? statusUpper : paymentStatusUpper)
+    : statusUpper || paymentStatusUpper || 'PENDING';
 
   const initRef = useRef(false);
   const finalizedRef = useRef(false);
