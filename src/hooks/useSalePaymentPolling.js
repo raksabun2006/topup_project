@@ -3,7 +3,8 @@ import { salePaymentApi } from '../api/salePaymentApi';
 import { getErrorMessage } from '../api/client';
 import { env } from '../config/env';
 
-const TERMINAL_STATUSES = ['PAID', 'COMPLETED', 'SUCCESS', 'FAILED', 'EXPIRED', 'REFUNDED', 'CANCELLED'];
+const TERMINAL_SUCCESS = ['PAID', 'SUCCESS', 'COMPLETED'];
+const TERMINAL_FAILURE = ['FAILED', 'EXPIRED', 'CANCELLED'];
 
 export function useSalePaymentPolling(saleId, enabled) {
   const [payment, setPayment] = useState(null);
@@ -13,14 +14,18 @@ export function useSalePaymentPolling(saleId, enabled) {
   const aliveRef = useRef(false);
   const inFlightRef = useRef(false);
 
-  const stop = useCallback(() => {
-    aliveRef.current = false;
-    inFlightRef.current = false;
+  const clearTimer = useCallback(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
   }, []);
+
+  const stop = useCallback(() => {
+    aliveRef.current = false;
+    inFlightRef.current = false;
+    clearTimer();
+  }, [clearTimer]);
 
   const poll = useCallback(async () => {
     if (!aliveRef.current || inFlightRef.current) return;
@@ -30,40 +35,44 @@ export function useSalePaymentPolling(saleId, enabled) {
       const result = await salePaymentApi.checkStatus(saleId);
       if (!aliveRef.current) return;
 
-      setPayment((prev) => {
-        if (!prev) return result;
-        return {
-          ...prev,
-          ...result,
-          qrString: prev.qrString || result?.qrString || null,
-          qr: prev.qr || result?.qr || null,
-          billNumber: prev.billNumber || result?.billNumber || null,
-          expiresAt: prev.expiresAt || result?.expiresAt || null,
-          merchantName: prev.merchantName || result?.merchantName || null,
-        };
-      });
-      setError('');
+      if (result) {
+        setPayment((prev) => {
+          if (!prev) return result;
+          return {
+            ...prev,
+            ...result,
+            // Preserve all QR & identification data across status updates
+            qrString: prev.qrString || result.qrString || null,
+            qr: prev.qr || result.qr || null,
+            md5: prev.md5 || result.md5 || null,
+            billNumber: prev.billNumber || result.billNumber || null,
+            invoiceNumber: prev.invoiceNumber || result.invoiceNumber || null,
+            expiresAt: prev.expiresAt || result.expiresAt || null,
+            merchantName: prev.merchantName || result.merchantName || null,
+            amount: prev.amount ?? result.amount,
+            currency: prev.currency || result.currency,
+            paymentId: prev.paymentId || result.paymentId,
+            saleId: prev.saleId || result.saleId,
+          };
+        });
+        setError('');
 
+        const status = (result.paymentStatus || result.status || '').toUpperCase();
+        const isPaid = result.paid === true || TERMINAL_SUCCESS.includes(status);
+        const isFailure = TERMINAL_FAILURE.includes(status);
 
-      const statusUpper = result?.status ? String(result.status).toUpperCase() : '';
-      const isPaid =
-        result?.paid === true ||
-        statusUpper === 'PAID' ||
-        statusUpper === 'SUCCESS' ||
-        statusUpper === 'COMPLETED';
-
-      // Stop immediately when payment is confirmed or has reached a terminal status
-      if (isPaid || TERMINAL_STATUSES.includes(statusUpper)) {
-        stop();
-        return;
+        // Stop polling immediately on terminal states
+        if (isPaid || isFailure) {
+          stop();
+          return;
+        }
       }
 
-      // Schedule next poll interval (2-3 seconds)
+      // Schedule next check only after current response has completed
       if (aliveRef.current) {
-        if (timerRef.current) clearTimeout(timerRef.current);
+        clearTimer();
         const interval = env.paymentPollIntervalMs || 3000;
         timerRef.current = setTimeout(() => {
-          inFlightRef.current = false;
           poll();
         }, interval);
       }
@@ -72,27 +81,26 @@ export function useSalePaymentPolling(saleId, enabled) {
       const httpStatus = err?.response?.status;
       console.warn('Payment polling notice:', httpStatus, err?.message);
 
-      // Stop polling on explicit authentication or resource-not-found errors
-      if (httpStatus === 401 || httpStatus === 403 || httpStatus === 404) {
+      // Stop polling on explicit authentication or forbidden errors
+      if (httpStatus === 401 || httpStatus === 403) {
         setError(getErrorMessage(err));
         stop();
         return;
       }
 
-      // For temporary provider busy (502/503), timeouts, or network glitches:
-      // Keep status as PENDING and retry after poll interval
+      // For temporary errors (5xx, timeouts, network glitch):
+      // Keep state as PENDING and schedule next poll
       if (aliveRef.current) {
-        if (timerRef.current) clearTimeout(timerRef.current);
+        clearTimer();
         const interval = env.paymentPollIntervalMs || 3000;
         timerRef.current = setTimeout(() => {
-          inFlightRef.current = false;
           poll();
         }, interval);
       }
     } finally {
       inFlightRef.current = false;
     }
-  }, [saleId, stop]);
+  }, [saleId, stop, clearTimer]);
 
   useEffect(() => {
     if (!enabled || !saleId) {
@@ -111,4 +119,5 @@ export function useSalePaymentPolling(saleId, enabled) {
 
   return { payment, error, setPayment, stop };
 }
+
 

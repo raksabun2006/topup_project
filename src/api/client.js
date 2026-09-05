@@ -17,6 +17,8 @@ apiClient.interceptors.request.use(async (config) => {
         config.url = config.url.replace(/^\/api\/v1/, '');
       } else if (config.url === '/api/v1') {
         config.url = '/';
+      } else if (config.url.startsWith('/api/mart/')) {
+        config.baseURL = env.backendUrl;
       } else if (config.url.startsWith('/api/')) {
         config.url = config.url.replace(/^\/api/, '');
       }

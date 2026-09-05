@@ -40,10 +40,17 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const initRef = useRef(false);
   const finalizedRef = useRef(false);
   const isRegeneratingRef = useRef(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // Complete sale flow with strict idempotency lock
   const completeSale = useCallback(async () => {
-    if (finalizedRef.current) return;
+    if (finalizedRef.current || !mountedRef.current) return;
     finalizedRef.current = true;
 
     setPollingEnabled(false);
@@ -52,7 +59,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     setFinishError('');
 
     try {
-      // 1. Fetch latest sale to verify status
+      // 1. Fetch latest verified sale entity from backend
       let updatedSale = null;
       try {
         updatedSale = await saleApi.getById(sale.id);
@@ -60,25 +67,22 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         console.warn('Notice fetching sale by ID:', err);
       }
 
-      // 2. If sale is not yet marked paid on backend, invoke markPaid safely
-      if (!updatedSale || updatedSale.paymentStatus !== 'PAID') {
-        try {
-          updatedSale = await saleApi.markPaid(sale.id);
-        } catch (err) {
-          // 409 Conflict is normal if already completed
-          if (err?.response?.status !== 409) {
-            console.warn('Notice while marking sale paid:', err);
-          }
-        }
-      }
+      // Brief visual confirmation of payment success before transitioning to receipt
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
-      // 3. Complete sale in POS (moves to Receipt modal and resets cart)
-      onPaid(updatedSale || sale);
+      if (!mountedRef.current) return;
+
+      // 2. Complete sale in POS (moves to Receipt modal and resets cart)
+      onPaid(updatedSale || { ...sale, paymentStatus: 'PAID', status: 'COMPLETED' });
     } catch (err) {
       console.warn('Notice during sale completion:', err);
-      onPaid(sale);
+      if (mountedRef.current) {
+        onPaid({ ...sale, paymentStatus: 'PAID', status: 'COMPLETED' });
+      }
     } finally {
-      setFinishing(false);
+      if (mountedRef.current) {
+        setFinishing(false);
+      }
     }
   }, [sale, onPaid, stopPolling]);
 
@@ -244,6 +248,10 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   }, [payment?.qrString, payment?.expiresAt, status, stopPolling]);
 
   const handleCancel = async () => {
+    if (finalizedRef.current || isPaid) {
+      onClose();
+      return;
+    }
     setCanceling(true);
     setPollingEnabled(false);
     stopPolling();
@@ -257,7 +265,9 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     } catch {
       // Close modal regardless
     } finally {
-      setCanceling(false);
+      if (mountedRef.current) {
+        setCanceling(false);
+      }
       onClose();
     }
   };
@@ -282,8 +292,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
             <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">លេខវិក្កយបត្រ៖ {billNo}</p>
           </div>
           <button
-            onClick={isSuccess ? onClose : handleCancel}
-            disabled={canceling}
+            onClick={isSuccess || finalizedRef.current ? onClose : handleCancel}
+            disabled={canceling || finishing}
             className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-50 transition"
             aria-label="Close"
           >
@@ -482,9 +492,14 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                 {pollError ? (
                   <p className="mb-2 text-center text-xs text-rose-600 dark:text-rose-400">{pollError}</p>
                 ) : (
-                  <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 py-2 sm:py-2.5 text-xs font-medium text-emerald-800 dark:text-emerald-300">
-                    <Loader2 size={14} className="animate-spin text-emerald-600 shrink-0" />
-                    <span className="truncate">កំពុងរង់ចាំការទូទាត់...</span>
+                  <div className="flex flex-col items-center justify-center gap-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 py-2.5 px-3 text-center">
+                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                      <Loader2 size={14} className="animate-spin text-emerald-600 shrink-0" />
+                      <span>កំពុងរង់ចាំការទូទាត់... (Waiting for payment...)</span>
+                    </div>
+                    <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                      សូមស្កេន KHQR ដើម្បីបង់ប្រាក់ (Please scan the KHQR and complete payment.)
+                    </p>
                   </div>
                 )}
 

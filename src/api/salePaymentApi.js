@@ -1,10 +1,21 @@
 import { apiClient } from './client';
 
+function extractStatusString(obj) {
+  if (!obj || typeof obj !== 'object') return '';
+  if (typeof obj.paymentStatus === 'string' && obj.paymentStatus.trim()) {
+    return obj.paymentStatus.trim();
+  }
+  if (typeof obj.status === 'string' && obj.status.trim()) {
+    return obj.status.trim();
+  }
+  return '';
+}
+
 /**
  * Normalizes payment response across:
- * - SalePaymentStatusResponse: { saleId, paymentStatus, paid, invoiceNumber, amount, currency, md5, paidAt, message }
- * - ApiResponsePaymentResponse: { success, message, data: { paymentId, orderId, saleId, qrString, qr, md5, amount, currency, status, paymentStatus, paid, billNumber, expiresAt, paidAt, createdAt } }
- * - PaymentResponse: { ... }
+ * - Wrapped response: { success, message, data: { status, paymentStatus, paid, qrString, ... } }
+ * - Direct response: { paid: true, paymentStatus: 'PAID', ... }
+ * - Fallback / Raw status responses
  */
 export function normalizePaymentResponse(raw, fallbackSaleId = null) {
   if (!raw || typeof raw !== 'object') {
@@ -14,40 +25,43 @@ export function normalizePaymentResponse(raw, fallbackSaleId = null) {
   // Unwrap envelope if present
   const data = raw.data && typeof raw.data === 'object' ? raw.data : raw;
 
-  // Determine status (PAID, PENDING, FAILED, EXPIRED, CANCELLED, REFUNDED)
-  const rawStatus = data.status || data.paymentStatus || raw.paymentStatus || '';
-  const statusUpper = String(rawStatus).toUpperCase();
+  // Extract status safely from paymentStatus or status
+  const rawStatus = extractStatusString(data) || extractStatusString(raw);
+  const normalizedStatus = rawStatus ? rawStatus.toUpperCase() : '';
 
-  // Boolean paid check: true if explicit boolean or status indicates completion
+  // Boolean paid check: explicit paid flag or terminal success statuses
   const isPaid =
     data.paid === true ||
     raw.paid === true ||
-    statusUpper === 'PAID' ||
-    statusUpper === 'SUCCESS' ||
-    statusUpper === 'COMPLETED';
+    ['PAID', 'SUCCESS', 'COMPLETED'].includes(normalizedStatus);
 
-  let normalizedStatus = statusUpper;
+  let finalStatus = 'PENDING';
   if (isPaid) {
-    normalizedStatus = 'PAID';
-  } else if (!normalizedStatus) {
-    normalizedStatus = 'PENDING';
+    finalStatus = 'PAID';
+  } else if (['FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'].includes(normalizedStatus)) {
+    finalStatus = normalizedStatus;
+  } else if (normalizedStatus) {
+    finalStatus = normalizedStatus;
   }
 
   return {
-    saleId: data.saleId || data.orderId || fallbackSaleId || null,
-    paymentId: data.paymentId || data.id || null,
-    status: normalizedStatus,
-    paymentStatus: normalizedStatus,
+    saleId: data.saleId || data.orderId || raw.saleId || raw.orderId || fallbackSaleId || null,
+    paymentId: data.paymentId || data.id || raw.paymentId || raw.id || null,
+    status: finalStatus,
+    paymentStatus: finalStatus,
     paid: isPaid,
-    amount: data.amount != null ? Number(data.amount) : null,
-    currency: data.currency || 'USD',
-    qrString: data.qrString || data.qr || null,
-    md5: data.md5 || null,
-    invoiceNumber: data.invoiceNumber || data.billNumber || null,
-    billNumber: data.billNumber || data.invoiceNumber || null,
-    expiresAt: data.expiresAt || null,
-    paidAt: data.paidAt || null,
-    createdAt: data.createdAt || null,
+    amount: data.amount != null ? Number(data.amount) : raw.amount != null ? Number(raw.amount) : null,
+    currency: data.currency || raw.currency || 'USD',
+    qrString: data.qrString || data.qr || raw.qrString || raw.qr || null,
+    qr: data.qr || data.qrString || raw.qr || raw.qrString || null,
+    md5: data.md5 || raw.md5 || null,
+    invoiceNumber: data.invoiceNumber || data.billNumber || raw.invoiceNumber || raw.billNumber || null,
+    billNumber: data.billNumber || data.invoiceNumber || raw.billNumber || raw.invoiceNumber || null,
+    expiresAt: data.expiresAt || raw.expiresAt || null,
+    paidAt: data.paidAt || raw.paidAt || null,
+    createdAt: data.createdAt || raw.createdAt || null,
+    merchantName: data.merchantName || raw.merchantName || null,
+    deeplinkUrl: data.deeplinkUrl || raw.deeplinkUrl || null,
     message: data.message || raw.message || null,
     raw,
   };
@@ -56,10 +70,10 @@ export function normalizePaymentResponse(raw, fallbackSaleId = null) {
 export const salePaymentApi = {
   /**
    * Create payment QR. Expiration (+15 min) is controlled entirely by backend.
-   * POST /sales/{saleId}/payment
+   * POST /api/v1/sales/{saleId}/payment
    */
   create: async (saleId, provider = 'BAKONG') => {
-    const res = await apiClient.post(`/sales/${saleId}/payment`, {
+    const res = await apiClient.post(`/api/v1/sales/${saleId}/payment`, {
       provider,
     });
     return normalizePaymentResponse(res.data, saleId);
@@ -67,72 +81,38 @@ export const salePaymentApi = {
 
   /**
    * Retrieve existing QR and payment info without re-triggering Bakong gateway.
-   * GET /sales/{saleId}/payment
+   * GET /api/v1/sales/{saleId}/payment
    */
   get: async (saleId) => {
-    const res = await apiClient.get(`/sales/${saleId}/payment`);
+    const res = await apiClient.get(`/api/v1/sales/${saleId}/payment`);
     return normalizePaymentResponse(res.data, saleId);
   },
 
   /**
    * Check & verify payment status with Bakong.
-   * Primary: GET /sales/{saleId}/payment/status (actively verifies with Bakong API)
-   * Secondary: GET /sales/{saleId}/payment-status
-   * Tertiary: GET /sales/{saleId} (checks if sale entity was marked PAID)
+   * Prioritizes active gateway verification endpoint:
+   * GET /api/v1/sales/{saleId}/payment/status (actively verifies with Bakong API)
+   * Falls back to GET /api/mart/sales/{saleId}/payment-status only if primary route fails.
    */
   checkStatus: async (saleId) => {
-    let paymentStatusRes = null;
-
-    // 1. Primary: GET /sales/{saleId}/payment/status
-    // This actively calls Bakong API (checkStatus with Bakong gateway)
     try {
-      const res = await apiClient.get(`/sales/${saleId}/payment/status`);
-      paymentStatusRes = normalizePaymentResponse(res.data, saleId);
-      if (paymentStatusRes?.paid || paymentStatusRes?.status === 'PAID') {
-        return paymentStatusRes;
-      }
-    } catch (err) {
-      console.warn('Notice calling payment/status:', err?.response?.status, err?.message);
-    }
+      const res = await apiClient.get(`/api/v1/sales/${saleId}/payment/status`);
+      return normalizePaymentResponse(res.data, saleId);
+    } catch (primaryErr) {
+      console.warn(
+        'Notice calling active payment/status verification:',
+        primaryErr?.response?.status,
+        primaryErr?.message
+      );
 
-    // 2. Secondary: GET /sales/{saleId}/payment-status
-    try {
-      const directRes = await apiClient.get(`/sales/${saleId}/payment-status`);
-      const direct = normalizePaymentResponse(directRes.data, saleId);
-      if (direct?.paid || direct?.status === 'PAID') {
-        return direct;
+      // Fallback only if active verification endpoint fails
+      try {
+        const fallbackRes = await apiClient.get(`/api/mart/sales/${saleId}/payment-status`);
+        return normalizePaymentResponse(fallbackRes.data, saleId);
+      } catch (fallbackErr) {
+        throw primaryErr;
       }
-      if (!paymentStatusRes) {
-        paymentStatusRes = direct;
-      }
-    } catch (err) {
-      console.warn('Notice calling payment-status:', err?.response?.status, err?.message);
     }
-
-    // 3. Tertiary: GET /sales/{saleId}
-    // Verifies whether the sale itself has transitioned to PAID / COMPLETED
-    try {
-      const saleRes = await apiClient.get(`/sales/${saleId}`);
-      const saleData = saleRes.data;
-      if (
-        saleData &&
-        (saleData.paymentStatus === 'PAID' || saleData.status === 'COMPLETED')
-      ) {
-        return {
-          ...(paymentStatusRes || {}),
-          saleId,
-          status: 'PAID',
-          paymentStatus: 'PAID',
-          paid: true,
-          amount: saleData.total,
-          invoiceNumber: saleData.invoiceNumber,
-        };
-      }
-    } catch {
-      // ignore
-    }
-
-    return paymentStatusRes;
   },
 
 
