@@ -6,11 +6,15 @@
 const rawApiUrl = (
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_URL ||
-  'https://mart-api-rubm.onrender.com/api/v1'
+  'https://gametopup-backend-production-3423.up.railway.app'
 ).replace(/\/+$/, '');
 
 export const env = {
+  // Base URL for API requests (guarantees /api/v1 prefix)
   apiBaseUrl: rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl}/api/v1`,
+
+  // Base URL without /api/v1 prefix
+  backendUrl: rawApiUrl.replace(/\/api\/v1$/, ''),
 
   appName: import.meta.env.VITE_APP_NAME ?? 'Mart System',
 

@@ -99,20 +99,46 @@ export const authClient = {
     const baseUrl = env.apiBaseUrl.replace(/\/+$/, '');
     const url = baseUrl.endsWith('/api/v1') ? `${baseUrl}/auth/login` : `${baseUrl}/api/v1/auth/login`;
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
+    let res;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+    } catch (networkErr) {
+      const err = new Error(
+        `Network error: មិនអាចភ្ជាប់ទៅកាន់ Server បានទេ។ សូមពិនិត្យ Internet របស់អ្នក។ (${networkErr.message || 'Connection failed'})`
+      );
+      err.code = 'NETWORK_ERROR';
+      throw err;
+    }
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       let msg = data.message || data.error_description || data.error;
       if (!msg) {
-        msg =
-          res.status === 401
-            ? 'ឈ្មោះអ្នកប្រើ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ (Username or password is incorrect)'
-            : 'ចូលគណនីមិនបានទេ។ សូមព្យាយាមម្តងទៀត។';
+        if (res.status === 401) {
+          msg = '401 Unauthorized: ឈ្មោះអ្នកប្រើ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ (Invalid username or password)';
+        } else if (res.status === 403) {
+          msg = '403 Forbidden: អ្នកមិនមានសិទ្ធិចូលប្រើប្រាស់ទេ (Permission denied)';
+        } else if (res.status === 404) {
+          msg = '404 Not Found: រកមិនឃើញសេវាកម្ម Login (Endpoint not found)';
+        } else if (res.status >= 500) {
+          msg = '500 Server Error: Server កំពុងមានបញ្ហា (Internal Server Error)';
+        } else {
+          msg = 'ចូលគណនីមិនបានទេ។ សូមព្យាយាមម្តងទៀត។';
+        }
+      } else {
+        if (res.status === 401 && !msg.includes('401')) {
+          msg = `401 Unauthorized: ${msg}`;
+        } else if (res.status === 403 && !msg.includes('403')) {
+          msg = `403 Forbidden: ${msg}`;
+        } else if (res.status === 404 && !msg.includes('404')) {
+          msg = `404 Not Found: ${msg}`;
+        } else if (res.status >= 500 && !msg.includes('500')) {
+          msg = `500 Server Error: ${msg}`;
+        }
       }
       const err = new Error(msg);
       err.code = data.code || (res.status === 401 ? 'invalid_grant' : 'AUTH_ERROR');
@@ -122,14 +148,15 @@ export const authClient = {
     }
 
     const json = await res.json();
-    const authData = json.data || json; // AuthResponse: { token, tokenType, username, role, id }
-    const token = authData.token || authData.access_token;
+    const authData = json.data || json; // AuthResponse: { token, accessToken, tokenType, username, role, id, user }
+    const token = authData.token || authData.accessToken || authData.access_token;
 
     if (!token) {
-      throw new Error('មិនបានទទួល token ពី server ទេ។');
+      throw new Error('មិនបានទទួល token ពី server ទេ។ (No token returned from server)');
     }
 
-    setSession(token, authData);
+    const userData = { ...authData, ...(authData.user || {}) };
+    setSession(token, userData);
     return tokenParsed;
   },
 
@@ -191,7 +218,22 @@ export const authClient = {
   },
 
   async logout() {
-    clearSession();
+    try {
+      const baseUrl = env.apiBaseUrl.replace(/\/+$/, '');
+      const url = baseUrl.endsWith('/api/v1') ? `${baseUrl}/auth/logout` : `${baseUrl}/api/v1/auth/logout`;
+      const token = accessToken || localStorage.getItem(STORAGE_TOKEN_KEY);
+      if (token) {
+        await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }).catch(() => {});
+      }
+    } finally {
+      clearSession();
+    }
   },
 
   getAccessToken: () =>

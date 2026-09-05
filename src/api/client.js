@@ -11,12 +11,14 @@ export const apiClient = axios.create({
 // Outbound Interceptor: Normalizes URL and attaches JWT token for protected requests
 apiClient.interceptors.request.use(async (config) => {
   try {
-    // Prevent duplicate /api/v1 prefix if URL already includes it
+    // Prevent duplicate /api/v1 or /api prefix if URL already includes it
     if (config.url) {
       if (config.url.startsWith('/api/v1/')) {
         config.url = config.url.replace(/^\/api\/v1/, '');
       } else if (config.url === '/api/v1') {
         config.url = '/';
+      } else if (config.url.startsWith('/api/')) {
+        config.url = config.url.replace(/^\/api/, '');
       }
     }
 
@@ -54,15 +56,34 @@ function looksLikeRawException(message) {
 }
 
 export function getErrorMessage(error) {
+  if (!error) return 'មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។ (An unexpected error occurred)';
+  if (typeof error === 'string') return error;
+
   console.error(error);
   const status = error?.response?.status;
   const data = error?.response?.data;
+
+  // Extract clean backend message if present
+  let backendMsg = null;
+  if (data) {
+    if (typeof data === 'string') {
+      backendMsg = data;
+    } else if (typeof data === 'object') {
+      if (data.message && !looksLikeRawException(data.message)) {
+        backendMsg = data.message;
+      } else if (data.error && typeof data.error === 'string') {
+        backendMsg = data.error;
+      } else if (data.error_description && typeof data.error_description === 'string') {
+        backendMsg = data.error_description;
+      }
+    }
+  }
 
   // Custom domain errors from backend body if provided
   if (data?.code === 'INSUFFICIENT_STOCK') {
     return data.details?.available != null
       ? `ស្តុកមិនគ្រប់គ្រាន់ - នៅសល់ត្រឹម ${data.details.available}`
-      : (data.message || 'ស្តុកមិនគ្រប់គ្រាន់');
+      : (backendMsg || 'ស្តុកមិនគ្រប់គ្រាន់');
   }
 
   if (data?.code === 'VALIDATION_FAILED' && data?.details && typeof data.details === 'object') {
@@ -77,56 +98,61 @@ export function getErrorMessage(error) {
       .join(' · ');
   }
 
-  // Network error (no response)
+  // Network error (no response received from server)
   if (!error?.response) {
-    if (error?.code === 'ECONNABORTED') {
-      return 'សំណើលើសពេលកំណត់។ សូមព្យាយាមម្តងទៀត។ (Request timed out. Please try again.)';
+    if (error?.code === 'ECONNABORTED' || error?.message?.includes('timeout')) {
+      return 'Network error: សំណើលើសពេលកំណត់។ សូមព្យាយាមម្តងទៀត។ (Request timed out)';
     }
-    return 'មិនអាចភ្ជាប់ទៅ Server បានទេ។ សូមពិនិត្យ Internet របស់អ្នក។ (Cannot connect to server. Please check your internet connection.)';
+    const netDetails = error?.message ? ` (${error.message})` : '';
+    return `Network error: មិនអាចភ្ជាប់ទៅកាន់ Server បានទេ។ សូមពិនិត្យ Internet របស់អ្នក។${netDetails}`;
   }
 
-  // 401: Unauthorized
+  // 401 Unauthorized
   if (status === 401) {
-    return 'សូមចូលគណនីឡើងវិញ (Authentication required)';
+    const detail = backendMsg ? `: ${backendMsg}` : '';
+    return `401 Unauthorized: សូមចូលគណនីឡើងវិញ (Authentication required${detail})`;
   }
 
-  // 403: Forbidden
+  // 403 Forbidden
   if (status === 403) {
-    return 'អ្នកមិនមានសិទ្ធិប្រើប្រាស់មុខងារនេះទេ (Permission denied)';
+    const detail = backendMsg ? `: ${backendMsg}` : '';
+    return `403 Forbidden: អ្នកមិនមានសិទ្ធិប្រើប្រាស់មុខងារនេះទេ (Permission denied${detail})`;
   }
 
-  // 404: Not Found
+  // 404 Not Found
   if (status === 404) {
-    return 'រកមិនឃើញទិន្នន័យ (Resource or order not found)';
+    const detail = backendMsg ? `: ${backendMsg}` : '';
+    return `404 Not Found: រកមិនឃើញទិន្នន័យ (Resource not found${detail})`;
   }
 
-  // 409: Conflict
+  // 409 Conflict
   if (status === 409) {
-    return data?.message && !looksLikeRawException(data.message)
-      ? data.message
-      : 'ទិន្នន័យជាន់គ្នា ឬការទូទាត់ត្រូវបានដំណើរការរួចហើយ (Conflict / Already processed)';
+    return backendMsg || '409 Conflict: ទិន្នន័យជាន់គ្នា ឬការទូទាត់ត្រូវបានដំណើរការរួចហើយ (Conflict / Already processed)';
   }
 
-  // 422: Unprocessable Entity
+  // 422 Unprocessable Entity
   if (status === 422) {
-    return data?.message && !looksLikeRawException(data.message)
-      ? data.message
-      : 'ទិន្នន័យមិនត្រឹមត្រូវទេ (Unprocessable entity)';
+    return backendMsg || '422 Unprocessable Entity: ទិន្នន័យមិនត្រឹមត្រូវទេ';
   }
 
-  // 429: Too Many Requests
+  // 429 Too Many Requests
   if (status === 429) {
-    return 'សំណើច្រើនពេកក្នុងពេលតែមួយ។ សូមរង់ចាំបន្តិច។ (Too many requests. Please wait a moment.)';
+    return '429 Too Many Requests: សំណើច្រើនពេកក្នុងពេលតែមួយ។ សូមរង់ចាំបន្តិច។';
   }
 
-  // 500, 502, 503: Server Error / Provider Error / Unavailable
-  if (status === 500 || status === 502 || status === 503) {
-    return 'Server កំពុងមានបញ្ហា';
+  // 500, 502, 503, 504: Server Error
+  if (status >= 500) {
+    const detail = backendMsg ? `: ${backendMsg}` : '';
+    return `500 Server Error: Server កំពុងមានបញ្ហា (Internal Server Error${detail})`;
   }
 
-  // Use clean backend message if not a raw stack trace
-  if (data?.message && !looksLikeRawException(data.message)) {
-    return data.message;
+  // If backend provided a specific message, display it
+  if (backendMsg) {
+    return backendMsg;
+  }
+
+  if (error?.message) {
+    return error.message;
   }
 
   return 'មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។ (An unexpected error occurred)';

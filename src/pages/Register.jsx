@@ -23,7 +23,7 @@ function validate(form) {
   if (/\s/.test(usernameTrimmed)) return 'ឈ្មោះអ្នកប្រើប្រាស់មិនត្រូវមានដកឃ្លាឡើយ (Username cannot contain spaces)';
   if (!form.email.trim()) return 'សូមបញ្ចូលអ៊ីមែល (Please enter your email)';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return 'អ៊ីមែលមិនត្រឹមត្រូវទេ (Invalid email address)';
-  if (!form.password || form.password.length < 6) return 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៦ តួអក្សរ (Password must be at least 6 characters)';
+  if (!form.password || form.password.length < 4) return 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៤ តួអក្សរ (Password must be at least 4 characters)';
   if (form.password !== form.confirmPassword) return 'ពាក្យសម្ងាត់ទាំងពីរមិនត្រូវគ្នាទេ (Passwords do not match)';
   return '';
 }
