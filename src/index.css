@@ -275,10 +275,10 @@ a {
   overscroll-behavior: contain;
 }
 
-/* E-Commerce & POS Receipt Print Stylesheet (A4, A5, Standard) */
+/* E-Commerce & POS Receipt Print Stylesheet (A4, A5, Thermal Standard) */
 @media print {
   @page {
-    margin: 12mm 10mm;
+    margin: 8mm;
     size: auto;
   }
 
@@ -286,9 +286,11 @@ a {
   body {
     background: #ffffff !important;
     color: #000000 !important;
-    font-size: 12pt;
+    font-size: 11pt;
     margin: 0 !important;
     padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   body * {
@@ -304,14 +306,18 @@ a {
     position: absolute;
     left: 0;
     top: 0;
+    right: 0;
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: 520px !important;
     margin: 0 auto !important;
-    padding: 0 !important;
+    padding: 20px !important;
     background: #ffffff !important;
     color: #000000 !important;
     box-shadow: none !important;
-    border: none !important;
+    border: 1px solid #18181b !important;
+    border-radius: 12px !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   /* Hide buttons, navbars, floating elements during print */
