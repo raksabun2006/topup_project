@@ -332,7 +332,7 @@ export default function Register() {
                   value={form.username}
                   onChange={set('username')}
                   placeholder="Username *"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2 sm:py-2.5 pl-10 pr-4 text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2 sm:py-2.5 pl-10 pr-4 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
                 />
               </div>
 
@@ -345,7 +345,7 @@ export default function Register() {
                     value={form.displayName}
                     onChange={set('displayName')}
                     placeholder="Full Name"
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2 sm:py-2.5 pl-9 pr-3 text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2 sm:py-2.5 pl-9 pr-3 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
                   />
                 </div>
 
@@ -357,7 +357,7 @@ export default function Register() {
                     value={form.phoneNumber}
                     onChange={set('phoneNumber')}
                     placeholder="Phone Number"
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2 sm:py-2.5 pl-9 pr-3 text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2 sm:py-2.5 pl-9 pr-3 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
                   />
                 </div>
               </div>
@@ -372,7 +372,7 @@ export default function Register() {
                   value={form.email}
                   onChange={set('email')}
                   placeholder="Email Address *"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2 sm:py-2.5 pl-10 pr-4 text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2 sm:py-2.5 pl-10 pr-4 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
                 />
               </div>
 
@@ -387,7 +387,7 @@ export default function Register() {
                     value={form.password}
                     onChange={set('password')}
                     placeholder="Password *"
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2 sm:py-2.5 pl-9 pr-8 text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2 sm:py-2.5 pl-9 pr-8 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
                   />
                   <button
                     type="button"
@@ -408,7 +408,7 @@ export default function Register() {
                     value={form.confirmPassword}
                     onChange={set('confirmPassword')}
                     placeholder="Confirm *"
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2 sm:py-2.5 pl-9 pr-8 text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2 sm:py-2.5 pl-9 pr-8 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
                   />
                   <button
                     type="button"

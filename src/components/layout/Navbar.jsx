@@ -222,7 +222,7 @@ export default function Navbar({ onOpenCart }) {
                 value={headerSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 onFocus={() => setShowSuggestions(Boolean(headerSearch.trim()))}
-                className="w-full bg-transparent px-3 text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+                className="w-full bg-transparent px-3 text-base md:text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
               />
 
               {headerSearch && (
@@ -593,7 +593,7 @@ export default function Navbar({ onOpenCart }) {
             placeholder={t('searchPlaceholder')}
             value={headerSearch}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full bg-transparent text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+            className="w-full bg-transparent text-base md:text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
           />
           {headerSearch && (
             <button

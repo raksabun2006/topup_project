@@ -62,6 +62,37 @@ body {
   color: #F8FAFC;
 }
 
+/**
+ * Mobile UX & iOS Auto-Zoom Prevention:
+ * iOS Safari triggers automatic viewport zoom whenever focusing an input/select/textarea
+ * with font-size < 16px. Enforcing 16px font-size on mobile devices completely eliminates
+ * this unwanted zoom behavior and keeps the UI layout crisp and stable.
+ */
+@media screen and (max-width: 899px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+@supports (-webkit-touch-callout: none) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Optimize touch interactions across all mobile controls */
+button,
+input,
+select,
+textarea,
+a {
+  touch-action: manipulation;
+}
+
 /* Custom sleek scrollbar styling for product grids & panels */
 ::-webkit-scrollbar {
   width: 6px;

@@ -215,7 +215,7 @@ export default function Checkout() {
                       placeholder="e.g. Bun Raksa"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
+                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-base sm:text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
                     />
                   </div>
                 </div>
@@ -232,7 +232,7 @@ export default function Checkout() {
                       placeholder="012 345 678"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
+                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-base sm:text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
                     />
                   </div>
                 </div>
@@ -250,7 +250,7 @@ export default function Checkout() {
                     placeholder="House/Street, Sangkat, Khan, Phnom Penh..."
                     value={deliveryAddress}
                     onChange={(e) => setDeliveryAddress(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
+                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-base sm:text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
                   />
                 </div>
               </div>
@@ -264,7 +264,7 @@ export default function Checkout() {
                   placeholder="e.g. Leave at door, call before arrival"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 px-3.5 text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 px-3.5 text-base sm:text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
                 />
               </div>
             </div>
