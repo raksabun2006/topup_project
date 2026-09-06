@@ -7,7 +7,6 @@ import {
   AlertCircle,
   Package,
   ShoppingBag,
-  RotateCcw,
 } from 'lucide-react';
 import BarcodeScanner from './BarcodeScanner';
 import BarcodeInput from './BarcodeInput';

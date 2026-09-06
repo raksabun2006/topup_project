@@ -5,13 +5,12 @@ import {
 } from 'lucide-react';
 import ProductCard from '../ProductCard';
 import ProductFormModal from '../admin/ProductFormModal';
-import BarcodeScannerModal from './BarcodeScannerModal';
 import { useProducts } from '../../hooks/useProducts';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import { useBarcodeScanner } from '../../hooks/useBarcodeScanner';
+import { useGlobalScanner } from '../../context/GlobalScannerContext';
 import { lookupProductByBarcode } from '../../utils/barcodeLookup';
-import { initAudioContext, playBeepSound, playErrorSound } from '../../utils/sound';
+import { playBeepSound } from '../../utils/sound';
 import { formatCurrency } from '../../utils/format';
 import { getCategoryIcon, AllCategoriesIcon } from '../../utils/categoryIcons';
 import { env } from '../../config/env';
@@ -28,10 +27,10 @@ export default function ProductGrid({
 }) {
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
   const [toastData, setToastData] = useState(null);
   const { isAdmin } = useAuth();
   const { items: cartItems } = useCart();
+  const { openScanner } = useGlobalScanner();
   const internalInputRef = useRef(null);
   const searchRef = searchInputRef || internalInputRef;
 
@@ -76,29 +75,6 @@ export default function ProductGrid({
     });
     setTimeout(() => setToastData(null), 2500);
   }, [cartItems]);
-
-  // Hardware USB/Bluetooth Barcode Scanner support
-  useBarcodeScanner(async (scannedCode) => {
-    if (!scannedCode) return;
-    initAudioContext();
-    try {
-      const result = await lookupProductByBarcode(scannedCode, productList);
-      if (result.status === 'found' && result.product) {
-        playBeepSound();
-        onAdd(result.product);
-        triggerToast(result.product);
-      } else {
-        playErrorSound();
-        setToastData({
-          isError: true,
-          message: `រកមិនឃើញទំនិញដែលមានបាកូដ "${scannedCode}" ទេ`,
-        });
-        setTimeout(() => setToastData(null), 3000);
-      }
-    } catch (err) {
-      console.error('Hardware scan error:', err);
-    }
-  });
 
   const handleSearchKeyDown = async (e) => {
     if (e.key === 'Enter') {
@@ -211,10 +187,7 @@ export default function ProductGrid({
           {/* Prominent Barcode Scanner Action Button */}
           <button
             type="button"
-            onClick={() => {
-              initAudioContext();
-              setShowScanner(true);
-            }}
+            onClick={openScanner}
             className="flex h-11 sm:h-12 shrink-0 items-center gap-1.5 sm:gap-2 rounded-2xl border-2 border-emerald-600/80 bg-emerald-50 dark:bg-emerald-950/50 px-3 sm:px-3.5 text-xs sm:text-sm font-bold text-emerald-800 dark:text-emerald-300 shadow-xs hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all active:scale-95 cursor-pointer"
             title="ស្កេន Barcode (Scan Barcode)"
             aria-label="Scan barcode"
@@ -420,18 +393,6 @@ export default function ProductGrid({
           </div>
         </div>
       )}
-
-      {/* Barcode Scanner Modal */}
-      <BarcodeScannerModal
-        isOpen={showScanner}
-        onClose={() => setShowScanner(false)}
-        products={products}
-        onAddProduct={(product) => {
-          onAdd(product);
-          triggerToast(product);
-        }}
-        cartItems={cartItems}
-      />
 
       {/* Admin: Product Form Modal */}
       {showCreate && (

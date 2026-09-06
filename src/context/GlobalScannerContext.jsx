@@ -1,0 +1,143 @@
+import { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { useCart } from './CartContext';
+import { lookupProductByBarcode, prefetchCatalogCache } from '../utils/barcodeLookup';
+import { initAudioContext, playBeepSound, playErrorSound, playInvalidBarcodeSound } from '../utils/sound';
+
+const GlobalScannerContext = createContext(null);
+
+export function GlobalScannerProvider({ children }) {
+  const { addItem, items: cartItems } = useCart();
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [globalToast, setGlobalToast] = useState(null); // { id, isError, name, price, quantity, message }
+  const toastTimerRef = useRef(null);
+
+  const openScanner = useCallback(() => {
+    initAudioContext();
+    prefetchCatalogCache();
+    setIsScannerOpen(true);
+  }, []);
+
+  const closeScanner = useCallback(() => {
+    setIsScannerOpen(false);
+  }, []);
+
+  const openDrawer = useCallback(() => {
+    setIsDrawerOpen(true);
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    setIsDrawerOpen(false);
+  }, []);
+
+  const toggleDrawer = useCallback(() => {
+    setIsDrawerOpen((prev) => !prev);
+  }, []);
+
+  const showToast = useCallback((data, durationMs = 2800) => {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
+    setGlobalToast({ id: Date.now(), ...data });
+    toastTimerRef.current = setTimeout(() => {
+      setGlobalToast(null);
+    }, durationMs);
+  }, []);
+
+  const hideToast = useCallback(() => {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
+    setGlobalToast(null);
+  }, []);
+
+  // Centralized barcode processor that adds directly to active order
+  const processBarcode = useCallback(
+    async (code, localProducts = []) => {
+      const trimmed = String(code || '').trim();
+      if (!trimmed) {
+        playInvalidBarcodeSound();
+        return { success: false, reason: 'empty' };
+      }
+
+      initAudioContext();
+
+      try {
+        const result = await lookupProductByBarcode(trimmed, localProducts);
+
+        if (result.status === 'found' && result.product) {
+          // Play supermarket beep immediately
+          playBeepSound();
+
+          // Add to active cart
+          addItem(result.product, 1);
+
+          // Compute updated quantity
+          const existing = (cartItems || []).find((i) => i?.product?.id === result.product.id);
+          const nextQty = (existing?.quantity || 0) + 1;
+
+          showToast({
+            isError: false,
+            product: result.product,
+            name: result.product.name,
+            price: result.product.price,
+            quantity: nextQty,
+          });
+
+          return { success: true, product: result.product, quantity: nextQty };
+        } else {
+          // Product not found
+          playErrorSound();
+          showToast(
+            {
+              isError: true,
+              message: `រកមិនឃើញទំនិញដែលមានបាកូដ "${trimmed}" ទេ (Not Found)`,
+            },
+            3200
+          );
+          return { success: false, reason: 'not_found', code: trimmed };
+        }
+      } catch (err) {
+        console.error('Global barcode process error:', err);
+        playErrorSound();
+        showToast(
+          {
+            isError: true,
+            message: 'មានបញ្ហាក្នុងការស្វែងរកទំនិញ (Connection error)',
+          },
+          3000
+        );
+        return { success: false, reason: 'error', error: err };
+      }
+    },
+    [addItem, cartItems, showToast]
+  );
+
+  const value = {
+    isScannerOpen,
+    openScanner,
+    closeScanner,
+    isDrawerOpen,
+    openDrawer,
+    closeDrawer,
+    toggleDrawer,
+    globalToast,
+    showToast,
+    hideToast,
+    processBarcode,
+  };
+
+  return (
+    <GlobalScannerContext.Provider value={value}>
+      {children}
+    </GlobalScannerContext.Provider>
+  );
+}
+
+export function useGlobalScanner() {
+  const context = useContext(GlobalScannerContext);
+  if (!context) {
+    throw new Error('useGlobalScanner must be used within a GlobalScannerProvider');
+  }
+  return context;
+}

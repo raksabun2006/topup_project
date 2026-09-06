@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { Camera, RefreshCw, Zap, ZapOff, AlertCircle, ShieldAlert } from 'lucide-react';
+import { RefreshCw, Zap, ZapOff, AlertCircle, ShieldAlert } from 'lucide-react';
 
 const SUPPORTED_FORMATS = [
   Html5QrcodeSupportedFormats.EAN_13,
@@ -22,8 +22,6 @@ const SUPPORTED_FORMATS = [
 export default function BarcodeScanner({
   onDetect,
   onSwitchToManual,
-  isPaused = false,
-  cooldownMs = 1200,
 }) {
   const [status, setStatus] = useState('initializing'); // 'initializing' | 'ready' | 'permission_denied' | 'no_camera' | 'error'
   const [errorMessage, setErrorMessage] = useState('');

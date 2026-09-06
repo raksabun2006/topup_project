@@ -9,6 +9,7 @@ import { env } from '../../config/env';
 import ThemeToggle from '../ui/ThemeToggle';
 import UserAvatar from '../ui/UserAvatar';
 import NotificationDropdown from '../ui/NotificationDropdown';
+import ActiveOrderIndicator from '../pos/ActiveOrderIndicator';
 
 const ICON_LINKS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -65,8 +66,16 @@ export default function Navbar() {
           </Link>
         </div>
 
+        {/* Mobile Mini Active Order Indicator */}
+        <div className="flex items-center gap-1.5 md:hidden">
+          <ActiveOrderIndicator />
+        </div>
+
         {/* ---------- Desktop ---------- */}
         <div className="hidden items-center gap-2 sm:gap-3 md:flex">
+          {/* Global Mini Active Order Indicator */}
+          <ActiveOrderIndicator />
+
           {isAuthenticated && (
             <div className="flex items-center gap-1.5">
               {iconLinks.map(({ to, icon: Icon, label }) => (

@@ -164,6 +164,19 @@ body {
   animation: slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@keyframes slide-left {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-left {
+  animation: slide-left 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 @keyframes scanner-laser {
   0% {
     top: 6%;
