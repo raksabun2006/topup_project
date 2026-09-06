@@ -1,4 +1,5 @@
 import { productApi } from '../api/productApi';
+import { adminProductApi } from '../api/adminProductApi';
 
 /**
  * Cache for catalog products fetched during barcode lookup to prevent redundant network calls
@@ -13,20 +14,46 @@ export function clearBarcodeLookupCache() {
 }
 
 /**
+ * Helper to extract items array from various Spring response formats
+ */
+function extractProductsFromResponse(res) {
+  if (!res) return [];
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res?.content)) return res.content;
+  if (Array.isArray(res?.data?.content)) return res.data.content;
+  if (Array.isArray(res?.data)) return res.data;
+  return [];
+}
+
+/**
+ * Fetch product catalog using adminProductApi if authenticated, or productApi as fallback
+ */
+async function fetchCatalogFromApi() {
+  try {
+    const adminRes = await adminProductApi.list({ page: 0, size: 200 });
+    const items = extractProductsFromResponse(adminRes);
+    if (items.length > 0) return items;
+  } catch {
+    // If adminProductApi fails (e.g. not admin/manager), fallback to public productApi
+  }
+
+  try {
+    const pubRes = await productApi.list({ page: 0, size: 200 });
+    return extractProductsFromResponse(pubRes);
+  } catch (err) {
+    console.warn('Both adminProductApi and productApi catalog fetch failed:', err);
+    throw err;
+  }
+}
+
+/**
  * Pre-fetch catalog in background so lookups are instantaneous (0ms)
  */
 export async function prefetchCatalogCache() {
   const now = Date.now();
   if (catalogCache && now - catalogCacheTime <= CACHE_TTL_MS) return;
   try {
-    const res = await productApi.list({ page: 0, size: 150 });
-    const items = Array.isArray(res)
-      ? res
-      : Array.isArray(res?.content)
-      ? res.content
-      : Array.isArray(res?.data?.content)
-      ? res.data.content
-      : [];
+    const items = await fetchCatalogFromApi();
     if (items.length > 0) {
       catalogCache = items;
       catalogCacheTime = now;
@@ -39,7 +66,7 @@ export async function prefetchCatalogCache() {
 /**
  * Look up a product by barcode or SKU
  * 1. Checks the currently loaded local products first (instant)
- * 2. If not found, checks cached catalog or fetches from productApi.list({ size: 100 })
+ * 2. If not found, checks cached catalog or fetches from catalog API
  *
  * @param {string} code - Barcode or SKU entered / scanned
  * @param {Array} localProducts - Products currently loaded in POS grid
@@ -68,18 +95,11 @@ export async function lookupProductByBarcode(code, localProducts = []) {
     }
   }
 
-  // 2. Fetch from productApi if not in local page or cache expired
+  // 2. Fetch from catalog API if not in local page or cache expired
   const now = Date.now();
   if (!catalogCache || now - catalogCacheTime > CACHE_TTL_MS) {
     try {
-      const res = await productApi.list({ page: 0, size: 100 });
-      const items = Array.isArray(res)
-        ? res
-        : Array.isArray(res?.content)
-        ? res.content
-        : Array.isArray(res?.data?.content)
-        ? res.data.content
-        : [];
+      const items = await fetchCatalogFromApi();
       catalogCache = items;
       catalogCacheTime = now;
     } catch (err) {

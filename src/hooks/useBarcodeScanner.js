@@ -11,9 +11,8 @@ import { useEffect, useRef } from 'react';
  * @param {number} options.maxInterval - Max milliseconds between keystrokes (default: 50ms)
  * @param {number} options.minLength - Minimum length of valid barcode (default: 3)
  */
-export function useBarcodeScanner(onScan, { enabled = true, maxInterval = 50, minLength = 3 } = {}) {
-  const bufferRef = useRef('');
-  const lastKeyTimeRef = useRef(0);
+export function useBarcodeScanner(onScan, { enabled = true, maxInterval = 60, minLength = 3 } = {}) {
+  const strokesRef = useRef([]); // [{ char, time, target }]
   const onScanRef = useRef(onScan);
 
   useEffect(() => {
@@ -24,50 +23,82 @@ export function useBarcodeScanner(onScan, { enabled = true, maxInterval = 50, mi
     if (!enabled) return;
 
     const handleKeyDown = (e) => {
-      // Ignore system modifier keys
+      // Ignore system modifier keys (Ctrl+C, Alt+Tab, Cmd+V, etc.)
       if (e.ctrlKey || e.altKey || e.metaKey) return;
 
       const now = Date.now();
-      const timeDiff = now - lastKeyTimeRef.current;
-      lastKeyTimeRef.current = now;
-
-      // If user is typing in a regular form input and speed is human (> 80ms), let standard input happen
       const target = e.target;
-      const isInput =
+      const isFormInput =
         target &&
         (target.tagName === 'INPUT' ||
           target.tagName === 'TEXTAREA' ||
           target.isContentEditable);
 
       if (e.key === 'Enter') {
-        const code = bufferRef.current.trim();
-        const bufferLength = code.length;
+        const strokes = strokesRef.current;
+        strokesRef.current = [];
 
-        // If buffered characters arrived rapidly and meet minimum length
-        if (bufferLength >= minLength) {
-          e.preventDefault();
-          e.stopPropagation();
-          onScanRef.current?.(code);
+        if (strokes.length >= minLength) {
+          // Calculate interval statistics between consecutive keys
+          let totalInterval = 0;
+          let maxGap = 0;
+          for (let i = 1; i < strokes.length; i++) {
+            const gap = strokes[i].time - strokes[i - 1].time;
+            totalInterval += gap;
+            if (gap > maxGap) maxGap = gap;
+          }
+          const avgInterval = strokes.length > 1 ? totalInterval / (strokes.length - 1) : 0;
+
+          // Hardware scanners emit characters at hardware keyboard speed (typically 5ms - 40ms).
+          // If average interval is <= maxInterval (60ms) and maxGap is under 120ms, it is a barcode scan.
+          // If not in an input, even a slightly looser threshold applies.
+          const isScanner = !isFormInput
+            ? avgInterval <= 100 || strokes.length >= 6
+            : avgInterval <= maxInterval && maxGap <= 130;
+
+          if (isScanner) {
+            const scannedCode = strokes.map((s) => s.char).join('').trim();
+            if (scannedCode.length >= minLength) {
+              e.preventDefault();
+              e.stopPropagation();
+
+              // If the scanner inadvertently pumped text into an input field (e.g. search bar),
+              // revert the barcode text from the input so the cashier's field stays clean
+              if (isFormInput && typeof target.value === 'string') {
+                if (target.value.endsWith(scannedCode)) {
+                  target.value = target.value.slice(0, -scannedCode.length);
+                  target.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+              }
+
+              onScanRef.current?.(scannedCode);
+              return;
+            }
+          }
         }
-
-        // Reset buffer
-        bufferRef.current = '';
         return;
       }
 
-      // Only printable single characters (numbers, letters, dashes)
+      // Record printable single characters
       if (e.key.length === 1) {
-        // If interval is larger than scanner threshold and not starting fresh, reset buffer
-        if (timeDiff > maxInterval && bufferRef.current.length > 0) {
-          bufferRef.current = '';
+        const strokes = strokesRef.current;
+        const lastStroke = strokes[strokes.length - 1];
+
+        // If gap between this keystroke and last keystroke is too large for a scanner, clear previous buffer
+        if (lastStroke && now - lastStroke.time > 180) {
+          strokesRef.current = [];
         }
 
-        // If focus is in standard text field and typing is normal human speed, do not capture
-        if (isInput && timeDiff > maxInterval) {
-          return;
-        }
+        strokesRef.current.push({
+          char: e.key,
+          time: now,
+          target,
+        });
 
-        bufferRef.current += e.key;
+        // Cap buffer memory
+        if (strokesRef.current.length > 100) {
+          strokesRef.current.shift();
+        }
       }
     };
 

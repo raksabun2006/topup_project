@@ -45,10 +45,10 @@ export default function ActiveOrderIndicator({ variant = 'default' }) {
             isAdmin ? 'text-slate-500 dark:text-slate-400' : 'text-emerald-100'
           }`}
         >
-          រទេះបច្ចុប្បន្ន
+          Active Order
         </p>
         <p className="text-xs font-black leading-tight mt-0.5">
-          <span>{itemCount} មុខ</span>
+          <span>{itemCount} {itemCount === 1 ? 'Item' : 'Items'}</span>
           <span className="mx-1 opacity-40">•</span>
           <span className={isAdmin ? 'text-emerald-600 dark:text-emerald-400' : 'text-white'}>
             {formattedTotal}
