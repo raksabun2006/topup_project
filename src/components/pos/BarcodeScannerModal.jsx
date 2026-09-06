@@ -252,25 +252,55 @@ export default function BarcodeScannerModal({
               }`}
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 text-white shrink-0">
-                  {scanFeedback.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-                </div>
+                {scanFeedback.type === 'success' ? (
+                  <div className="relative shrink-0">
+                    {scanFeedback.product.imageUrl ? (
+                      <img
+                        src={scanFeedback.product.imageUrl}
+                        alt={scanFeedback.product.name}
+                        className="h-11 w-11 rounded-xl object-cover bg-white border border-white/30"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 text-white">
+                        <Package size={20} />
+                      </div>
+                    )}
+                    <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-emerald-700 shadow-xs text-[10px] font-black">
+                      ✓
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 text-white shrink-0">
+                    <AlertCircle size={18} />
+                  </div>
+                )}
+
                 <div className="min-w-0">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider opacity-90">
-                    {scanFeedback.type === 'success' ? '✓ SCANNED — ADDED TO CART' : '⚠ SCAN ERROR'}
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider opacity-90 block">
+                    {scanFeedback.type === 'success' ? '✓ PRODUCT SCANNED' : '⚠ SCAN ERROR'}
                   </span>
                   <p className="text-xs truncate font-bold">
                     {scanFeedback.type === 'success'
                       ? scanFeedback.product.name
                       : scanFeedback.message}
                   </p>
+                  {scanFeedback.type === 'success' && (
+                    <p className="text-[10px] opacity-80 truncate">
+                      Barcode: {scanFeedback.product.barcode || scanFeedback.product.sku || scanFeedback.code}
+                    </p>
+                  )}
                 </div>
               </div>
 
               {scanFeedback.type === 'success' && (
                 <div className="text-right shrink-0">
                   <span className="font-extrabold">{formatCurrency(scanFeedback.product.price)}</span>
-                  <span className="text-emerald-200 font-bold ml-1">× {scanFeedback.quantity}</span>
+                  <p className="text-emerald-200 text-[11px] font-bold">
+                    Qty: {scanFeedback.quantity}
+                  </p>
                 </div>
               )}
 

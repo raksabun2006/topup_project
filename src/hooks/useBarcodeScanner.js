@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { initAudioContext } from '../utils/sound';
 
 /**
  * Hook to listen for hardware USB/Bluetooth barcode scanners.
@@ -23,6 +24,9 @@ export function useBarcodeScanner(onScan, { enabled = true, maxInterval = 60, mi
     if (!enabled) return;
 
     const handleKeyDown = (e) => {
+      // Unlock AudioContext safely on user physical interaction
+      initAudioContext();
+
       // Ignore system modifier keys (Ctrl+C, Alt+Tab, Cmd+V, etc.)
       if (e.ctrlKey || e.altKey || e.metaKey) return;
 

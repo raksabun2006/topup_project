@@ -80,6 +80,8 @@ export function GlobalScannerProvider({ children }) {
             isError: false,
             product: result.product,
             name: result.product.name,
+            imageUrl: result.product.imageUrl,
+            barcode: result.product.barcode || result.product.sku || trimmed,
             price: result.product.price,
             quantity: nextQty,
           });
@@ -91,9 +93,10 @@ export function GlobalScannerProvider({ children }) {
           showToast(
             {
               isError: true,
+              barcode: trimmed,
               message: `រកមិនឃើញទំនិញដែលមានបាកូដ "${trimmed}" ទេ (Not Found)`,
             },
-            3200
+            3400
           );
           return { success: false, reason: 'not_found', code: trimmed };
         }
