@@ -51,6 +51,7 @@ export default function AppRoutes() {
         {/* Public Storefront / Shopping Flow (No login required) */}
         <Route path="/" element={<Pos />} />
         <Route path="/pos" element={<Pos />} />
+        <Route path="/orders" element={<Pos />} />
         <Route path="/cart" element={<Pos />} />
         <Route path="/checkout" element={<Pos />} />
         <Route path="/payment/:saleId" element={<Pos />} />

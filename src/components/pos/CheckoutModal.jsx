@@ -1,32 +1,29 @@
 import { useState } from 'react';
-import { X, Loader2, AlertCircle, Banknote, Clock, QrCode, CreditCard } from 'lucide-react';
+import { X, Loader2, AlertCircle, Banknote, Clock, QrCode, CreditCard, User, Phone, MapPin, Truck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { formatCurrency, formatCurrencyPrecise } from '../../utils/format';
 import { saleApi } from '../../api/saleApi';
 import { getErrorMessage } from '../../api/client';
 import BakongPaymentModal from './BakongPaymentModal';
-
+import { saveCustomerOrder } from './CustomerOrdersModal';
 
 const QUICK_AMOUNTS = [5, 10, 20, 50, 100];
 
-/**
- * Modern Retail POS Payment & Checkout Dialog:
- * - Large, tactile payment method cards (Cash, Bakong KHQR, Card, Pay Later)
- * - Quick cash tender buttons & automatic change calculation
- * - Fully preserves backend API payload & Bakong polling flow
- */
 export default function CheckoutModal({
   items,
   customer,
   subtotal,
-  discountAmount,
-  taxAmount,
+  discountAmount = 0,
+  taxAmount = 0,
   total,
   onClose,
   onSuccess,
 }) {
   const { isAuthenticated } = useAuth();
-  const [method, setMethod] = useState(isAuthenticated ? 'CASH' : 'BAKONG');
+  const [method, setMethod] = useState('BAKONG'); // 'BAKONG', 'CASH', 'CARD', 'UNPAID'
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
   const [cashTendered, setCashTendered] = useState(total.toString());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -65,6 +62,17 @@ export default function CheckoutModal({
 
       const sale = await saleApi.create(payload, { isGuest });
 
+      // Save customer details and order to history
+      saveCustomerOrder({
+        ...sale,
+        items,
+        total,
+        customerName: customerName || customer?.name,
+        customerPhone,
+        deliveryAddress,
+        paymentMethod: method,
+      });
+
       // Customer checkout or Bakong KHQR proceeds to polling QR modal
       if (!isAuthenticated || method === 'BAKONG') {
         setPendingSale({ ...sale, isGuest });
@@ -87,6 +95,7 @@ export default function CheckoutModal({
       <BakongPaymentModal
         sale={pendingSale}
         onPaid={(completed) => {
+          saveCustomerOrder(completed);
           setPendingSale(null);
           onSuccess(completed);
         }}
@@ -111,10 +120,10 @@ export default function CheckoutModal({
         <div className="flex shrink-0 items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
           <div>
             <h3 className="text-base sm:text-lg font-extrabold text-[#172033] dark:text-white">
-              {isAuthenticated ? 'ទូទាត់ប្រាក់ (Payment & Checkout)' : 'សង្ខេបការបញ្ជាទិញ'}
+              {isAuthenticated ? 'ទូទាត់ប្រាក់ (Payment & Checkout)' : 'ការទូទាត់ប្រាក់ (Checkout)'}
             </h3>
             <p className="text-xs text-[#667085] dark:text-slate-400">
-              {customer?.name ? `អតិថិជន៖ ${customer.name}` : 'អតិថិជនទូទៅ'} · {items.length} មុខទំនិញ
+              {customer?.name ? `អតិថិជន៖ ${customer.name}` : 'សង្ខេបការបញ្ជាទិញ'} · {items.length} មុខទំនិញ
             </p>
           </div>
           <button
@@ -135,13 +144,59 @@ export default function CheckoutModal({
             </div>
           )}
 
-          {isAuthenticated && (
-            <div>
-              <label className="mb-2 block text-xs font-bold text-[#172033] dark:text-slate-300">
-                ជ្រើសរើសវិធីទូទាត់ (Payment Method)
-              </label>
+          {/* Customer / Delivery Information (For Customer POS) */}
+          {!isAuthenticated && (
+            <div className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-3.5">
+              <span className="text-xs font-bold text-[#172033] dark:text-white flex items-center gap-1.5">
+                <Truck size={14} className="text-[#009F6B]" />
+                <span>ព័ត៌មានដឹកជញ្ជូន / ទំនាក់ទំនង (Delivery Information)</span>
+              </span>
 
-              {/* 4 Large Payment Method Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="relative">
+                  <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="ឈ្មោះរបស់អ្នក (Name)"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 pl-8 pr-3 text-xs font-semibold text-slate-900 dark:text-white focus:border-[#009F6B] focus:outline-none"
+                  />
+                </div>
+
+                <div className="relative">
+                  <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="tel"
+                    placeholder="លេខទូរស័ព្ទ (Phone number)"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 pl-8 pr-3 text-xs font-semibold text-slate-900 dark:text-white focus:border-[#009F6B] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="relative">
+                <MapPin size={14} className="absolute left-3 top-2.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="អាសយដ្ឋានដឹកជញ្ជូន / ចំណាំ (Address / Note)"
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 pl-8 pr-3 text-xs font-semibold text-slate-900 dark:text-white focus:border-[#009F6B] focus:outline-none"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Payment Method Selector */}
+          <div>
+            <label className="mb-2 block text-xs font-bold text-[#172033] dark:text-slate-300">
+              ជ្រើសរើសវិធីទូទាត់ (Payment Method)
+            </label>
+
+            {isAuthenticated ? (
+              /* Staff Payment Methods */
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <button
                   type="button"
@@ -195,10 +250,28 @@ export default function CheckoutModal({
                   <span>បង់ក្រោយ (Later)</span>
                 </button>
               </div>
-            </div>
-          )}
+            ) : (
+              /* Online Customer: Strictly Bakong KHQR */
+              <div className="flex items-center gap-3.5 rounded-2xl border-2 border-[#009F6B] bg-[#E8F8F2]/70 dark:bg-emerald-950/40 p-3.5 shadow-xs">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-slate-800 text-[#009F6B] shadow-xs border border-[#009F6B]/20">
+                  <QrCode size={24} />
+                </div>
+                <div className="min-w-0 flex-1 text-left">
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-extrabold text-sm text-slate-900 dark:text-white">Bakong KHQR</p>
+                    <span className="rounded-md bg-[#009F6B] text-white px-1.5 py-0.2 text-[9px] font-bold">
+                      ស្វ័យប្រវត្តិ
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
+                    ស្កេនទូទាត់ភ្លាមៗជាមួយគ្រប់កម្មវិធីធនាគារក្នុងប្រទេសកម្ពុជា
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
 
-          {/* Cash Tender Calculation (When Cash is selected) */}
+          {/* Cash Tender Calculation (Staff Cash) */}
           {isAuthenticated && method === 'CASH' && (
             <div className="space-y-2.5 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 p-3.5">
               <div className="flex items-center justify-between text-xs font-bold text-[#172033] dark:text-slate-200">
@@ -260,23 +333,29 @@ export default function CheckoutModal({
           {/* Receipt Price Breakdown */}
           <div className="space-y-1.5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/80 p-4 text-xs border border-slate-200/90 dark:border-slate-800">
             <div className="flex justify-between text-[#667085] dark:text-slate-400">
-              <span>សរុបរង</span>
+              <span>សរុបរង (Subtotal)</span>
               <span className="text-[#172033] dark:text-slate-200 font-semibold">{formatCurrency(subtotal)}</span>
             </div>
+            {!isAuthenticated && (
+              <div className="flex justify-between text-[#667085] dark:text-slate-400">
+                <span>ដឹកជញ្ជូន (Delivery)</span>
+                <span className="text-slate-800 dark:text-slate-200 font-semibold">{formatCurrency(1.5)}</span>
+              </div>
+            )}
             {discountAmount > 0 && (
               <div className="flex justify-between text-[#009F6B] dark:text-emerald-400 font-medium">
-                <span>បញ្ចុះតម្លៃ</span>
+                <span>បញ្ចុះតម្លៃ (Discount)</span>
                 <span>-{formatCurrencyPrecise(discountAmount)}</span>
               </div>
             )}
             {taxAmount > 0 && (
               <div className="flex justify-between text-[#667085] dark:text-slate-400">
-                <span>ពន្ធ</span>
+                <span>ពន្ធ (Tax)</span>
                 <span className="text-[#172033] dark:text-slate-200 font-semibold">{formatCurrencyPrecise(taxAmount)}</span>
               </div>
             )}
             <div className="flex items-baseline justify-between border-t border-slate-200 dark:border-slate-700 pt-2 text-sm font-bold text-[#172033] dark:text-white">
-              <span className="text-base font-extrabold">សរុបត្រូវបង់</span>
+              <span className="text-base font-extrabold">សរុបត្រូវបង់ (TOTAL)</span>
               <span className="text-2xl font-black text-[#009F6B] dark:text-emerald-400">{formatCurrency(total)}</span>
             </div>
           </div>
@@ -306,7 +385,9 @@ export default function CheckoutModal({
                   : 'កត់ត្រាការលក់ (បង់ក្រោយ)'}
               </span>
             ) : (
-              <span>បង់ប្រាក់ ({formatCurrency(total)})</span>
+              <span>
+                {method === 'BAKONG' ? `បង់ប្រាក់តាម Bakong KHQR (${formatCurrency(total)})` : `បញ្ជាទិញ (${formatCurrency(total)})`}
+              </span>
             )}
           </button>
         </div>

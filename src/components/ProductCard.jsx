@@ -1,14 +1,44 @@
 import { useState, useEffect } from 'react';
-import { Package, Plus, Minus, Trash2 } from 'lucide-react';
+import { Package, Plus, Minus, Trash2, Heart } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
+import { useAuth } from '../context/AuthContext';
+
+const WISHLIST_STORAGE_KEY = 'mart_customer_wishlist';
+
+function isProductWishlisted(id) {
+  try {
+    const raw = localStorage.getItem(WISHLIST_STORAGE_KEY);
+    const set = raw ? JSON.parse(raw) : [];
+    return Array.isArray(set) && set.includes(id);
+  } catch {
+    return false;
+  }
+}
+
+function toggleWishlist(id) {
+  try {
+    const raw = localStorage.getItem(WISHLIST_STORAGE_KEY);
+    let set = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(set)) set = [];
+    if (set.includes(id)) {
+      set = set.filter((x) => x !== id);
+    } else {
+      set.push(id);
+    }
+    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(set));
+    return set.includes(id);
+  } catch {
+    return false;
+  }
+}
 
 /**
- * Professional Retail POS Product Card:
- * - Direct click to add
- * - In-cart selected state with subtle emerald tint & border
- * - Inline stepper controls ([-] [qty] [+]) for instant cashier adjustments
- * - Secondary subtle SKU
- * - High-contrast price & clean stock indicator
+ * Shared Customer & Staff POS Product Card
+ * - Visually unified with POS design tokens (radius, borders, price typography)
+ * - Safe stock indicators for customers (In Stock / Low Stock / Out of Stock)
+ * - Wishlist heart toggle
+ * - Instant stepper & Quick Add
+ * - Click to inspect product detail
  */
 export default function ProductCard({
   product,
@@ -16,22 +46,40 @@ export default function ProductCard({
   onSetQuantity,
   onRemove,
   cartQuantity = 0,
+  onOpenDetails,
 }) {
+  const { isAuthenticated } = useAuth();
   const [imageBroken, setImageBroken] = useState(false);
+  const [wishlisted, setWishlisted] = useState(false);
 
   useEffect(() => {
     setImageBroken(false);
-  }, [product?.imageUrl]);
+    if (product?.id) {
+      setWishlisted(isProductWishlisted(product.id));
+    }
+  }, [product?.id, product?.imageUrl]);
 
   if (!product) return null;
-  const available = (product.stockQuantity ?? 0) - cartQuantity;
-  const outOfStock = (product.stockQuantity ?? 0) <= 0;
+  const stock = product.stockQuantity ?? 0;
+  const outOfStock = stock <= 0;
+  const isLowStock = !outOfStock && stock <= 5;
+  const available = Math.max(0, stock - cartQuantity);
   const atMaxStock = available <= 0 && cartQuantity > 0;
+  const isSelected = cartQuantity > 0;
 
   const handleCardClick = () => {
-    if (outOfStock) return;
-    if (cartQuantity === 0) {
+    if (onOpenDetails) {
+      onOpenDetails(product);
+    } else if (!outOfStock && cartQuantity === 0) {
       onAdd(product);
+    }
+  };
+
+  const handleWishlistToggle = (e) => {
+    e.stopPropagation();
+    if (product?.id) {
+      const next = toggleWishlist(product.id);
+      setWishlisted(next);
     }
   };
 
@@ -54,8 +102,6 @@ export default function ProductCard({
       if (onSetQuantity) onSetQuantity(product.id, cartQuantity - 1);
     }
   };
-
-  const isSelected = cartQuantity > 0;
 
   return (
     <div
@@ -83,18 +129,37 @@ export default function ProductCard({
           <Package size={28} className="text-slate-300 dark:text-slate-600" />
         )}
 
-        {/* Stock / Out of Stock pill */}
+        {/* Customer Stock Badges */}
         <div className="absolute top-1.5 left-1.5 flex items-center gap-1">
           {outOfStock ? (
             <span className="rounded-md bg-rose-500 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-2xs">
               អស់ស្តុក
             </span>
-          ) : product.stockQuantity !== undefined && product.stockQuantity <= 5 ? (
+          ) : isLowStock ? (
             <span className="rounded-md bg-amber-500 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-2xs">
-              នៅសល់ {available}
+              ស្តុកមានកំណត់
             </span>
-          ) : null}
+          ) : (
+            <span className="rounded-md bg-emerald-600/90 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-2xs">
+              មានក្នុងស្តុក
+            </span>
+          )}
         </div>
+
+        {/* Wishlist Heart Button */}
+        <button
+          type="button"
+          onClick={handleWishlistToggle}
+          className={`absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full transition-transform active:scale-75 ${
+            wishlisted
+              ? 'bg-rose-50 dark:bg-rose-950/70 text-rose-500 shadow-2xs'
+              : 'bg-white/80 dark:bg-slate-800/80 text-slate-400 hover:text-rose-500'
+          }`}
+          title={wishlisted ? 'ដកចេញពីបញ្ជីពេញចិត្ត' : 'ចូលចិត្ត'}
+          aria-label="Wishlist toggle"
+        >
+          <Heart size={13} className={wishlisted ? 'fill-rose-500 text-rose-500' : ''} />
+        </button>
       </div>
 
       {/* Content Area */}
@@ -117,12 +182,12 @@ export default function ProductCard({
           </p>
         </div>
 
-        {/* Price and Stock row */}
+        {/* Price and Stock Status */}
         <div className="mt-2 flex items-baseline justify-between">
           <span className="text-sm sm:text-base font-black text-[#009F6B] dark:text-emerald-400">
             {formatCurrency(product.price)}
           </span>
-          {!outOfStock && product.stockQuantity !== undefined && product.stockQuantity > 5 && (
+          {isAuthenticated && product.stockQuantity !== undefined && (
             <span className="text-[10px] font-medium text-[#64748B] dark:text-slate-400">
               ស្តុក {available}
             </span>
@@ -136,7 +201,7 @@ export default function ProductCard({
               អស់ពីស្តុក
             </div>
           ) : isSelected ? (
-            /* Selected State: Inline Stepper for Fast Cashier Speed */
+            /* Selected State: Inline Stepper for Fast POS Speed */
             <div
               className="flex h-8 sm:h-9 w-full items-center justify-between rounded-xl bg-white dark:bg-slate-800 border border-[#009F6B] p-0.5 shadow-2xs"
               onClick={(e) => e.stopPropagation()}
@@ -185,4 +250,3 @@ export default function ProductCard({
     </div>
   );
 }
-

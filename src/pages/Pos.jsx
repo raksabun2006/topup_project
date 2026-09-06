@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ShoppingCart, ChevronUp, ChevronDown } from 'lucide-react';
+import { ShoppingCart, ChevronUp, ChevronDown, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useCategories } from '../hooks/useCategories';
@@ -9,6 +9,8 @@ import CartPanel from '../components/pos/CartPanel';
 import CheckoutModal from '../components/pos/CheckoutModal';
 import BakongPaymentModal from '../components/pos/BakongPaymentModal';
 import SaleSuccessModal from '../components/pos/SaleSuccessModal';
+import CustomerOrdersModal, { saveCustomerOrder } from '../components/pos/CustomerOrdersModal';
+import CustomerBottomNav from '../components/layout/CustomerBottomNav';
 import SEO from '../components/SEO';
 import { env } from '../config/env';
 import { formatCurrency, parseBackendDate } from '../utils/format';
@@ -82,11 +84,35 @@ export default function Pos() {
   const [taxPct, setTaxPct] = useState('0');
   const [heldOrders, setHeldOrders] = useState(loadHeldOrders);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [showOrdersModal, setShowOrdersModal] = useState(pathname === '/orders');
   const [resumedPaymentSale, setResumedPaymentSale] = useState(loadActiveBakongPayment);
   const [completedSale, setCompletedSale] = useState(null);
   const [stockReloadSignal, setStockReloadSignal] = useState(0);
-  const [mobileCartOpen, setMobileCartOpen] = useState(false);
+  const [mobileCartOpen, setMobileCartOpen] = useState(pathname === '/cart');
+
   const searchInputRef = useRef(null);
+  const categoryContainerRef = useRef(null);
+
+  useEffect(() => {
+    const handleOpenOrders = () => setShowOrdersModal(true);
+    const handleOpenCart = () => setMobileCartOpen(true);
+    window.addEventListener('mart:open-orders', handleOpenOrders);
+    window.addEventListener('mart:open-cart', handleOpenCart);
+    return () => {
+      window.removeEventListener('mart:open-orders', handleOpenOrders);
+      window.removeEventListener('mart:open-cart', handleOpenCart);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (pathname === '/orders') {
+      setShowOrdersModal(true);
+    } else if (pathname === '/cart') {
+      setMobileCartOpen(true);
+    } else if (pathname === '/checkout') {
+      setShowCheckout(true);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     sessionStorage.setItem(HELD_ORDERS_KEY, JSON.stringify(heldOrders));
@@ -103,15 +129,15 @@ export default function Pos() {
         return;
       }
 
-      // F4: Focus/open Customer selector
-      if (e.key === 'F4') {
+      // F4: Focus/open Customer selector (Staff only)
+      if (e.key === 'F4' && isAuthenticated) {
         e.preventDefault();
         document.getElementById('pos-customer-button')?.click();
         return;
       }
 
-      // F8: Focus discount input
-      if (e.key === 'F8') {
+      // F8: Focus discount input (Staff only)
+      if (e.key === 'F8' && isAuthenticated) {
         e.preventDefault();
         const discountInput = document.getElementById('pos-discount-input');
         if (discountInput) {
@@ -135,6 +161,9 @@ export default function Pos() {
         if (showCheckout) {
           e.preventDefault();
           setShowCheckout(false);
+        } else if (showOrdersModal) {
+          e.preventDefault();
+          setShowOrdersModal(false);
         } else if (completedSale) {
           e.preventDefault();
           setCompletedSale(null);
@@ -144,11 +173,15 @@ export default function Pos() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [items.length, showCheckout, completedSale]);
+  }, [items.length, showCheckout, showOrdersModal, completedSale, isAuthenticated]);
 
-  // For unauthenticated customers, discount and tax are always 0.
+  // For unauthenticated customers, discount and tax are calculated cleanly
   const activeDiscountPct = isAuthenticated ? discountPct : '0';
   const activeTaxPct = isAuthenticated ? taxPct : '0';
+  const deliveryFee = useMemo(
+    () => (!isAuthenticated && items.length > 0 ? 1.5 : 0),
+    [isAuthenticated, items.length]
+  );
 
   const discountAmount = useMemo(
     () => (isAuthenticated ? (subtotal * (Number(activeDiscountPct) || 0)) / 100 : 0),
@@ -161,7 +194,7 @@ export default function Pos() {
         : 0,
     [subtotal, discountAmount, activeTaxPct, isAuthenticated]
   );
-  const total = Math.max(0, subtotal - discountAmount + taxAmount);
+  const total = Math.max(0, subtotal - discountAmount + taxAmount + deliveryFee);
 
   const resetActiveSale = () => {
     clear();
@@ -173,7 +206,7 @@ export default function Pos() {
 
   const handleCancelOrder = () => {
     if (items.length === 0) return;
-    if (!window.confirm('តើអ្នកពិតជាចង់បោះបង់ការលក់នេះមែនទេ? ទំនិញក្នុងរទេះនឹងត្រូវលុបចោល។')) return;
+    if (!window.confirm('តើអ្នកពិតជាចង់បោះបង់ការលក់នេះមែនទេ?')) return;
     resetActiveSale();
   };
 
@@ -210,6 +243,7 @@ export default function Pos() {
 
   const handleSaleSuccess = (sale) => {
     setShowCheckout(false);
+    saveCustomerOrder(sale);
     setCompletedSale(sale);
     resetActiveSale();
     setStockReloadSignal((n) => n + 1);
@@ -219,123 +253,52 @@ export default function Pos() {
     setCompletedSale(null);
   };
 
+  const handleFocusCategories = () => {
+    categoryContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
   const isProductsPage = pathname === '/products';
-  const isPosPage = pathname === '/pos';
+  const isPosPage = pathname === '/pos' || pathname === '/';
   const isCheckoutFlow = pathname === '/cart' || pathname === '/checkout' || pathname.startsWith('/payment');
 
-  let pageTitle = 'Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម';
+  let pageTitle = 'Mart System | ប្រព័ន្ធគ្រប់គ្រងហាង និង Online Store POS';
   let pageDescription =
-    'Mart System - ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព ។ ចំណុចលក់ (POS) • ទំនិញ (Products)។ ទំនាក់ទំនង: 0968782196, Email: raksabun2006@gmail.com';
+    'Mart System - Customer POS និងប្រព័ន្ធគ្រប់គ្រងហាងទំនើប។ ស្វែងរកទំនិញ កុម្ម៉ង់ទិញ និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព។';
   let pageKeywords =
-    'Mart System, ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម, ចំណុចលក់ POS, ទំនិញ Products, គ្រប់គ្រងការលក់, គ្រប់គ្រងស្តុក, Bakong KHQR POS, POS System Cambodia';
+    'Mart System, Customer POS, Online Shopping POS, Mart Shopping, Bakong KHQR POS, Cambodia';
   let pageCanonical = '/';
   let pageRobots = 'index, follow';
 
   if (isProductsPage) {
-    pageTitle = 'ទំនិញ (Products) | Mart System POS';
-    pageDescription =
-      'មើលបញ្ជីទំនិញទាំងអស់នៅក្នុង Mart System — ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម រួមមានតម្លៃ ស្តុក និងប្រភេទផ្សេងៗ។';
-    pageKeywords = 'ទំនិញ, Products, ស្តុក, Mart System Products, Catalog Cambodia';
+    pageTitle = 'ទំនិញ (Products) | Mart System';
+    pageDescription = 'មើលបញ្ជីទំនិញទាំងអស់នៅក្នុង Mart System រួមមានតម្លៃ ស្តុក និងប្រភេទផ្សេងៗ។';
     pageCanonical = '/products';
   } else if (isPosPage) {
-    pageTitle = 'ចំណុចលក់ (POS) | Mart System';
-    pageDescription =
-      'ចំណុចលក់ (POS) ទំនើប គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព ។';
-    pageKeywords = 'ចំណុចលក់, POS, POS Screen, Cashier Register, គិតលុយ, Bakong KHQR';
+    pageTitle = 'Mart System | Online Shopping POS';
+    pageDescription = 'ជ្រើសរើសទំនិញ និងទូទាត់ប្រាក់តាម Bakong KHQR យ៉ាងរហ័ស។';
     pageCanonical = '/pos';
-    pageRobots = 'index, follow';
   } else if (isCheckoutFlow) {
     pageTitle = 'ការទូទាត់ប្រាក់ (Checkout) | Mart System';
-    pageDescription = 'ទូទាត់ប្រាក់ទំនិញរបស់អ្នកដោយសុវត្ថិភាពតាមរយៈ Bakong KHQR ឬសាច់ប្រាក់។';
-    pageKeywords = 'Bakong KHQR, Checkout, ទូទាត់ប្រាក់';
     pageCanonical = pathname;
     pageRobots = 'noindex, nofollow';
   }
 
   const homepageSchema = useMemo(() => {
-    const baseSchemaGraph = [
-      {
-        '@type': 'WebSite',
-        '@id': `${env.siteUrl}/#website`,
-        'url': env.siteUrl,
-        'name': 'Mart System',
-        'alternateName': [
-          'ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម',
-          'Mart POS Cambodia'
-        ],
-        'description': pageDescription,
-        'inLanguage': 'km-KH',
-      },
-      {
-        '@type': 'SoftwareApplication',
-        '@id': `${env.siteUrl}/#software`,
-        'name': 'Mart System',
-        'alternateName': 'ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម',
-        'applicationCategory': 'BusinessApplication',
-        'applicationSubCategory': 'Point of Sale & Inventory Management',
-        'operatingSystem': 'Web, iOS, Android, Windows, macOS',
-        'description':
-          'ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព ។',
-        'inLanguage': 'km-KH',
-        'featureList': [
-          'ចំណុចលក់ (POS)',
-          'ទំនិញ (Products)',
-          'គ្រប់គ្រងការលក់ និងស្តុកទំនិញ',
-          'ទូទាត់ប្រាក់តាម Bakong KHQR ស្វ័យប្រវត្តិ'
-        ],
-        'author': {
-          '@type': 'Person',
-          'name': 'Bun Raksa',
-          'email': 'raksabun2006@gmail.com',
-          'telephone': '0968782196'
-        }
-      },
-      {
-        '@type': 'LocalBusiness',
-        '@id': `${env.siteUrl}/#localbusiness`,
-        'name': 'Mart System',
-        'headline': 'ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម',
-        'description':
-          'ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម។ គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព ។',
-        'telephone': '0968782196',
-        'email': 'raksabun2006@gmail.com',
-        'url': env.siteUrl,
-        'currenciesAccepted': 'USD, KHR',
-        'paymentAccepted': 'Cash, Bakong KHQR'
-      }
-    ];
-
-    if (isProductsPage || isPosPage) {
-      baseSchemaGraph.push({
-        '@type': 'BreadcrumbList',
-        '@id': `${env.siteUrl}/#breadcrumb`,
-        'itemListElement': [
-          {
-            '@type': 'ListItem',
-            'position': 1,
-            'name': 'ទំព័រដើម',
-            'item': env.siteUrl,
-          },
-          {
-            '@type': 'ListItem',
-            'position': 2,
-            'name': isProductsPage ? 'ទំនិញ (Products)' : 'ចំណុចលក់ (POS)',
-            'item': `${env.siteUrl}${isProductsPage ? '/products' : '/pos'}`,
-          },
-        ],
-      });
-    }
-
     return {
       '@context': 'https://schema.org',
-      '@graph': baseSchemaGraph,
+      '@type': 'WebSite',
+      'url': env.siteUrl,
+      'name': 'Mart System',
+      'alternateName': ['Mart Online Shopping POS', 'Mart POS Cambodia'],
+      'description': pageDescription,
+      'inLanguage': 'km-KH',
     };
-  }, [isProductsPage, isPosPage, pageDescription]);
+  }, [pageDescription]);
 
   return (
     <div
       className={`flex h-full min-h-0 flex-1 flex-col bg-[#F7F9FA] dark:bg-slate-950 transition-colors duration-200 ${
-        items.length > 0 ? 'pb-20 sm:pb-24' : 'pb-2 sm:pb-3'
+        items.length > 0 ? 'pb-24 sm:pb-28' : 'pb-16 sm:pb-20'
       } lg:pb-0`}
     >
       <SEO
@@ -348,11 +311,8 @@ export default function Pos() {
       />
 
       <header className="sr-only">
-        <h1>Mart System — ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម</h1>
-        <p>គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព ។</p>
-        <h2>ចំណុចលក់ (POS)</h2>
-        <h2>ទំនិញ (Products)</h2>
-        <p>ទំនាក់ទំនងទូរស័ព្ទ: 0968782196 | អ៊ីមែល: raksabun2006@gmail.com</p>
+        <h1>Mart System — Customer Shopping POS</h1>
+        <p>ស្វែងរកទំនិញ បន្ថែមក្នុងរទេះ និងទូទាត់ប្រាក់តាម Bakong KHQR</p>
       </header>
 
       {/* Main Responsive 2-Column POS Layout */}
@@ -363,11 +323,12 @@ export default function Pos() {
             category={category}
             onSelectCategory={setCategory}
             categories={categories}
-            onAdd={(product) => addItem(product, 1)}
+            onAdd={(product, qty = 1) => addItem(product, qty)}
             onSetQuantity={setQuantity}
             onRemove={removeItem}
             reloadSignal={stockReloadSignal}
             searchInputRef={searchInputRef}
+            categoryContainerRef={categoryContainerRef}
           />
         </div>
 
@@ -398,24 +359,24 @@ export default function Pos() {
         </div>
       </div>
 
-      {/* Floating Mobile Cart & Checkout Bar (Sticky Bottom on Mobile) */}
+      {/* Floating Mobile Cart & Checkout Bar (Sticky Bottom on Mobile when cart has items) */}
       {items.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-2.5 sm:p-3 shadow-2xl backdrop-blur-md lg:hidden animate-slide-up pb-[max(0.625rem,env(safe-area-inset-bottom))]">
-          <div className="mx-auto flex max-w-md items-center justify-between gap-2 sm:gap-3">
+        <div className="fixed inset-x-0 bottom-14 sm:bottom-16 z-30 border-t border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-2 sm:p-2.5 shadow-2xl backdrop-blur-md lg:hidden animate-slide-up">
+          <div className="mx-auto flex max-w-md items-center justify-between gap-2">
             {/* View Cart / Items trigger button */}
             <button
               type="button"
               onClick={() => setMobileCartOpen(!mobileCartOpen)}
-              className="flex items-center gap-2 sm:gap-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 sm:px-3.5 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95"
+              className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 cursor-pointer"
             >
-              <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white shrink-0">
+              <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-[#009F6B] text-white shrink-0">
                 <ShoppingCart size={16} />
                 <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white shadow-xs">
                   {itemCount}
                 </span>
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight truncate">{itemCount} ចំនួន</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight truncate">{itemCount} មុខ</p>
                 <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight">{formatCurrency(total)}</p>
               </div>
               {mobileCartOpen ? <ChevronDown size={14} className="text-slate-400 shrink-0" /> : <ChevronUp size={14} className="text-slate-400 shrink-0" />}
@@ -428,10 +389,11 @@ export default function Pos() {
                 setMobileCartOpen(false);
                 setShowCheckout(true);
               }}
-              className="flex flex-1 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-600 py-3 px-3 sm:px-4 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 active:scale-[0.98]"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#009F6B] py-2.5 px-4 text-xs sm:text-sm font-bold text-white shadow-lg shadow-[#009F6B]/30 hover:bg-[#00845A] active:scale-[0.98] transition cursor-pointer"
             >
-              <span>បង់ប្រាក់ឥឡូវនេះ</span>
+              <span>{isAuthenticated ? 'បង់ប្រាក់ឥឡូវនេះ' : 'ទូទាត់ប្រាក់ (Checkout)'}</span>
               <span className="font-extrabold">{formatCurrency(total)}</span>
+              <ArrowRight size={15} />
             </button>
           </div>
         </div>
@@ -441,8 +403,8 @@ export default function Pos() {
       {mobileCartOpen && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs lg:hidden animate-fade-in">
           <div className="fixed inset-0" onClick={() => setMobileCartOpen(false)} />
-          <div className="relative z-10 max-h-[90vh] w-full overflow-hidden rounded-t-3xl border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-slide-up pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-            {/* Grab Handle for touch drawer UX */}
+          <div className="relative z-10 max-h-[85vh] w-full overflow-hidden rounded-t-3xl border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-slide-up pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+            {/* Grab Handle */}
             <div className="flex justify-center pt-2 pb-0.5" onClick={() => setMobileCartOpen(false)}>
               <div className="h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-700" />
             </div>
@@ -479,6 +441,13 @@ export default function Pos() {
         </div>
       )}
 
+      {/* Customer Mobile Bottom Navigation Bar */}
+      <CustomerBottomNav
+        onOpenCart={() => setMobileCartOpen(true)}
+        onOpenOrders={() => setShowOrdersModal(true)}
+        onSelectCategoryFocus={handleFocusCategories}
+      />
+
       {/* Checkout Modal */}
       {showCheckout && (
         <CheckoutModal
@@ -493,7 +462,18 @@ export default function Pos() {
         />
       )}
 
-      {/* Resumed Bakong Payment Modal (Preserves active payment session on page refresh) */}
+      {/* Customer Orders / History Modal */}
+      {showOrdersModal && (
+        <CustomerOrdersModal
+          onClose={() => setShowOrdersModal(false)}
+          onViewReceipt={(sale) => {
+            setShowOrdersModal(false);
+            setCompletedSale(sale);
+          }}
+        />
+      )}
+
+      {/* Resumed Bakong Payment Modal */}
       {!showCheckout && resumedPaymentSale && (
         <BakongPaymentModal
           sale={resumedPaymentSale}
