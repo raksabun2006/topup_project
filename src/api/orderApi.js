@@ -8,17 +8,21 @@ export const orderApi = {
     try {
       await apiClient.delete('/api/v1/cart');
     } catch {
-      // ignore if cart is already empty
+      // ignore if cart is already empty or unauthenticated
     }
 
     for (const item of items) {
       const productId = item.product?.id || item.productId;
       const quantity = item.quantity || item.qty || 1;
       if (productId) {
-        await apiClient.post('/api/v1/cart/items', {
-          productId,
-          quantity,
-        });
+        try {
+          await apiClient.post('/api/v1/cart/items', {
+            productId,
+            quantity,
+          });
+        } catch {
+          // ignore individual item sync errors
+        }
       }
     }
   },
@@ -52,12 +56,14 @@ export const orderApi = {
   /**
    * Checkout customer cart to create e-commerce order:
    * POST /api/v1/orders/checkout
+   * Parameters: { deliveryMethod = 'DELIVERY', deliveryAddressId = null, note = '' }
    * Returns: CheckoutResponse { orderId, orderNumber, amount, currency, status, order, payment }
    */
-  checkout: async ({ deliveryAddressId = null, note = '' } = {}, config = {}) => {
+  checkout: async ({ deliveryMethod = 'DELIVERY', deliveryAddressId = null, note = '' } = {}, config = {}) => {
     const res = await apiClient.post(
       '/api/v1/orders/checkout',
       {
+        deliveryMethod,
         deliveryAddressId: deliveryAddressId || null,
         note: note || '',
       },
@@ -85,22 +91,28 @@ export const orderApi = {
   },
 
   /**
-   * Get current customer's order history:
+   * Get current customer's order history from backend:
    * GET /api/v1/orders/my-orders or GET /api/v1/customer/orders
    */
-  getMyOrders: async ({ page = 0, size = 20 } = {}, config = {}) => {
+  getMyOrders: async ({ page = 0, size = 50 } = {}, config = {}) => {
     try {
       const res = await apiClient.get('/api/v1/orders/my-orders', {
         params: { page, size },
         ...config,
       });
-      return res.data?.data ?? res.data;
+      const data = res.data?.data ?? res.data;
+      return Array.isArray(data) ? data : (data?.content ?? data?.orders ?? []);
     } catch {
-      const res = await apiClient.get('/api/v1/customer/orders', {
-        params: { page, size },
-        ...config,
-      });
-      return res.data?.data ?? res.data;
+      try {
+        const res = await apiClient.get('/api/v1/customer/orders', {
+          params: { page, size },
+          ...config,
+        });
+        const data = res.data?.data ?? res.data;
+        return Array.isArray(data) ? data : (data?.content ?? data?.orders ?? []);
+      } catch {
+        return [];
+      }
     }
   },
 

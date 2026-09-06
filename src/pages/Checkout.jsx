@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
-  User, Phone, MapPin, Truck, QrCode, ShieldCheck, ArrowRight,
-  AlertCircle, Loader2, CheckCircle, ShoppingBag, ArrowLeft, Printer, FileText
+  User, Phone, MapPin, Truck, QrCode, ArrowRight,
+  AlertCircle, Loader2, ShoppingBag, Printer, FileText,
+  Store
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +20,7 @@ export default function Checkout() {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
+  const [deliveryMethod, setDeliveryMethod] = useState('DELIVERY'); // 'DELIVERY' ($1.50) or 'PICKUP' ($0.00)
   const [customerName, setCustomerName] = useState(user?.displayName || user?.name || '');
   const [customerPhone, setCustomerPhone] = useState(user?.phoneNumber || '');
   const [deliveryAddress, setDeliveryAddress] = useState('');
@@ -28,8 +30,9 @@ export default function Checkout() {
   const [pendingSale, setPendingSale] = useState(null);
   const [completedOrder, setCompletedOrder] = useState(null);
 
-  const deliveryFee = !isAuthenticated && items.length > 0 ? 1.5 : 0;
-  const total = Math.max(0, subtotal + deliveryFee);
+  // Authoritative estimated display pricing (final amount is returned by backend on checkout)
+  const deliveryFee = deliveryMethod === 'DELIVERY' ? 1.50 : 0.00;
+  const estimatedTotal = Math.max(0, subtotal + deliveryFee);
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
@@ -43,7 +46,7 @@ export default function Checkout() {
       setError('Please enter your phone number.');
       return;
     }
-    if (!deliveryAddress.trim()) {
+    if (deliveryMethod === 'DELIVERY' && !deliveryAddress.trim()) {
       setError('Please enter your delivery address.');
       return;
     }
@@ -57,9 +60,9 @@ export default function Checkout() {
       // 1. Synchronize frontend cart items with backend customer cart
       await orderApi.syncCart(items);
 
-      // 2. Optionally create delivery address record if logged in
+      // 2. Optionally create delivery address record if logged in and delivery is selected
       let deliveryAddressId = null;
-      if (isAuthenticated) {
+      if (isAuthenticated && deliveryMethod === 'DELIVERY' && deliveryAddress.trim()) {
         try {
           const addr = await orderApi.createAddress({
             receiverName: customerName.trim(),
@@ -74,16 +77,25 @@ export default function Checkout() {
       }
 
       // 3. Perform Customer E-Commerce Order Checkout: POST /api/v1/orders/checkout
-      const fullDeliveryNote = `${deliveryAddress.trim()}${note ? ` (Note: ${note.trim()})` : ''}`;
+      const destinationText = deliveryMethod === 'DELIVERY'
+        ? `${deliveryAddress.trim()}${note ? ` (Note: ${note.trim()})` : ''}`
+        : `Store Pickup at Mart System${note ? ` (Note: ${note.trim()})` : ''}`;
+
       const checkoutRes = await orderApi.checkout({
+        deliveryMethod,
         deliveryAddressId,
-        note: fullDeliveryNote,
+        note: destinationText,
       });
 
       const orderId = checkoutRes.orderId || checkoutRes.id || checkoutRes.order?.id;
       const orderNumber = checkoutRes.orderNumber || checkoutRes.order?.orderNumber || (orderId ? `ORD-${orderId.slice(0, 8).toUpperCase()}` : 'ORD');
       const invoiceNumber = checkoutRes.payment?.billNumber || checkoutRes.order?.orderNumber || orderNumber;
-      const authoritativeTotal = checkoutRes.amount ?? checkoutRes.order?.amount ?? checkoutRes.finalTotal ?? total;
+      
+      // Authoritative backend total
+      const authoritativeTotal = checkoutRes.amount ?? checkoutRes.order?.amount ?? checkoutRes.finalTotal ?? estimatedTotal;
+      const authoritativeDeliveryFee = checkoutRes.order?.deliveryFee ?? (deliveryMethod === 'DELIVERY' ? 1.50 : 0.00);
+      const authoritativeDiscount = checkoutRes.order?.discount ?? 0;
+      const authoritativeSubtotal = checkoutRes.order?.subtotal ?? subtotal;
 
       const orderData = {
         ...checkoutRes,
@@ -95,11 +107,13 @@ export default function Checkout() {
         entityType: 'orders',
         items,
         total: authoritativeTotal,
-        subtotal,
-        deliveryFee,
+        subtotal: authoritativeSubtotal,
+        discount: authoritativeDiscount,
+        deliveryFee: authoritativeDeliveryFee,
+        deliveryMethod,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
-        deliveryAddress: fullDeliveryNote,
+        deliveryAddress: destinationText,
         paymentMethod: 'KHQR',
         paymentStatus: 'PENDING',
         status: 'PENDING_PAYMENT',
@@ -120,10 +134,14 @@ export default function Checkout() {
       items: (sale.items && sale.items.length > 0) ? sale.items : items,
       customerName: customerName.trim() || sale.customerName,
       customerPhone: customerPhone.trim() || sale.customerPhone,
-      deliveryAddress: `${deliveryAddress.trim()}${note ? ` (Note: ${note.trim()})` : ''}` || sale.deliveryAddress,
-      total: sale.finalTotal ?? sale.total ?? total,
+      deliveryAddress: (deliveryMethod === 'DELIVERY' ? `${deliveryAddress.trim()}${note ? ` (Note: ${note.trim()})` : ''}` : 'Store Pickup at Mart System') || sale.deliveryAddress,
+      deliveryMethod: deliveryMethod || sale.deliveryMethod || 'DELIVERY',
+      deliveryFee: sale.deliveryFee ?? (deliveryMethod === 'DELIVERY' ? 1.50 : 0.00),
+      total: sale.finalTotal ?? sale.total ?? sale.amount ?? estimatedTotal,
       subtotal: sale.subtotal ?? subtotal,
-      deliveryFee,
+      paymentMethod: 'KHQR',
+      paymentStatus: 'PAID',
+      status: 'PAID',
     };
     saveCustomerOrder(fullOrder);
     setPendingSale(null);
@@ -144,13 +162,14 @@ export default function Checkout() {
       items: formattedItems.length > 0 ? formattedItems : completedOrder.items,
       customerName: customerName.trim() || completedOrder.customerName,
       customerPhone: customerPhone.trim() || completedOrder.customerPhone,
-      deliveryAddress: `${deliveryAddress.trim()}${note ? ` (Note: ${note.trim()})` : ''}`,
-      total: completedOrder.finalTotal ?? completedOrder.total ?? total,
+      deliveryAddress: completedOrder.deliveryAddress,
+      deliveryMethod: completedOrder.deliveryMethod || deliveryMethod,
+      deliveryFee: completedOrder.deliveryFee ?? deliveryFee,
+      total: completedOrder.finalTotal ?? completedOrder.total ?? completedOrder.amount ?? estimatedTotal,
       subtotal: completedOrder.subtotal ?? subtotal,
-      deliveryFee,
       paymentMethod: completedOrder.paymentMethod || 'KHQR',
       paymentStatus: completedOrder.paymentStatus || 'PAID',
-      status: completedOrder.status || 'COMPLETED',
+      status: completedOrder.status || 'PAID',
     };
 
     return (
@@ -229,7 +248,7 @@ export default function Checkout() {
             Checkout
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Fill in your delivery address and pay with Bakong KHQR
+            Select your delivery method, provide contact details, and pay with Bakong KHQR
           </p>
         </div>
 
@@ -244,11 +263,76 @@ export default function Checkout() {
         <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left: Delivery & Payment Details */}
           <div className="lg:col-span-7 space-y-6">
-            {/* Delivery Information Card */}
+            
+            {/* 1. Delivery Method Selection */}
             <div className="rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-6 space-y-4">
               <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
                 <Truck size={16} className="text-emerald-600" />
-                <span>1. Delivery Information</span>
+                <span>1. Delivery Method</span>
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Option 1: Delivery ($1.50) */}
+                <button
+                  type="button"
+                  onClick={() => setDeliveryMethod('DELIVERY')}
+                  className={`flex flex-col p-4 rounded-2xl border text-left transition cursor-pointer relative ${
+                    deliveryMethod === 'DELIVERY'
+                      ? 'border-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/30 ring-1 ring-emerald-600'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full mb-1">
+                    <div className="flex items-center gap-2">
+                      <Truck size={18} className={deliveryMethod === 'DELIVERY' ? 'text-emerald-600' : 'text-slate-400'} />
+                      <span className="font-extrabold text-sm text-slate-900 dark:text-white">Delivery</span>
+                    </div>
+                    <span className="font-mono font-black text-xs px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">
+                      $1.50 USD
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Express doorstep delivery in Phnom Penh
+                  </p>
+                  {deliveryMethod === 'DELIVERY' && (
+                    <div className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-emerald-600" />
+                  )}
+                </button>
+
+                {/* Option 2: Pickup ($0.00 / Free) */}
+                <button
+                  type="button"
+                  onClick={() => setDeliveryMethod('PICKUP')}
+                  className={`flex flex-col p-4 rounded-2xl border text-left transition cursor-pointer relative ${
+                    deliveryMethod === 'PICKUP'
+                      ? 'border-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/30 ring-1 ring-emerald-600'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full mb-1">
+                    <div className="flex items-center gap-2">
+                      <Store size={18} className={deliveryMethod === 'PICKUP' ? 'text-emerald-600' : 'text-slate-400'} />
+                      <span className="font-extrabold text-sm text-slate-900 dark:text-white">Pickup</span>
+                    </div>
+                    <span className="font-mono font-black text-xs px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+                      Free ($0.00)
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Store pickup at Mart System (Phnom Penh)
+                  </p>
+                  {deliveryMethod === 'PICKUP' && (
+                    <div className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-emerald-600" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Customer & Address Information Card */}
+            <div className="rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-6 space-y-4">
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
+                <User size={16} className="text-emerald-600" />
+                <span>2. {deliveryMethod === 'DELIVERY' ? 'Recipient & Delivery Address' : 'Customer Contact Details'}</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -287,22 +371,29 @@ export default function Checkout() {
                 </div>
               </div>
 
-              <div>
-                <label className="mb-1 block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Delivery Address *
-                </label>
-                <div className="relative">
-                  <MapPin size={15} className="absolute left-3.5 top-3 text-slate-400" />
-                  <textarea
-                    required
-                    rows={2}
-                    placeholder="House/Street, Sangkat, Khan, Phnom Penh..."
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-base sm:text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
-                  />
+              {deliveryMethod === 'DELIVERY' ? (
+                <div>
+                  <label className="mb-1 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Delivery Address *
+                  </label>
+                  <div className="relative">
+                    <MapPin size={15} className="absolute left-3.5 top-3 text-slate-400" />
+                    <textarea
+                      required
+                      rows={2}
+                      placeholder="House/Street, Sangkat, Khan, Phnom Penh..."
+                      value={deliveryAddress}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
+                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-base sm:text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 p-3.5 border border-emerald-200/60 dark:border-emerald-900/40 text-xs text-emerald-800 dark:text-emerald-300">
+                  <span className="font-bold block mb-0.5">Store Pickup Location:</span>
+                  <p>Mart System Official Store — Phnom Penh, Cambodia (Opening hours: 7:00 AM - 10:00 PM)</p>
+                </div>
+              )}
 
               <div>
                 <label className="mb-1 block text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -310,7 +401,7 @@ export default function Checkout() {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Leave at door, call before arrival"
+                  placeholder="e.g. Leave at door, call before arrival, or pickup time"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 px-3.5 text-base sm:text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
@@ -318,11 +409,11 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* Payment Method Card */}
+            {/* 3. Payment Method Card */}
             <div className="rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-6 space-y-4">
               <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
                 <QrCode size={16} className="text-emerald-600" />
-                <span>2. Payment Method</span>
+                <span>3. Payment Method</span>
               </h3>
 
               <div className="flex items-center gap-4 rounded-2xl border border-emerald-500/40 bg-white dark:bg-slate-800 p-4 shadow-xs">
@@ -387,14 +478,16 @@ export default function Checkout() {
               <div className="flex justify-between text-slate-600 dark:text-slate-400">
                 <span className="flex items-center gap-1">
                   <Truck size={13} className="text-emerald-600" />
-                  <span>Delivery Fee</span>
+                  <span>Delivery ({deliveryMethod})</span>
                 </span>
-                <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(deliveryFee)}</span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {deliveryFee > 0 ? formatCurrency(deliveryFee) : 'Free ($0.00)'}
+                </span>
               </div>
               <div className="flex items-baseline justify-between border-t border-slate-200/60 dark:border-slate-800 pt-3 text-sm font-bold text-slate-900 dark:text-white">
-                <span>Total</span>
+                <span>Total Amount</span>
                 <span className="text-2xl font-black text-slate-900 dark:text-white">
-                  {formatCurrency(total)}
+                  {formatCurrency(estimatedTotal)}
                 </span>
               </div>
             </div>
@@ -412,7 +505,7 @@ export default function Checkout() {
                 </>
               ) : (
                 <>
-                  <span>Place Order & Pay KHQR</span>
+                  <span>Place Order &amp; Pay KHQR ({formatCurrency(estimatedTotal)})</span>
                   <ArrowRight size={15} />
                 </>
               )}

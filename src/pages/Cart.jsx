@@ -13,7 +13,8 @@ export default function Cart() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const deliveryFee = !isAuthenticated && items.length > 0 ? 1.5 : 0;
+  // Estimated delivery fee for online orders ($1.50)
+  const deliveryFee = items.length > 0 ? 1.50 : 0;
   const total = Math.max(0, subtotal + deliveryFee);
 
   if (items.length === 0) {

@@ -375,38 +375,24 @@ export default function Navbar({ onOpenCart }) {
             </span>
           </button>
 
-          {/* Account / Auth Profile Menu (Desktop, Tablet & Mobile) */}
+          {/* Account / Auth Profile Menu (Desktop & Tablet only ≥ 640px) */}
           {!isAuthenticated ? (
-            <>
-              {/* Desktop / Tablet Auth Buttons (≥ 640px) */}
-              <div className="hidden sm:flex items-center gap-2 text-xs font-bold shrink-0">
-                <Link
-                  to="/login"
-                  className="rounded-full border border-slate-200 dark:border-slate-700 px-3.5 py-1.5 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-                >
-                  {t('signIn')}
-                </Link>
-                <Link
-                  to="/register"
-                  className="rounded-full bg-[#18181B] dark:bg-white text-white dark:text-slate-900 px-3.5 py-1.5 hover:bg-black dark:hover:bg-slate-100 transition shadow-2xs"
-                >
-                  {t('register')}
-                </Link>
-              </div>
-
-              {/* Mobile Auth Button (< 640px) */}
-              <div className="flex sm:hidden items-center gap-1 shrink-0">
-                <Link
-                  to="/login"
-                  className="flex items-center gap-1 rounded-full bg-[#18181B] dark:bg-white text-white dark:text-slate-900 px-2.5 py-1.5 text-xs font-bold shadow-2xs active:scale-95 transition"
-                >
-                  <LogIn size={13} />
-                  <span className="hidden xs:inline">{t('signIn')}</span>
-                </Link>
-              </div>
-            </>
+            <div className="hidden sm:flex items-center gap-2 text-xs font-bold shrink-0">
+              <Link
+                to="/login"
+                className="rounded-full border border-slate-200 dark:border-slate-700 px-3.5 py-1.5 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              >
+                {t('signIn')}
+              </Link>
+              <Link
+                to="/register"
+                className="rounded-full bg-[#18181B] dark:bg-white text-white dark:text-slate-900 px-3.5 py-1.5 hover:bg-black dark:hover:bg-slate-100 transition shadow-2xs"
+              >
+                {t('register')}
+              </Link>
+            </div>
           ) : (
-            <div className="relative">
+            <div className="relative hidden sm:block">
               {/* User Avatar Trigger Button */}
               <button
                 type="button"

@@ -94,6 +94,7 @@ export default function Receipt({
   const customerEmail = rawEmail;
 
   // 2. Resolve Delivery Info
+  const deliveryMethod = (sale.deliveryMethod || sale.order?.deliveryMethod || 'DELIVERY').toUpperCase();
   const deliveryAddress =
     sale.deliveryAddress ||
     sale.shippingAddress ||
@@ -125,7 +126,7 @@ export default function Receipt({
   // 6. Financial values directly from backend
   const subtotal = sale.subtotal ?? sale.subTotal ?? sale.itemsTotal;
   const discount = Number(sale.discount ?? sale.discountAmount ?? 0);
-  const deliveryFee = Number(sale.deliveryFee ?? sale.shippingFee ?? sale.shipping ?? 0);
+  const deliveryFee = Number(sale.deliveryFee ?? sale.shippingFee ?? sale.shipping ?? (deliveryMethod === 'PICKUP' ? 0.00 : 1.50));
   const tax = Number(sale.tax ?? sale.taxAmount ?? 0);
   const finalTotal = sale.finalTotal ?? sale.total ?? sale.totalAmount ?? sale.amount ?? 0;
 
@@ -249,10 +250,15 @@ export default function Receipt({
         {/* Delivery / Order Destination Card */}
         <div className="rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 p-4 border border-slate-100 dark:border-slate-800/60 flex flex-col justify-between print:bg-transparent print:border-slate-200">
           <div>
-            <div className="flex items-center gap-1.5 mb-2 text-xs font-extrabold text-slate-700 dark:text-slate-300 print:text-black">
-              <MapPin size={13} className="text-emerald-600 dark:text-emerald-400" />
-              <span>អាសយដ្ឋានដឹកជញ្ជូន</span>
-              <span className="text-[10px] text-slate-400 font-medium">· Delivery</span>
+            <div className="flex items-center justify-between gap-1.5 mb-2">
+              <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-700 dark:text-slate-300 print:text-black">
+                <MapPin size={13} className="text-emerald-600 dark:text-emerald-400" />
+                <span>វិធីដឹកជញ្ជូន</span>
+                <span className="text-[10px] text-slate-400 font-medium">· Delivery</span>
+              </div>
+              <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                {deliveryMethod}
+              </span>
             </div>
             {deliveryAddress ? (
               <div className="text-xs text-slate-800 dark:text-slate-200 print:text-black leading-relaxed font-semibold">
@@ -261,7 +267,9 @@ export default function Receipt({
               </div>
             ) : (
               <div className="text-xs text-slate-600 dark:text-slate-400 print:text-slate-700">
-                <p className="font-semibold text-slate-800 dark:text-slate-200">Direct Online Order / Store Pickup</p>
+                <p className="font-semibold text-slate-800 dark:text-slate-200">
+                  {deliveryMethod === 'PICKUP' ? 'Store Pickup at Mart System' : 'Direct Online Delivery'}
+                </p>
                 <p className="text-[11px] text-slate-400 mt-0.5">Phnom Penh, Cambodia</p>
               </div>
             )}
@@ -336,15 +344,13 @@ export default function Receipt({
             </div>
           )}
 
-          {/* Delivery Fee if present */}
-          {deliveryFee > 0 && (
-            <div className="flex justify-between text-slate-600 dark:text-slate-400 print:text-slate-700">
-              <span className="font-medium">ថ្លៃដឹកជញ្ជូន (Delivery)</span>
-              <span className="font-bold font-mono text-slate-800 dark:text-slate-200 print:text-black">
-                {formatCurrency(deliveryFee)}
-              </span>
-            </div>
-          )}
+          {/* Delivery Fee */}
+          <div className="flex justify-between text-slate-600 dark:text-slate-400 print:text-slate-700">
+            <span className="font-medium">ថ្លៃដឹកជញ្ជូន (Delivery Fee)</span>
+            <span className="font-bold font-mono text-slate-800 dark:text-slate-200 print:text-black">
+              {deliveryFee > 0 ? formatCurrency(deliveryFee) : 'Free ($0.00)'}
+            </span>
+          </div>
 
           {/* Tax if present */}
           {tax > 0 && showTaxDiscount && (
