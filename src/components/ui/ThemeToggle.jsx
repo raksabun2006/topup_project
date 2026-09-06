@@ -2,44 +2,31 @@ import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 /**
- * Icon-only Theme Toggle Button.
- * Strictly no emojis and no text labels.
- * Provides accessible keyboard focus and smooth icon micro-transitions.
+ * ThemeToggle Component
+ * Sleek toggle button for switching between Light and Dark mode.
  */
-export default function ThemeToggle({ className = '', variant = 'navbar' }) {
+export default function ThemeToggle({ className = '', showLabel = false }) {
   const { isDark, toggleTheme } = useTheme();
-
-  const baseStyles =
-    'relative inline-flex items-center justify-center rounded-full transition-all duration-200 outline-none select-none active:scale-95 cursor-pointer';
-
-  const variants = {
-    // In emerald navbar (white-tinted buttons)
-    navbar:
-      'h-10 w-10 text-white/90 hover:bg-white/15 hover:text-white focus-visible:ring-2 focus-visible:ring-white/50 active:bg-white/20',
-    // In Admin dashboard header / neutral headers
-    admin:
-      'h-9 w-9 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white active:bg-slate-200 dark:active:bg-slate-700 focus-visible:ring-2 focus-visible:ring-emerald-500',
-    // In login/register or standalone pages
-    floating:
-      'h-10 w-10 text-slate-600 dark:text-slate-300 bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md backdrop-blur-xs focus-visible:ring-2 focus-visible:ring-emerald-500',
-  };
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      className={`${baseStyles} ${variants[variant] || variants.navbar} ${className}`}
-      aria-label={isDark ? 'ប្តូរទៅ Light Mode (Switch to Light Mode)' : 'ប្តូរទៅ Dark Mode (Switch to Dark Mode)'}
-      title={isDark ? 'ប្តូរទៅ Light Mode' : 'ប្តូរទៅ Dark Mode'}
+      className={`group relative inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800/90 px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 active:scale-95 cursor-pointer shadow-2xs ${className}`}
+      aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+      title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
     >
-      <span className="sr-only">
-        {isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      <div className="relative flex items-center justify-center">
+        {isDark ? (
+          <Sun size={15} className="text-amber-400 transition-transform duration-300 rotate-0 group-hover:rotate-45" />
+        ) : (
+          <Moon size={15} className="text-slate-700 dark:text-slate-300 transition-transform duration-300 -rotate-12 group-hover:rotate-0" />
+        )}
+      </div>
+
+      <span className="text-[11px] font-bold">
+        {isDark ? 'Light' : 'Dark'}
       </span>
-      {isDark ? (
-        <Sun size={19} className="transition-transform duration-300 rotate-0 hover:rotate-45 text-amber-400" />
-      ) : (
-        <Moon size={19} className="transition-transform duration-300 -rotate-12 hover:rotate-0" />
-      )}
     </button>
   );
 }

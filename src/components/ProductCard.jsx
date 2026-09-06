@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Package, Plus, Minus, Trash2, Heart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Package, Plus, Minus, Trash2, Heart, ShoppingCart, Check } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import { useAuth } from '../context/AuthContext';
 
@@ -32,14 +33,6 @@ function toggleWishlist(id) {
   }
 }
 
-/**
- * Shared Customer & Staff POS Product Card
- * - Visually unified with POS design tokens (radius, borders, price typography)
- * - Safe stock indicators for customers (In Stock / Low Stock / Out of Stock)
- * - Wishlist heart toggle
- * - Instant stepper & Quick Add
- * - Click to inspect product detail
- */
 export default function ProductCard({
   product,
   onAdd,
@@ -49,8 +42,10 @@ export default function ProductCard({
   onOpenDetails,
 }) {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [imageBroken, setImageBroken] = useState(false);
   const [wishlisted, setWishlisted] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
 
   useEffect(() => {
     setImageBroken(false);
@@ -70,8 +65,8 @@ export default function ProductCard({
   const handleCardClick = () => {
     if (onOpenDetails) {
       onOpenDetails(product);
-    } else if (!outOfStock && cartQuantity === 0) {
-      onAdd(product);
+    } else if (product?.id) {
+      navigate(`/product/${product.id}`);
     }
   };
 
@@ -83,12 +78,20 @@ export default function ProductCard({
     }
   };
 
+  const handleQuickAdd = (e) => {
+    e.stopPropagation();
+    if (outOfStock) return;
+    if (onAdd) onAdd(product);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1500);
+  };
+
   const handleIncrement = (e) => {
     e.stopPropagation();
     if (atMaxStock) return;
     if (onSetQuantity) {
       onSetQuantity(product.id, cartQuantity + 1);
-    } else {
+    } else if (onAdd) {
       onAdd(product);
     }
   };
@@ -106,143 +109,129 @@ export default function ProductCard({
   return (
     <div
       onClick={handleCardClick}
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-150 select-none ${
-        outOfStock
-          ? 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 opacity-60 cursor-not-allowed'
-          : isSelected
-          ? 'border-[#009F6B] bg-[#E8F8F2]/60 dark:bg-emerald-950/30 ring-1 ring-[#009F6B]/30 shadow-xs'
-          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:border-[#009F6B]/60 hover:shadow-sm cursor-pointer'
+      className={`group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 transition-all duration-200 hover:shadow-lg hover:border-blue-500/50 cursor-pointer ${
+        outOfStock ? 'opacity-70' : ''
       }`}
     >
-      {/* Product Image Area */}
-      <div className="relative flex aspect-[4/3] max-h-24 sm:max-h-28 w-full shrink-0 items-center justify-center bg-slate-50 dark:bg-slate-800/60 p-2 overflow-hidden border-b border-slate-100 dark:border-slate-800/80">
-        {product.imageUrl && !imageBroken ? (
-          <img
-            src={product.imageUrl}
-            alt={`${product.name} - Mart System`}
-            loading="lazy"
-            decoding="async"
-            className="h-full w-full object-contain transition-transform duration-150 group-hover:scale-105"
-            onError={() => setImageBroken(true)}
-          />
+      {/* Top Header: Real Category / Stock Tag & Wishlist Button */}
+      <div className="flex items-center justify-between gap-2 pb-2">
+        {outOfStock ? (
+          <span className="rounded-md bg-rose-500 text-white px-2 py-0.5 text-[9px] font-bold">
+            អស់ស្តុក (Out of Stock)
+          </span>
+        ) : isLowStock ? (
+          <span className="rounded-md bg-amber-500 text-white px-2 py-0.5 text-[9px] font-bold">
+            ស្តុកមានកំណត់ ({stock})
+          </span>
+        ) : product.category ? (
+          <span className="rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 text-[9px] font-bold text-slate-600 dark:text-slate-300 truncate max-w-[130px]">
+            {product.category}
+          </span>
         ) : (
-          <Package size={28} className="text-slate-300 dark:text-slate-600" />
+          <span className="rounded-md bg-blue-50 text-blue-600 px-2 py-0.5 text-[9px] font-bold">
+            In Stock
+          </span>
         )}
 
-        {/* Customer Stock Badges */}
-        <div className="absolute top-1.5 left-1.5 flex items-center gap-1">
-          {outOfStock ? (
-            <span className="rounded-md bg-rose-500 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-2xs">
-              អស់ស្តុក
-            </span>
-          ) : isLowStock ? (
-            <span className="rounded-md bg-amber-500 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-2xs">
-              ស្តុកមានកំណត់
-            </span>
-          ) : (
-            <span className="rounded-md bg-emerald-600/90 text-white px-1.5 py-0.5 text-[9px] font-bold shadow-2xs">
-              មានក្នុងស្តុក
-            </span>
-          )}
-        </div>
-
-        {/* Wishlist Heart Button */}
         <button
           type="button"
           onClick={handleWishlistToggle}
-          className={`absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full transition-transform active:scale-75 ${
+          className={`flex h-6 w-6 items-center justify-center rounded-full border transition active:scale-75 ${
             wishlisted
-              ? 'bg-rose-50 dark:bg-rose-950/70 text-rose-500 shadow-2xs'
-              : 'bg-white/80 dark:bg-slate-800/80 text-slate-400 hover:text-rose-500'
+              ? 'border-rose-200 bg-rose-50 text-rose-500'
+              : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-500'
           }`}
-          title={wishlisted ? 'ដកចេញពីបញ្ជីពេញចិត្ត' : 'ចូលចិត្ត'}
-          aria-label="Wishlist toggle"
+          title={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          aria-label="Wishlist"
         >
-          <Heart size={13} className={wishlisted ? 'fill-rose-500 text-rose-500' : ''} />
+          <Heart size={12} className={wishlisted ? 'fill-rose-500 text-rose-500' : ''} />
         </button>
       </div>
 
-      {/* Content Area */}
-      <div className="flex flex-1 flex-col p-2.5 sm:p-3 justify-between">
-        <div>
-          <h3
-            className={`line-clamp-2 text-xs sm:text-[13px] font-bold leading-snug transition-colors ${
-              isSelected
-                ? 'text-[#00845A] dark:text-emerald-300'
-                : 'text-[#0F172A] dark:text-slate-100 group-hover:text-[#009F6B] dark:group-hover:text-emerald-400'
-            }`}
-            title={product.name}
-          >
-            {product.name}
-          </h3>
+      {/* Real Product Image Canvas */}
+      <div className="relative flex aspect-square w-full items-center justify-center p-2 overflow-hidden bg-slate-50/50 dark:bg-slate-800/50 rounded-xl">
+        {product.imageUrl && !imageBroken ? (
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            loading="lazy"
+            decoding="async"
+            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+            onError={() => setImageBroken(true)}
+          />
+        ) : (
+          <Package size={44} className="text-slate-300 dark:text-slate-600" />
+        )}
+      </div>
 
-          {/* Secondary SKU metadata */}
-          <p className="mt-0.5 truncate text-[10px] text-[#64748B] dark:text-slate-500">
-            {product.sku ? `SKU: ${product.sku}` : product.barcode ? `BAR: ${product.barcode}` : '\u00A0'}
-          </p>
-        </div>
+      {/* Product Information */}
+      <div className="space-y-1.5 pt-2.5">
+        {product.sku && (
+          <span className="text-[10px] text-slate-400 font-mono block truncate">
+            SKU: {product.sku}
+          </span>
+        )}
 
-        {/* Price and Stock Status */}
-        <div className="mt-2 flex items-baseline justify-between">
-          <span className="text-sm sm:text-base font-black text-[#009F6B] dark:text-emerald-400">
+        {/* Real Product Name */}
+        <h3
+          className="line-clamp-2 text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors leading-snug"
+          title={product.name}
+        >
+          {product.name}
+        </h3>
+
+        {/* Real Price & Action */}
+        <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+          <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
             {formatCurrency(product.price)}
           </span>
-          {isAuthenticated && product.stockQuantity !== undefined && (
-            <span className="text-[10px] font-medium text-[#64748B] dark:text-slate-400">
-              ស្តុក {available}
-            </span>
-          )}
-        </div>
 
-        {/* Dynamic Action Button / Quantity Stepper */}
-        <div className="mt-2.5">
+          {/* Stepper or Quick Add Button */}
           {outOfStock ? (
-            <div className="flex h-8 sm:h-9 w-full items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-400 select-none">
-              អស់ពីស្តុក
-            </div>
+            <span className="text-[10px] font-bold text-rose-500">អស់ស្តុក</span>
           ) : isSelected ? (
-            /* Selected State: Inline Stepper for Fast POS Speed */
             <div
-              className="flex h-8 sm:h-9 w-full items-center justify-between rounded-xl bg-white dark:bg-slate-800 border border-[#009F6B] p-0.5 shadow-2xs"
+              className="flex h-7 items-center rounded-lg bg-blue-50 dark:bg-slate-800 border border-blue-500 p-0.5"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 type="button"
                 onClick={handleDecrement}
-                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-600 dark:hover:text-rose-400 transition active:scale-90 cursor-pointer"
-                title={cartQuantity === 1 ? 'ដកចេញពីរទេះ' : 'បន្ថយ'}
-                aria-label="Decrease quantity"
+                className="flex h-5 w-5 items-center justify-center rounded text-blue-700 dark:text-blue-300 hover:bg-rose-100 transition cursor-pointer"
               >
-                {cartQuantity === 1 ? <Trash2 size={13} className="text-rose-500" /> : <Minus size={13} />}
+                {cartQuantity === 1 ? <Trash2 size={10} className="text-rose-500" /> : <Minus size={10} />}
               </button>
-
-              <span className="font-black text-xs sm:text-sm text-[#00845A] dark:text-emerald-300 px-1 select-none">
-                {cartQuantity} ក្នុងរទេះ
+              <span className="px-1 text-[11px] font-black text-blue-700 dark:text-blue-300 select-none">
+                {cartQuantity}
               </span>
-
               <button
                 type="button"
                 onClick={handleIncrement}
                 disabled={atMaxStock}
-                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-[#009F6B] text-white hover:bg-[#00845A] transition active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                title={atMaxStock ? 'ដល់ស្តុកអតិបរមាហើយ' : 'បន្ថែម'}
-                aria-label="Increase quantity"
+                className="flex h-5 w-5 items-center justify-center rounded bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-40 cursor-pointer"
               >
-                <Plus size={13} />
+                <Plus size={10} />
               </button>
             </div>
           ) : (
-            /* Unselected State: Clean Add to Cart Button */
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onAdd(product);
-              }}
-              className="flex h-8 sm:h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-[#009F6B] text-xs font-bold text-white shadow-2xs hover:bg-[#00845A] transition-all active:scale-95 cursor-pointer"
+              onClick={handleQuickAdd}
+              className={`flex h-7 items-center justify-center gap-1 rounded-lg px-2.5 text-[10px] font-bold text-white transition-all active:scale-95 shadow-xs cursor-pointer ${
+                justAdded
+                  ? 'bg-emerald-600'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
-              <Plus size={14} />
-              <span>បន្ថែមក្នុងរទេះ</span>
+              {justAdded ? (
+                <>
+                  <Check size={11} /> បានបន្ថែម
+                </>
+              ) : (
+                <>
+                  <ShoppingCart size={11} /> Add
+                </>
+              )}
             </button>
           )}
         </div>

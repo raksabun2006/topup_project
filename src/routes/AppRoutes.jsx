@@ -4,6 +4,15 @@ import { useAuth } from '../context/AuthContext';
 import MainLayout from '../components/layout/MainLayout';
 import AdminLayout from '../components/layout/AdminLayout';
 import Login from '../pages/Login';
+import Register from '../pages/Register';
+import Home from '../pages/Home';
+import Shop from '../pages/Shop';
+import Categories from '../pages/Categories';
+import ProductDetail from '../pages/ProductDetail';
+import Cart from '../pages/Cart';
+import Checkout from '../pages/Checkout';
+import Orders from '../pages/Orders';
+import Account from '../pages/Account';
 import Pos from '../pages/Pos';
 import Sales from '../pages/Sales';
 import SaleDetail from '../pages/SaleDetail';
@@ -14,20 +23,6 @@ import Reports from '../pages/Reports';
 import Expenses from '../pages/Expenses';
 import Profile from '../pages/Profile';
 import NotFound from '../pages/NotFound';
-
-/**
- * Route handler for /products:
- * - Admin logged in: Admin Products Management (/dashboard/products)
- * - Customers/Guests: Public Product Storefront (Pos)
- */
-function ProductsRouteHandler() {
-  const { isAdmin, isAuthenticated, loading } = useAuth();
-  if (loading) return null;
-  if (isAuthenticated && isAdmin) {
-    return <Navigate to="/dashboard/products" replace />;
-  }
-  return <Pos />;
-}
 
 function DashboardWrapper() {
   const { isAdmin, loading } = useAuth();
@@ -41,21 +36,26 @@ function DashboardWrapper() {
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* ---------- ១. AUTH (Login Only) ---------- */}
+      {/* ---------- ១. AUTH ROUTES ---------- */}
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Navigate to="/login" replace />} />
+      <Route path="/register" element={<Register />} />
 
-      {/* ---------- ២ & ៣. Main Layout ---------- */}
+      {/* ---------- ២. MAIN STOREFRONT & CUSTOMER E-COMMERCE ---------- */}
       <Route element={<MainLayout />}>
+        {/* Customer Storefront Pages */}
+        <Route path="/" element={<Home />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/products" element={<Shop />} />
+        <Route path="/categories" element={<Categories />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/my-orders" element={<Orders />} />
+        <Route path="/account" element={<Account />} />
 
-        {/* Public Storefront / Shopping Flow (No login required) */}
-        <Route path="/" element={<Pos />} />
+        {/* Staff / In-Store POS Screen */}
         <Route path="/pos" element={<Pos />} />
-        <Route path="/orders" element={<Pos />} />
-        <Route path="/cart" element={<Pos />} />
-        <Route path="/checkout" element={<Pos />} />
-        <Route path="/payment/:saleId" element={<Pos />} />
-        <Route path="/products" element={<ProductsRouteHandler />} />
 
         {/* Protected Dashboard & Admin Routes */}
         <Route

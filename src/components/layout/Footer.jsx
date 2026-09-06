@@ -1,65 +1,100 @@
 import { Link } from 'react-router-dom';
+import { Store, Phone, Mail, MapPin, Truck, ShieldCheck, QrCode } from 'lucide-react';
+import { env } from '../../config/env';
 
 export default function Footer() {
   return (
-    <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 transition-colors duration-200">
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:items-center md:justify-between">
-          {/* Left Column: Branding & Marketing Message */}
-          <div className="space-y-2.5">
-            <Link to="/" className="inline-block text-base sm:text-lg font-bold text-slate-900 dark:text-white transition hover:text-emerald-600 dark:hover:text-emerald-400">
-              Mart System
-            </Link>
-            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug">
-              ប្រព័ន្ធគ្រប់គ្រងហាង និង POS ទំនើបសម្រាប់អាជីវកម្ម
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-md">
-              គ្រប់គ្រងការលក់ ទំនិញ ស្តុក និងទូទាត់ប្រាក់តាម Bakong KHQR បានយ៉ាងរហ័ស និងមានសុវត្ថិភាព។
-            </p>
-            <nav aria-label="Footer quick links" className="flex items-center gap-4 pt-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              <Link to="/pos" className="hover:underline">ចំណុចលក់ (POS)</Link>
-              <span>•</span>
-              <Link to="/products" className="hover:underline">ទំនិញ (Products)</Link>
-            </nav>
+    <footer className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+          {/* Col 1: About */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+              About
+            </h4>
+            <ul className="space-y-2 text-xs font-semibold">
+              <li><Link to="/shop" className="hover:text-black dark:hover:text-white transition">Our Store</Link></li>
+              <li><Link to="/categories" className="hover:text-black dark:hover:text-white transition">All Categories</Link></li>
+              <li><Link to="/orders" className="hover:text-black dark:hover:text-white transition">Track Orders</Link></li>
+            </ul>
           </div>
 
-          {/* Right Column: Contact Details & CTA */}
-          <div className="flex flex-col md:items-end space-y-3.5">
-            <div className="space-y-1.5 text-xs sm:text-sm">
-              <div className="flex items-center gap-1.5 md:justify-end">
-                <span className="font-semibold text-slate-900 dark:text-slate-200">Phone:</span>
-                <a
-                  href="tel:0968782196"
-                  className="font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline transition"
-                >
-                  0968782196
-                </a>
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5 md:justify-end">
-                <span className="font-semibold text-slate-900 dark:text-slate-200">Email:</span>
-                <a
-                  href="mailto:raksabun2006@gmail.com"
-                  className="font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline break-all transition"
-                >
-                  raksabun2006@gmail.com
-                </a>
-              </div>
-            </div>
+          {/* Col 2: Support */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+              Support
+            </h4>
+            <ul className="space-y-2 text-xs font-semibold">
+              <li><a href="tel:0968782196" className="hover:text-black dark:hover:text-white transition">Contact Us: 0968782196</a></li>
+              <li><a href="mailto:raksabun2006@gmail.com" className="hover:text-black dark:hover:text-white transition">Email Support</a></li>
+              <li><span className="text-slate-400">Delivery: $1.50 Express</span></li>
+              <li><span className="text-slate-400">Payment: Bakong KHQR</span></li>
+            </ul>
+          </div>
 
-            <div>
+          {/* Col 3: Customer Portal */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+              Customer
+            </h4>
+            <ul className="space-y-2 text-xs font-semibold">
+              <li><Link to="/account" className="hover:text-black dark:hover:text-white transition">My Account</Link></li>
+              <li><Link to="/cart" className="hover:text-black dark:hover:text-white transition">Shopping Bag</Link></li>
+              <li><Link to="/checkout" className="hover:text-black dark:hover:text-white transition">Checkout</Link></li>
+              <li><Link to="/orders" className="hover:text-black dark:hover:text-white transition">Purchase History</Link></li>
+            </ul>
+          </div>
+
+          {/* Col 4: Social Media */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+              Social Media
+            </h4>
+            <div className="flex items-center gap-2 pt-1">
               <a
-                href="mailto:raksabun2006@gmail.com?subject=សំណើធ្វើ%20System%20សម្រាប់អាជីវកម្ម"
-                className="inline-flex items-center justify-center rounded-xl bg-emerald-600 dark:bg-emerald-600 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
+                href="https://t.me"
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#18181B] text-white hover:bg-black transition shadow-xs text-xs font-bold"
+                aria-label="Telegram"
               >
-                ទំនាក់ទំនងខ្ញុំ
+                TG
+              </a>
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#18181B] text-white hover:bg-black transition shadow-xs text-xs font-bold"
+                aria-label="Facebook"
+              >
+                f
+              </a>
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#18181B] text-white hover:bg-black transition shadow-xs text-xs font-bold"
+                aria-label="Instagram"
+              >
+                ig
               </a>
             </div>
+            <p className="text-[11px] text-slate-400 pt-1">
+              Follow us for daily flash deals and fresh arrivals.
+            </p>
           </div>
         </div>
 
-        {/* Bottom Copyright Divider */}
-        <div className="mt-8 border-t border-slate-100 dark:border-slate-800/80 pt-6 text-center text-xs text-slate-500 dark:text-slate-500">
-          <p>© 2026 Mart System. រក្សាសិទ្ធិគ្រប់យ៉ាងដោយ Bun Raksa។</p>
+        {/* Bottom Bar: Copyright & Terms */}
+        <div className="mt-12 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-semibold text-slate-400">
+          <p>© {new Date().getFullYear()} {env.appName || 'Mart System'}. All Rights Reserved.</p>
+          <div className="flex items-center gap-4">
+            <span>Terms of Service</span>
+            <span>•</span>
+            <span>Privacy Policy</span>
+            <span>•</span>
+            <span className="text-emerald-600 font-bold">Bakong KHQR Verified</span>
+          </div>
         </div>
       </div>
     </footer>

@@ -210,6 +210,26 @@ body {
   transform-origin: top center;
 }
 
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee 22s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
 /* Safe area padding utilities for mobile notch and home bar */
 .pb-safe {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));

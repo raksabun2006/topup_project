@@ -1,60 +1,87 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Store, Layers, Receipt, ShoppingCart, User, LogIn } from 'lucide-react';
+import { Store, Layers, Receipt, ShoppingCart, User, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import { formatCurrency } from '../../utils/format';
 
-export default function CustomerBottomNav({ onOpenCart, onOpenOrders, onSelectCategoryFocus }) {
+export default function CustomerBottomNav({ onOpenCart }) {
   const { pathname } = useLocation();
   const { isAuthenticated, user } = useAuth();
-  const { itemCount, subtotal } = useCart();
+  const { itemCount } = useCart();
 
-  const isShopActive = pathname === '/' || pathname === '/pos' || pathname === '/products';
+  const isHome = pathname === '/';
+  const isShop = pathname === '/shop' || pathname === '/products';
+  const isCategories = pathname === '/categories';
+  const isOrders = pathname === '/orders';
+  const isCart = pathname === '/cart';
+  const isAccount = pathname === '/account' || pathname === '/profile' || pathname === '/login';
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md lg:hidden pb-[max(0.35rem,env(safe-area-inset-bottom))]">
-      <div className="mx-auto flex max-w-md items-center justify-around px-1 py-1.5 text-[11px] font-bold">
-        {/* 1. Shop (Main POS Screen) */}
+    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md md:hidden pb-[max(0.35rem,env(safe-area-inset-bottom))] shadow-lg">
+      <div className="mx-auto flex max-w-md items-center justify-around px-1 py-1.5 text-[10px] font-bold">
+        {/* 1. Home */}
         <Link
-          to="/pos"
+          to="/"
           className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition ${
-            isShopActive
-              ? 'text-[#009F6B] dark:text-emerald-400'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+            isHome
+              ? 'text-[#009F6B] dark:text-emerald-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
           }`}
         >
-          <Store size={19} className={isShopActive ? 'stroke-[2.5]' : ''} />
+          <Store size={18} className={isHome ? 'stroke-[2.5]' : ''} />
           <span>ទំព័រដើម</span>
         </Link>
 
-        {/* 2. Categories Shortcut */}
-        <button
-          type="button"
-          onClick={onSelectCategoryFocus}
-          className="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition cursor-pointer"
+        {/* 2. Shop */}
+        <Link
+          to="/shop"
+          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition ${
+            isShop
+              ? 'text-[#009F6B] dark:text-emerald-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+          }`}
         >
-          <Layers size={19} />
+          <ShoppingBag size={18} className={isShop ? 'stroke-[2.5]' : ''} />
+          <span>ទំនិញ</span>
+        </Link>
+
+        {/* 3. Categories */}
+        <Link
+          to="/categories"
+          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition ${
+            isCategories
+              ? 'text-[#009F6B] dark:text-emerald-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+          }`}
+        >
+          <Layers size={18} className={isCategories ? 'stroke-[2.5]' : ''} />
           <span>ប្រភេទ</span>
-        </button>
+        </Link>
 
-        {/* 3. Orders */}
-        <button
-          type="button"
-          onClick={onOpenOrders}
-          className="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition cursor-pointer"
+        {/* 4. Orders */}
+        <Link
+          to="/orders"
+          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition ${
+            isOrders
+              ? 'text-[#009F6B] dark:text-emerald-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+          }`}
         >
-          <Receipt size={19} />
+          <Receipt size={18} className={isOrders ? 'stroke-[2.5]' : ''} />
           <span>ការទិញ</span>
-        </button>
+        </Link>
 
-        {/* 4. Cart with Dynamic Badge */}
+        {/* 5. Cart */}
         <button
           type="button"
           onClick={onOpenCart}
-          className="relative flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition cursor-pointer"
+          className={`relative flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition cursor-pointer ${
+            isCart
+              ? 'text-[#009F6B] dark:text-emerald-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+          }`}
         >
           <div className="relative">
-            <ShoppingCart size={19} />
+            <ShoppingCart size={18} className={isCart ? 'stroke-[2.5]' : ''} />
             {itemCount > 0 && (
               <span className="absolute -top-1.5 -right-2.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#009F6B] px-1 text-[9px] font-black text-white shadow-xs">
                 {itemCount}
@@ -64,28 +91,18 @@ export default function CustomerBottomNav({ onOpenCart, onOpenOrders, onSelectCa
           <span>រទេះ</span>
         </button>
 
-        {/* 5. Account / Profile */}
-        {isAuthenticated ? (
-          <Link
-            to="/profile"
-            className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition ${
-              pathname === '/profile'
-                ? 'text-[#009F6B] dark:text-emerald-400'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-            }`}
-          >
-            <User size={19} className={pathname === '/profile' ? 'stroke-[2.5]' : ''} />
-            <span className="max-w-[48px] truncate">{user?.displayName || user?.username || 'គណនី'}</span>
-          </Link>
-        ) : (
-          <Link
-            to="/login"
-            className="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition"
-          >
-            <LogIn size={19} />
-            <span>ចូលគណនី</span>
-          </Link>
-        )}
+        {/* 6. Account */}
+        <Link
+          to={isAuthenticated ? '/account' : '/login'}
+          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition ${
+            isAccount
+              ? 'text-[#009F6B] dark:text-emerald-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+          }`}
+        >
+          <User size={18} className={isAccount ? 'stroke-[2.5]' : ''} />
+          <span className="truncate max-w-[42px]">{isAuthenticated ? 'គណនី' : 'ចូល'}</span>
+        </Link>
       </div>
     </nav>
   );

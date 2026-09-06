@@ -1,30 +1,40 @@
+import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import CartDrawer from '../cart/CartDrawer';
+import CustomerBottomNav from './CustomerBottomNav';
 import { useAuth } from '../../context/AuthContext';
 
-/**
- * Outlet ជាកន្លែងដែល child route បង្ហាញ។
- *
- * ទំព័រ /pos ត្រូវការកម្ពស់ពេញអេក្រង់ដូចម៉ាស៊ីនគិតលុយពិត (គ្មាន
- * scroll នៅកម្រិត page) - ដូច្នេះលាក់ Footer ចោលនៅទំព័រនោះ។ ទំព័រ
- * /dashboard សម្រាប់ admin មាន sidebar+topbar ផ្ទាល់ខ្លួន ដូច្នេះលាក់
- * Navbar/Footer ខាងក្រៅចោលដែរ ដើម្បីកុំឲ្យមាន navigation ជាន់គ្នា។
- */
 export default function MainLayout() {
   const { pathname } = useLocation();
   const { isAdmin } = useAuth();
-  const isPos = pathname === '/pos' || pathname === '/' || pathname === '/cart' || pathname === '/checkout' || pathname.startsWith('/payment');
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+
+  const isStaffPos = pathname === '/pos';
   const isAdminDashboard = (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) && isAdmin;
-  const isFullScreen = isPos || isAdminDashboard;
+  const isFullScreen = isStaffPos || isAdminDashboard;
 
   return (
-    <div className={`flex flex-col bg-ink-950 text-slate-700 dark:text-slate-200 selection:bg-emerald-500 selection:text-white transition-colors duration-200 ${isFullScreen ? 'h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-[100dvh]'}`}>
-      {!isAdminDashboard && <Navbar />}
+    <div className={`flex flex-col bg-[#F8FAFC] dark:bg-slate-950 text-slate-800 dark:text-slate-200 selection:bg-emerald-500 selection:text-white transition-colors duration-200 ${isFullScreen ? 'h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-[100dvh]'}`}>
+      {!isAdminDashboard && (
+        <Navbar onOpenCart={() => setCartDrawerOpen(true)} />
+      )}
+
       <main className={isFullScreen ? 'min-h-0 flex-1 flex flex-col overflow-hidden' : 'flex-1'}>
         <Outlet />
       </main>
-      {!isPos && !isAdminDashboard && <Footer />}
+
+      {/* Global Slide-out Cart Drawer */}
+      <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
+
+      {/* Mobile Customer Bottom Navigation (on public customer pages) */}
+      {!isFullScreen && (
+        <CustomerBottomNav onOpenCart={() => setCartDrawerOpen(true)} />
+      )}
+
+      {/* Modern E-Commerce Footer */}
+      {!isFullScreen && <Footer />}
     </div>
   );
 }
