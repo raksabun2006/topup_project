@@ -82,6 +82,9 @@ function clearSession() {
   localStorage.removeItem('token');
   localStorage.removeItem(STORAGE_USER_KEY);
   localStorage.removeItem('pos_refresh_token');
+  localStorage.removeItem('pos_cart');
+  localStorage.removeItem('cart');
+  localStorage.removeItem('mart_customer_orders');
 }
 
 export const authClient = {

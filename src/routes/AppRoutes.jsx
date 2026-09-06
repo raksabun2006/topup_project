@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, getRoleDashboardPath } from '../context/AuthContext';
 import MainLayout from '../components/layout/MainLayout';
 import AdminLayout from '../components/layout/AdminLayout';
 import Login from '../pages/Login';
@@ -19,18 +19,22 @@ import SaleDetail from '../pages/SaleDetail';
 import Products from '../pages/Products';
 import Customers from '../pages/Customers';
 import Dashboard from '../pages/Dashboard';
+import AdminDashboard from '../components/dashboard/AdminDashboard';
+import StaffDashboard from '../pages/StaffDashboard';
+import CustomerDashboard from '../pages/CustomerDashboard';
 import Reports from '../pages/Reports';
 import Expenses from '../pages/Expenses';
-import Profile from '../pages/Profile';
+import Discounts from '../pages/Discounts';
+import Unauthorized from '../pages/Unauthorized';
 import NotFound from '../pages/NotFound';
 
-function DashboardWrapper() {
-  const { isAdmin, loading } = useAuth();
+function DashboardLayoutWrapper() {
+  const { role, isStaff, isAdmin, loading } = useAuth();
   if (loading) return null;
-  if (isAdmin) {
+  if (isAdmin || isStaff) {
     return <AdminLayout />;
   }
-  return <Dashboard />;
+  return <MainLayout />;
 }
 
 export default function AppRoutes() {
@@ -39,6 +43,7 @@ export default function AppRoutes() {
       {/* ---------- ១. AUTH ROUTES ---------- */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
 
       {/* ---------- ២. MAIN STOREFRONT & CUSTOMER E-COMMERCE ---------- */}
       <Route element={<MainLayout />}>
@@ -54,89 +59,137 @@ export default function AppRoutes() {
         <Route path="/my-orders" element={<Orders />} />
         <Route path="/account" element={<Account />} />
 
-        {/* Staff / In-Store POS Screen */}
-        <Route path="/pos" element={<Pos />} />
-
-        {/* Protected Dashboard & Admin Routes */}
+        {/* Dedicated Customer Dashboard */}
         <Route
-          path="/dashboard"
+          path="/customer/dashboard"
           element={
-            <ProtectedRoute>
-              <DashboardWrapper />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Dashboard />} />
-          <Route
-            path="products"
-            element={
-              <ProtectedRoute requireAdmin>
-                <Products />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="sales"
-            element={
-              <ProtectedRoute>
-                <Sales />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="sales/:id"
-            element={
-              <ProtectedRoute>
-                <SaleDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="customers"
-            element={
-              <ProtectedRoute requireAdmin>
-                <Customers />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="reports"
-            element={
-              <ProtectedRoute requireManagerOrAdmin>
-                <Reports />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="expenses"
-            element={
-              <ProtectedRoute requireManagerOrAdmin>
-                <Expenses />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
-
-        {/* Legacy / Direct Route Aliases */}
-        <Route path="/reports" element={<Navigate to="/dashboard/reports" replace />} />
-        <Route path="/expenses" element={<Navigate to="/dashboard/expenses" replace />} />
-        <Route path="/sales" element={<Navigate to="/dashboard/sales" replace />} />
-        <Route path="/sales/:id" element={<Navigate to="/dashboard/sales" replace />} />
-        <Route path="/customers" element={<Navigate to="/dashboard/customers" replace />} />
-        <Route path="/admin/products" element={<Navigate to="/dashboard/products" replace />} />
-
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
+            <ProtectedRoute allowedRoles={['CUSTOMER', 'STAFF', 'ADMIN']}>
+              <CustomerDashboard />
             </ProtectedRoute>
           }
         />
 
-        {/* 404 Fallback */}
-        <Route path="*" element={<NotFound />} />
+        {/* Staff / In-Store POS Screen */}
+        <Route
+          path="/pos"
+          element={
+            <ProtectedRoute allowedRoles={['STAFF', 'ADMIN']}>
+              <Pos />
+            </ProtectedRoute>
+          }
+        />
       </Route>
+
+      {/* ---------- ៣. DEDICATED ADMIN & STAFF DASHBOARD ROUTES ---------- */}
+      <Route
+        element={
+          <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+            <DashboardLayoutWrapper />
+          </ProtectedRoute>
+        }
+      >
+        {/* Admin Dashboard Entry */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Staff Dashboard Entry */}
+        <Route
+          path="/staff/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['STAFF', 'ADMIN']}>
+              <StaffDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* General Dashboard Routing & Module Routes */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/dashboard/products"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+              <Products />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/sales"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+              <Sales />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/sales/:id"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+              <SaleDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/customers"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <Customers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/reports"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <Reports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/expenses"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <Expenses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/discounts"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <Discounts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/profile"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'CUSTOMER']}>
+              <Account />
+            </ProtectedRoute>
+          }
+        />
+      </Route>
+
+      {/* ---------- ៤. ALIASES & 404 FALLBACK ---------- */}
+      <Route path="/reports" element={<Navigate to="/dashboard/reports" replace />} />
+      <Route path="/expenses" element={<Navigate to="/dashboard/expenses" replace />} />
+      <Route path="/discounts" element={<Navigate to="/dashboard/discounts" replace />} />
+      <Route path="/admin/discounts" element={<Navigate to="/dashboard/discounts" replace />} />
+      <Route path="/sales" element={<Navigate to="/dashboard/sales" replace />} />
+      <Route path="/sales/:id" element={<Navigate to="/dashboard/sales" replace />} />
+      <Route path="/customers" element={<Navigate to="/dashboard/customers" replace />} />
+      <Route path="/admin/products" element={<Navigate to="/dashboard/products" replace />} />
+      <Route path="/profile" element={<Navigate to="/dashboard/profile" replace />} />
+
+      {/* 404 Fallback */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
+

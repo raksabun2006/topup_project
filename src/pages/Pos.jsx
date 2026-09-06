@@ -10,7 +10,6 @@ import CheckoutModal from '../components/pos/CheckoutModal';
 import BakongPaymentModal from '../components/pos/BakongPaymentModal';
 import SaleSuccessModal from '../components/pos/SaleSuccessModal';
 import CustomerOrdersModal, { saveCustomerOrder } from '../components/pos/CustomerOrdersModal';
-import CustomerBottomNav from '../components/layout/CustomerBottomNav';
 import SEO from '../components/SEO';
 import { env } from '../config/env';
 import { formatCurrency, parseBackendDate } from '../utils/format';
@@ -440,13 +439,6 @@ export default function Pos() {
           </div>
         </div>
       )}
-
-      {/* Customer Mobile Bottom Navigation Bar */}
-      <CustomerBottomNav
-        onOpenCart={() => setMobileCartOpen(true)}
-        onOpenOrders={() => setShowOrdersModal(true)}
-        onSelectCategoryFocus={handleFocusCategories}
-      />
 
       {/* Checkout Modal */}
       {showCheckout && (

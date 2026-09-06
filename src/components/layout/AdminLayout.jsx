@@ -1,50 +1,61 @@
 import { useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, ShoppingCart, Receipt as ReceiptIcon, Package, Users, User, LogOut,
-  Menu, X, Sparkles, ChevronRight, BarChart3, WalletCards
+  LayoutGrid, ShoppingBag, Package, Users, BarChart2,
+  WalletCards, Tag, Globe, ShoppingCart, ChevronLeft, ChevronRight,
+  Menu, X, Sparkles, LogOut, User, Plus, ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useSales } from '../../hooks/useSales';
 import ThemeToggle from '../ui/ThemeToggle';
 import UserAvatar from '../ui/UserAvatar';
 import NotificationDropdown from '../ui/NotificationDropdown';
 import { env } from '../../config/env';
 
-const NAV_ITEMS = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'ផ្ទាំងគ្រប់គ្រង', end: true },
-  { to: '/pos', icon: ShoppingCart, label: 'ចំណុចលក់ (POS)', isPos: true },
-  { to: '/dashboard/reports', icon: BarChart3, label: 'របាយការណ៍', managerOrAdminOnly: true },
-  { to: '/dashboard/expenses', icon: WalletCards, label: 'ការចំណាយ', managerOrAdminOnly: true },
-  { to: '/dashboard/sales', icon: ReceiptIcon, label: 'ការលក់' },
-  { to: '/dashboard/products', icon: Package, label: 'ផលិតផល', adminOnly: true },
-  { to: '/dashboard/customers', icon: Users, label: 'អតិថិជន', adminOnly: true },
-];
-
 export default function AdminLayout() {
-  const { user, logout, isAdmin, isManagerOrAdmin } = useAuth();
+  const { user, logout, isAdmin, isManagerOrAdmin, displayRole } = useAuth();
+  const { sales } = useSales();
   const { pathname } = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
-  const navItems = NAV_ITEMS.filter(
-    (item) => (!item.adminOnly || isAdmin) && (!item.managerOrAdminOnly || isManagerOrAdmin)
-  );
+  const pendingOrTotalCount = sales.length > 0 ? sales.length : undefined;
+  const overviewPath = isAdmin ? '/admin/dashboard' : '/staff/dashboard';
 
-  const getPageInfo = () => {
-    if (pathname === '/dashboard/reports') return { title: 'របាយការណ៍ហិរញ្ញវត្ថុ', subtitle: 'Financial Analytics & Reports' };
-    if (pathname === '/dashboard/expenses') return { title: 'ការគ្រប់គ្រងចំណាយ', subtitle: 'Expense Tracking & Receipts' };
-    if (pathname === '/dashboard/products') return { title: 'គ្រប់គ្រងផលិតផល', subtitle: 'Products Management' };
-    if (pathname === '/dashboard/sales') return { title: 'ប្រវត្តិការលក់', subtitle: 'Sales Transactions' };
-    if (pathname.startsWith('/dashboard/sales/')) return { title: 'ព័ត៌មានលម្អិតការលក់', subtitle: 'Sale Invoice Details' };
-    if (pathname === '/dashboard/customers') return { title: 'គ្រប់គ្រងអតិថិជន', subtitle: 'Customer Directory' };
-    if (pathname === '/dashboard') return { title: 'ផ្ទាំងគ្រប់គ្រង', subtitle: 'Mart Analytics Overview' };
-    if (pathname.startsWith('/dashboard/')) return { title: 'ផ្ទាំងគ្រប់គ្រង', subtitle: 'Dashboard' };
-    return { title: 'Mart System', subtitle: 'POS Management' };
+  // Role-based navigation maps
+  const roleNavigation = {
+    ADMIN: [
+      { to: '/admin/dashboard', icon: LayoutGrid, label: 'Overview', end: true },
+      { to: '/dashboard/sales', icon: ShoppingBag, label: 'Orders & Sales', badge: pendingOrTotalCount ? String(pendingOrTotalCount) : undefined },
+      { to: '/dashboard/products', icon: Package, label: 'Products' },
+      { to: '/dashboard/customers', icon: Users, label: 'Customers' },
+      { to: '/dashboard/discounts', icon: Tag, label: 'Discounts & Promo' },
+      { to: '/dashboard/reports', icon: BarChart2, label: 'Analytics' },
+      { to: '/dashboard/expenses', icon: WalletCards, label: 'Store Expenses' },
+    ],
+    STAFF: [
+      { to: '/staff/dashboard', icon: LayoutGrid, label: 'Operations Overview', end: true },
+      { to: '/dashboard/sales', icon: ShoppingBag, label: 'Orders & Receipts', badge: pendingOrTotalCount ? String(pendingOrTotalCount) : undefined },
+      { to: '/dashboard/products', icon: Package, label: 'Product Catalog' },
+    ],
   };
 
-  const pageInfo = getPageInfo();
+  const mainMenuItems = isAdmin ? roleNavigation.ADMIN : roleNavigation.STAFF;
+
+  const salesChannels = [
+    { to: '/shop', icon: Globe, label: 'Online store', external: false },
+    { to: '/pos', icon: ShoppingCart, label: 'Point of sale', external: false },
+  ];
+
+  const appIntegrations = [
+    { name: 'Bakong KHQR', color: 'bg-rose-500 text-white', icon: 'KH' },
+    { name: 'Shopee', color: 'bg-orange-500 text-white', icon: 'S' },
+    { name: 'Tiktok', color: 'bg-black text-white dark:bg-white dark:text-black', icon: 'T' },
+    { name: 'Telegram Bot', color: 'bg-sky-500 text-white', icon: 'TG' },
+  ];
 
   return (
-    <div className="flex h-full w-full bg-slate-50/50 dark:bg-ink-950 text-slate-700 dark:text-slate-200 transition-colors duration-200">
+    <div className="flex h-screen w-full bg-[#F4F5F7] dark:bg-slate-950 text-slate-700 dark:text-slate-200 transition-colors duration-200 overflow-hidden font-sans">
       {/* Mobile Sidebar Backdrop */}
       {mobileNavOpen && (
         <div
@@ -53,260 +64,209 @@ export default function AdminLayout() {
         />
       )}
 
-      {/* ------- Left Sidebar (Desktop + Mobile Drawer) ------- */}
+      {/* ------- Left Sidebar (Saledash Minimalist Style) ------- */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 sm:w-64 shrink-0 flex-col border-r border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl lg:shadow-none transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
-          mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 flex shrink-0 flex-col border-r border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-xl lg:shadow-none transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
+          mobileNavOpen ? 'translate-x-0 w-64' : '-translate-x-full'
+        } ${collapsed ? 'lg:w-20' : 'lg:w-60'}`}
       >
         {/* Brand Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
-          <Link to="/dashboard" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 group">
-            <img
-              src="/mart.jpg"
-              alt={env.appName || 'Mart Logo'}
-              className="h-10 w-10 rounded-xl object-cover transition duration-200 group-hover:scale-105 shadow-xs"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">{env.appName}</span>
-                <span className="rounded-md bg-emerald-600 px-1.5 py-0.5 text-[9px] font-black uppercase text-white shadow-2xs">
-                  ADMIN
+        <div className="relative flex items-center justify-between px-5 py-5 border-b border-slate-100 dark:border-slate-800/60">
+          <Link to={overviewPath} onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 group min-w-0">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200/60 dark:border-slate-700 shadow-2xs group-hover:scale-105 transition-transform">
+              <img
+                src="/mart.jpg"
+                alt="Logo"
+                className="h-7 w-7 rounded-lg object-cover"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            </div>
+            {!collapsed && (
+              <div className="min-w-0 truncate">
+                <span className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-none block">
+                  {env.appName || 'Saledash'}
+                </span>
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  Admin Panel
                 </span>
               </div>
-              <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                <Sparkles size={10} />
-                <span>ប្រព័ន្ធគ្រប់គ្រងហាង</span>
-              </p>
-            </div>
+            )}
           </Link>
 
+          {/* Collapse Toggle Button on Desktop */}
+          <button
+            type="button"
+            onClick={() => setCollapsed(!collapsed)}
+            className="hidden lg:flex absolute -right-3.5 top-6 h-7 w-7 items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white shadow-sm transition hover:scale-105 cursor-pointer z-10"
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
+          </button>
+
+          {/* Close for mobile */}
           <button
             onClick={() => setMobileNavOpen(false)}
-            className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 lg:hidden cursor-pointer"
-            aria-label="បិទម៉ឺនុយ"
+            className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
-        {/* User Card in Mobile Drawer */}
-        <div className="lg:hidden mx-3.5 mt-3.5 p-3 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/70 dark:from-slate-800/80 dark:to-slate-800/40 border border-slate-200/80 dark:border-slate-700/60 flex items-center gap-3">
-          <UserAvatar
-            user={user}
-            className="h-10 w-10 text-sm shadow-2xs"
-            fallbackClass="bg-gradient-to-br from-emerald-600 to-teal-600 text-white font-bold"
-          />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-              {user?.displayName || user?.username}
-            </p>
-            <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-              {isAdmin ? 'អ្នកគ្រប់គ្រង (Admin)' : 'បុគ្គលិក (Staff)'}
-            </p>
+        {/* Scrollable Navigation */}
+        <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6 scrollbar-thin">
+          {/* Main Menu */}
+          <div className="space-y-1">
+            {!collapsed && (
+              <p className="px-3 pb-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500">
+                Main Menu
+              </p>
+            )}
+            {mainMenuItems.map(({ to, icon: Icon, label, end, badge }) => (
+              <NavLink
+                key={to + label}
+                to={to}
+                end={end}
+                onClick={() => setMobileNavOpen(false)}
+                className={({ isActive }) =>
+                  `group flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition-all duration-150 ${
+                    isActive
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-extrabold shadow-2xs'
+                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                  } ${collapsed ? 'justify-center px-2' : ''}`
+                }
+                title={collapsed ? label : undefined}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Icon size={18} className="shrink-0 text-slate-600 dark:text-slate-300 group-hover:scale-105 transition-transform" />
+                  {!collapsed && <span className="truncate">{label}</span>}
+                </div>
+                {!collapsed && badge && (
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-black text-white shadow-2xs">
+                    {badge}
+                  </span>
+                )}
+              </NavLink>
+            ))}
           </div>
+
+          {/* Sales Channels */}
+          <div className="space-y-1">
+            {!collapsed && (
+              <p className="px-3 pb-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500">
+                Sales Channel
+              </p>
+            )}
+            {salesChannels.map(({ to, icon: Icon, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                onClick={() => setMobileNavOpen(false)}
+                className={({ isActive }) =>
+                  `group flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition-all duration-150 ${
+                    isActive
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white'
+                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                  } ${collapsed ? 'justify-center px-2' : ''}`
+                }
+                title={collapsed ? label : undefined}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Icon size={18} className="shrink-0 text-slate-600 dark:text-slate-300" />
+                  {!collapsed && <span className="truncate">{label}</span>}
+                </div>
+              </NavLink>
+            ))}
+          </div>
+
+          {/* Apps / Integrations */}
+          {!collapsed && (
+            <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+              <p className="px-3 pb-1 text-[11px] font-bold text-slate-400 dark:text-slate-500">
+                Apps
+              </p>
+              {appIntegrations.map((app) => (
+                <div
+                  key={app.name}
+                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition cursor-pointer"
+                >
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-md text-[9px] font-black shrink-0 ${app.color}`}>
+                    {app.icon}
+                  </span>
+                  <span className="truncate">{app.name}</span>
+                </div>
+              ))}
+              <button
+                type="button"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+              >
+                <Plus size={14} />
+                <span>Add apps</span>
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Navigation Items */}
-        <nav className="flex-1 space-y-1.5 overflow-y-auto p-3.5 touch-scroll">
-          <p className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-            ម៉ឺនុយមេ (Main Menu)
-          </p>
-          {navItems.map(({ to, icon: Icon, label, end, isPos }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              onClick={() => setMobileNavOpen(false)}
-              className={({ isActive }) =>
-                `group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-bold transition-all duration-150 ${
-                  isActive
-                    ? 'bg-emerald-600/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
-                    : isPos
-                    ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 dark:bg-emerald-950/30 hover:bg-emerald-500/15'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white'
-                }`
-              }
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <Icon size={18} className="shrink-0" />
-                <span className="truncate">{label}</span>
-              </div>
-              <ChevronRight size={14} className="opacity-0 group-hover:opacity-60 transition" />
-            </NavLink>
-          ))}
-        </nav>
-
         {/* Sidebar Footer */}
-        <div className="border-t border-slate-100 dark:border-slate-800 p-3 space-y-1 bg-slate-50/60 dark:bg-slate-900">
-          <Link
-            to="/profile"
+        <div className="border-t border-slate-100 dark:border-slate-800/80 p-3 bg-slate-50/50 dark:bg-slate-900/60 space-y-1">
+          <NavLink
+            to="/dashboard/profile"
             onClick={() => setMobileNavOpen(false)}
-            className="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 transition hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+            className={({ isActive }) =>
+              `flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold transition-all ${
+                isActive
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-extrabold shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              } ${collapsed ? 'justify-center px-1' : ''}`
+            }
+            title="Profile"
           >
-            <User size={16} className="text-slate-400 dark:text-slate-400" />
-            <span>ព័ត៌មានផ្ទាល់ខ្លួន (Profile)</span>
-          </Link>
+            <User size={16} className="text-slate-400 shrink-0" />
+            {!collapsed && <span className="truncate">Profile & Account</span>}
+          </NavLink>
           <button
+            type="button"
             onClick={logout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 transition hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+            className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition cursor-pointer ${
+              collapsed ? 'justify-center px-1' : ''
+            }`}
+            title="Sign Out"
           >
-            <LogOut size={16} />
-            <span>ចាកចេញ (Sign Out)</span>
+            <LogOut size={16} className="shrink-0" />
+            {!collapsed && <span>Sign Out</span>}
           </button>
         </div>
       </aside>
 
-      {/* ------- Main Content Column ------- */}
+      {/* ------- Main Content Area ------- */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {/* Top Header Bar */}
-        <header className="sticky top-0 z-30 flex shrink-0 items-center justify-between gap-3 border-b border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3.5 shadow-2xs">
-          <div className="flex items-center gap-2 sm:gap-3">
+        {/* Mobile Header Top Bar (on mobile only) */}
+        <div className="lg:hidden flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 py-3 shrink-0">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setMobileNavOpen(true)}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 p-2 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-800 lg:hidden cursor-pointer"
-              aria-label="បើកម៉ឺនុយ"
+              className="rounded-xl border border-slate-200 dark:border-slate-700 p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
             >
-              <Menu size={19} />
+              <Menu size={18} />
             </button>
-            <div className="flex items-center gap-2">
-              <span className="hidden sm:inline-block h-2 w-2 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50" />
-              <div>
-                <h1 className="text-sm sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-                  {pageInfo.title}
-                </h1>
-                <p className="hidden xs:block text-[11px] text-slate-400 dark:text-slate-500 leading-tight">
-                  {pageInfo.subtitle}
-                </p>
-              </div>
-            </div>
+            <span className="text-sm font-black text-slate-900 dark:text-white">
+              {env.appName || 'Saledash'}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="flex items-center gap-2">
             <ThemeToggle variant="admin" />
-
-            {/* Interactive Notification Bell with Dropdown */}
             <NotificationDropdown variant="admin" />
-
-            {/* User Profile Pill */}
-            <Link
-              to="/profile"
-              className="flex items-center gap-2 h-9 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/90 pl-1 pr-3 shadow-2xs transition hover:border-emerald-500/50 hover:bg-slate-50 dark:hover:bg-slate-800"
-            >
-              <UserAvatar
-                user={user}
-                className="h-7 w-7 text-xs shadow-2xs"
-                fallbackClass="bg-gradient-to-br from-emerald-600 to-teal-600 text-white font-bold"
-              />
-              <div className="hidden sm:block text-left">
-                <p className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[110px] leading-tight">
-                  {user?.displayName || user?.username}
-                </p>
-                <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 leading-tight">
-                  {isAdmin ? 'អ្នកគ្រប់គ្រង (Admin)' : 'បុគ្គលិក (Staff)'}
-                </p>
-              </div>
+            <Link to="/dashboard/profile">
+              <UserAvatar user={user} className="h-8 w-8 text-xs" />
             </Link>
           </div>
-        </header>
+        </div>
 
-        {/* Scrollable Viewport Main Outlet (pb-24 on mobile ensures bottom nav clearance) */}
-        <main className="flex-1 min-h-0 bg-slate-50/50 dark:bg-ink-950 p-3 sm:p-5 md:p-6 pb-24 lg:pb-6 overflow-y-auto touch-scroll">
+        {/* Scrollable Viewport Main Outlet */}
+        <main className="flex-1 min-h-0 p-3 sm:p-5 md:p-6 lg:p-7 overflow-y-auto scrollbar-thin">
           <Outlet />
         </main>
       </div>
-
-      {/* ------- Mobile Bottom Navigation Bar (< 1024px) ------- */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl px-2 py-1.5 pb-safe shadow-2xl lg:hidden">
-        <NavLink
-          to="/dashboard"
-          end
-          className={({ isActive }) =>
-            `flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-1.5 transition ${
-              isActive
-                ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-                : 'text-slate-500 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-white'
-            }`
-          }
-        >
-          <BarChart3 size={19} />
-          <span className="text-[10px] leading-none">ផ្ទាំងគ្រប់គ្រង</span>
-        </NavLink>
-
-        <NavLink
-          to="/dashboard/sales"
-          className={({ isActive }) =>
-            `flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-1.5 transition ${
-              isActive
-                ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-                : 'text-slate-500 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-white'
-            }`
-          }
-        >
-          <ReceiptIcon size={19} />
-          <span className="text-[10px] leading-none">ការលក់</span>
-        </NavLink>
-
-        {/* Highlighted POS center button */}
-        <Link
-          to="/pos"
-          className="flex flex-col items-center justify-center -mt-4 group"
-        >
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/40 transition group-hover:scale-105 active:scale-95">
-            <ShoppingCart size={22} />
-          </div>
-          <span className="mt-1 text-[10px] font-black text-emerald-700 dark:text-emerald-400">POS</span>
-        </Link>
-
-        {isAdmin && (
-          <NavLink
-            to="/dashboard/products"
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-1.5 transition ${
-                isActive
-                  ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-                  : 'text-slate-500 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-white'
-              }`
-            }
-          >
-            <Package size={19} />
-            <span className="text-[10px] leading-none">ផលិតផល</span>
-          </NavLink>
-        )}
-
-        {isAdmin ? (
-          <NavLink
-            to="/dashboard/customers"
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-1.5 transition ${
-                isActive
-                  ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-                  : 'text-slate-500 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-white'
-              }`
-            }
-          >
-            <Users size={19} />
-            <span className="text-[10px] leading-none">អតិថិជន</span>
-          </NavLink>
-        ) : (
-          <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-1.5 transition ${
-                isActive
-                  ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-                  : 'text-slate-500 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-white'
-              }`
-            }
-          >
-            <User size={19} />
-            <span className="text-[10px] leading-none">ព័ត៌មាន</span>
-          </NavLink>
-        )}
-      </nav>
     </div>
   );
 }

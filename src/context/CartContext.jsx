@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useAuth } from './AuthContext';
 
 const CART_STORAGE_KEY = 'pos_cart';
 
@@ -26,7 +27,33 @@ function loadInitialCart() {
  * គាំទ្រ guest customers ដោយមិនចាំបាច់ login។
  */
 export function CartProvider({ children }) {
+  const { isAuthenticated, user } = useAuth();
   const [items, setItems] = useState(loadInitialCart);
+  const prevAuthRef = useRef(isAuthenticated);
+  const prevUserRef = useRef(user?.id || user?.username || null);
+
+  const clear = useCallback(() => {
+    setItems([]);
+    try {
+      localStorage.removeItem(CART_STORAGE_KEY);
+      localStorage.removeItem('cart');
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Reset cart upon logout or account switch
+  useEffect(() => {
+    if (prevAuthRef.current && !isAuthenticated) {
+      clear();
+    }
+    const currentUserId = user?.id || user?.username || null;
+    if (prevUserRef.current && currentUserId && prevUserRef.current !== currentUserId) {
+      clear();
+    }
+    prevAuthRef.current = isAuthenticated;
+    prevUserRef.current = currentUserId;
+  }, [isAuthenticated, user, clear]);
 
   // រក្សាទុកក្នុង localStorage រាល់ពេលទំនិញក្នុងរទេះផ្លាស់ប្តូរ
   useEffect(() => {
@@ -71,16 +98,6 @@ export function CartProvider({ children }) {
 
   const removeItem = useCallback((productId) => {
     setItems((prev) => (Array.isArray(prev) ? prev : []).filter((i) => i?.product?.id !== productId));
-  }, []);
-
-  const clear = useCallback(() => {
-    setItems([]);
-    try {
-      localStorage.removeItem(CART_STORAGE_KEY);
-      localStorage.removeItem('cart');
-    } catch {
-      // ignore
-    }
   }, []);
 
   const safeItems = Array.isArray(items) ? items.filter((i) => i?.product) : [];

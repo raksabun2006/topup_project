@@ -3,7 +3,6 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import CartDrawer from '../cart/CartDrawer';
-import CustomerBottomNav from './CustomerBottomNav';
 import { useAuth } from '../../context/AuthContext';
 
 export default function MainLayout() {
@@ -27,11 +26,6 @@ export default function MainLayout() {
 
       {/* Global Slide-out Cart Drawer */}
       <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
-
-      {/* Mobile Customer Bottom Navigation (on public customer pages) */}
-      {!isFullScreen && (
-        <CustomerBottomNav onOpenCart={() => setCartDrawerOpen(true)} />
-      )}
 
       {/* Modern E-Commerce Footer */}
       {!isFullScreen && <Footer />}

@@ -36,6 +36,14 @@ export function getCustomerOrders() {
   }
 }
 
+export function clearCustomerOrders() {
+  try {
+    localStorage.removeItem(CUSTOMER_ORDERS_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export default function CustomerOrdersModal({ onClose, onViewReceipt }) {
   const [orders, setOrders] = useState(getCustomerOrders);
   const [loading, setLoading] = useState(false);

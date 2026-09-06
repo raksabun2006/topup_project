@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { categoryApi } from '../api/categoryApi';
 import { getErrorMessage } from '../api/client';
+import { DEFAULT_CATEGORIES } from '../constants/categories';
 
 export function useCategories() {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -19,9 +20,14 @@ export function useCategories() {
         : Array.isArray(res?.content)
         ? res.content
         : [];
-      setCategories(list);
+      if (list && list.length > 0) {
+        setCategories(list);
+      } else {
+        setCategories(DEFAULT_CATEGORIES);
+      }
     } catch (err) {
       setError(getErrorMessage(err));
+      setCategories(DEFAULT_CATEGORIES);
     } finally {
       setLoading(false);
     }
@@ -33,3 +39,4 @@ export function useCategories() {
 
   return { categories, loading, error, reload: load };
 }
+

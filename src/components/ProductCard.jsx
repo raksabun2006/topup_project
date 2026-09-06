@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Package, Plus, Minus, Trash2, Heart, ShoppingCart, Check } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const WISHLIST_STORAGE_KEY = 'mart_customer_wishlist';
 
@@ -42,6 +43,7 @@ export default function ProductCard({
   onOpenDetails,
 }) {
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [imageBroken, setImageBroken] = useState(false);
   const [wishlisted, setWishlisted] = useState(false);
@@ -109,34 +111,34 @@ export default function ProductCard({
   return (
     <div
       onClick={handleCardClick}
-      className={`group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 transition-all duration-200 hover:shadow-lg hover:border-blue-500/50 cursor-pointer ${
+      className={`group relative flex flex-col justify-between rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-3 transition-all duration-200 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer ${
         outOfStock ? 'opacity-70' : ''
       }`}
     >
-      {/* Top Header: Real Category / Stock Tag & Wishlist Button */}
-      <div className="flex items-center justify-between gap-2 pb-2">
+      {/* Top Header: Category / Stock Tag & Wishlist Button */}
+      <div className="flex items-center justify-between gap-1.5 pb-1.5">
         {outOfStock ? (
-          <span className="rounded-md bg-rose-500 text-white px-2 py-0.5 text-[9px] font-bold">
-            អស់ស្តុក (Out of Stock)
+          <span className="rounded bg-rose-500 text-white px-1.5 py-0.5 text-[8px] sm:text-[9px] font-bold">
+            {t('outOfStock')}
           </span>
         ) : isLowStock ? (
-          <span className="rounded-md bg-amber-500 text-white px-2 py-0.5 text-[9px] font-bold">
-            ស្តុកមានកំណត់ ({stock})
+          <span className="rounded bg-amber-500 text-white px-1.5 py-0.5 text-[8px] sm:text-[9px] font-bold">
+            {t('lowStock')} ({stock})
           </span>
         ) : product.category ? (
-          <span className="rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 text-[9px] font-bold text-slate-600 dark:text-slate-300 truncate max-w-[130px]">
+          <span className="rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-bold text-slate-600 dark:text-slate-300 truncate max-w-[110px]">
             {product.category}
           </span>
         ) : (
-          <span className="rounded-md bg-blue-50 text-blue-600 px-2 py-0.5 text-[9px] font-bold">
-            In Stock
+          <span className="rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-bold">
+            {t('inStock')}
           </span>
         )}
 
         <button
           type="button"
           onClick={handleWishlistToggle}
-          className={`flex h-6 w-6 items-center justify-center rounded-full border transition active:scale-75 ${
+          className={`flex h-5 w-5 items-center justify-center rounded-full border transition active:scale-75 ${
             wishlisted
               ? 'border-rose-200 bg-rose-50 text-rose-500'
               : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-500'
@@ -144,92 +146,92 @@ export default function ProductCard({
           title={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
           aria-label="Wishlist"
         >
-          <Heart size={12} className={wishlisted ? 'fill-rose-500 text-rose-500' : ''} />
+          <Heart size={10} className={wishlisted ? 'fill-rose-500 text-rose-500' : ''} />
         </button>
       </div>
 
-      {/* Real Product Image Canvas */}
-      <div className="relative flex aspect-square w-full items-center justify-center p-2 overflow-hidden bg-slate-50/50 dark:bg-slate-800/50 rounded-xl">
+      {/* Compact Product Image Canvas */}
+      <div className="relative flex aspect-[4/3] w-full max-h-36 sm:max-h-40 items-center justify-center p-2 overflow-hidden bg-slate-50/70 dark:bg-slate-800/60 rounded-lg">
         {product.imageUrl && !imageBroken ? (
           <img
             src={product.imageUrl}
             alt={product.name}
             loading="lazy"
             decoding="async"
-            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+            className="max-h-28 sm:max-h-32 max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
             onError={() => setImageBroken(true)}
           />
         ) : (
-          <Package size={44} className="text-slate-300 dark:text-slate-600" />
+          <Package size={32} className="text-slate-300 dark:text-slate-600" />
         )}
       </div>
 
       {/* Product Information */}
-      <div className="space-y-1.5 pt-2.5">
+      <div className="space-y-1 pt-2">
         {product.sku && (
-          <span className="text-[10px] text-slate-400 font-mono block truncate">
+          <span className="text-[9px] text-slate-400 font-mono block truncate">
             SKU: {product.sku}
           </span>
         )}
 
-        {/* Real Product Name */}
+        {/* Product Name */}
         <h3
-          className="line-clamp-2 text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors leading-snug"
+          className="line-clamp-2 text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-snug min-h-[28px]"
           title={product.name}
         >
           {product.name}
         </h3>
 
-        {/* Real Price & Action */}
-        <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-          <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+        {/* Price & Action Row */}
+        <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-slate-800">
+          <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
             {formatCurrency(product.price)}
           </span>
 
           {/* Stepper or Quick Add Button */}
           {outOfStock ? (
-            <span className="text-[10px] font-bold text-rose-500">អស់ស្តុក</span>
+            <span className="text-[9px] font-bold text-rose-500">{t('outOfStock')}</span>
           ) : isSelected ? (
             <div
-              className="flex h-7 items-center rounded-lg bg-blue-50 dark:bg-slate-800 border border-blue-500 p-0.5"
+              className="flex h-6 items-center rounded-md bg-emerald-50 dark:bg-slate-800 border border-emerald-500 p-0.5"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 type="button"
                 onClick={handleDecrement}
-                className="flex h-5 w-5 items-center justify-center rounded text-blue-700 dark:text-blue-300 hover:bg-rose-100 transition cursor-pointer"
+                className="flex h-4.5 w-4.5 items-center justify-center rounded text-emerald-700 dark:text-emerald-300 hover:bg-rose-100 transition cursor-pointer"
               >
-                {cartQuantity === 1 ? <Trash2 size={10} className="text-rose-500" /> : <Minus size={10} />}
+                {cartQuantity === 1 ? <Trash2 size={9} className="text-rose-500" /> : <Minus size={9} />}
               </button>
-              <span className="px-1 text-[11px] font-black text-blue-700 dark:text-blue-300 select-none">
+              <span className="px-1 text-[10px] font-black text-emerald-700 dark:text-emerald-300 select-none">
                 {cartQuantity}
               </span>
               <button
                 type="button"
                 onClick={handleIncrement}
                 disabled={atMaxStock}
-                className="flex h-5 w-5 items-center justify-center rounded bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-40 cursor-pointer"
+                className="flex h-4.5 w-4.5 items-center justify-center rounded bg-emerald-600 text-white hover:bg-emerald-700 transition disabled:opacity-40 cursor-pointer"
               >
-                <Plus size={10} />
+                <Plus size={9} />
               </button>
             </div>
           ) : (
             <button
               type="button"
               onClick={handleQuickAdd}
-              className={`flex h-7 items-center justify-center gap-1 rounded-lg px-2.5 text-[10px] font-bold text-white transition-all active:scale-95 shadow-xs cursor-pointer ${
+              className={`flex h-6 sm:h-6.5 items-center justify-center gap-1 rounded-md px-2 text-[9px] sm:text-[10px] font-bold text-white transition-all active:scale-95 shadow-xs cursor-pointer ${
                 justAdded
                   ? 'bg-emerald-600'
-                  : 'bg-blue-600 hover:bg-blue-700'
+                  : 'bg-slate-900 dark:bg-emerald-600 hover:bg-emerald-600 dark:hover:bg-emerald-700'
               }`}
             >
               {justAdded ? (
                 <>
-                  <Check size={11} /> បានបន្ថែម
+                  <Check size={10} /> {t('added')}
                 </>
               ) : (
                 <>
-                  <ShoppingCart size={11} /> Add
+                  <ShoppingCart size={10} /> {t('add')}
                 </>
               )}
             </button>

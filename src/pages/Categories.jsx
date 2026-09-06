@@ -10,9 +10,11 @@ export default function Categories() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 pb-20">
       <SEO
-        title="All Categories | Mart System"
-        description="Browse all grocery and lifestyle categories in Mart System."
+        title="Browse Grocery &amp; Lifestyle Categories | Mart System"
+        description="Explore fresh vegetables, drinks, meat, dairy, snacks, and everyday items organized by category in Mart System Online Store."
+        keywords="Mart Categories, Grocery Categories Cambodia, Drinks, Snacks, Fresh Food Phnom Penh"
         canonical="/categories"
+        ogImage="/mart.jpg"
       />
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12 space-y-10">

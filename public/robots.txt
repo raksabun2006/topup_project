@@ -1,8 +1,11 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
+Allow: /shop
+Allow: /categories
 Allow: /products
 Allow: /pos
+Allow: /mart.jpg
 Allow: /favicon.svg
 Allow: /og-image.png
 Allow: /site.webmanifest

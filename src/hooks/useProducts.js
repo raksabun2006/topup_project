@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { productApi } from '../api/productApi';
 import { getErrorMessage } from '../api/client';
+import { DEFAULT_PRODUCTS } from '../constants/products';
 
 const PAGE_SIZE = 24;
 
@@ -27,13 +28,11 @@ export function useProducts({ category, reloadSignal } = {}) {
     load();
   }, [load]);
 
-  // ប្តូរ category ត្រូវត្រឡប់ទៅទំព័រ 1 វិញ
+  // Reset to page 0 on category change
   useEffect(() => {
     setPage(0);
   }, [category]);
 
-  // ស្តុកប្រែប្រួលបន្ទាប់ពីលក់ជោគជ័យ - ទាញយកទំព័រនេះឡើងវិញស្ងាត់ៗ
-  // (គ្មាន loading spinner) ដើម្បីកុំឲ្យក្រឡាទំនិញលោតបន្ទាប់ពីគិតលុយរួច។
   const isFirstReloadSignal = useRef(true);
   useEffect(() => {
     if (isFirstReloadSignal.current) {
@@ -44,10 +43,25 @@ export function useProducts({ category, reloadSignal } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadSignal]);
 
+  const resolvedProducts = useMemo(() => {
+    const list = pageData?.content;
+    if (Array.isArray(list) && list.length > 0) {
+      return list;
+    }
+    if (category) {
+      return DEFAULT_PRODUCTS.filter((p) => p.category?.toLowerCase() === category.toLowerCase());
+    }
+    return DEFAULT_PRODUCTS;
+  }, [pageData?.content, category]);
+
+  const totalCount = (pageData?.totalElements && pageData.totalElements > 0)
+    ? pageData.totalElements
+    : resolvedProducts.length;
+
   return {
-    products: pageData?.content ?? [],
-    totalPages: pageData?.totalPages ?? 0,
-    totalElements: pageData?.totalElements ?? 0,
+    products: resolvedProducts,
+    totalPages: pageData?.totalPages || Math.ceil(resolvedProducts.length / PAGE_SIZE) || 1,
+    totalElements: totalCount,
     page,
     setPage,
     loading,
@@ -55,3 +69,4 @@ export function useProducts({ category, reloadSignal } = {}) {
     reload: load,
   };
 }
+

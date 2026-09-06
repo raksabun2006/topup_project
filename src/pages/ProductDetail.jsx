@@ -161,9 +161,31 @@ export default function ProductDetail() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 pb-20">
       <SEO
-        title={`${product.name} | Mart System`}
-        description={product.description || `Buy ${product.name} with fast delivery and Bakong KHQR payment.`}
+        title={`${product.name} - Buy Online | Mart System`}
+        description={product.description || `Buy ${product.name} with $1.50 express delivery and Bakong KHQR payment in Phnom Penh.`}
+        keywords={`${product.name}, ${product.category || 'Grocery'}, Buy ${product.name} Online, Mart System, Cambodia`}
         canonical={`/product/${product.id}`}
+        ogImage={product.imageUrl || '/mart.jpg'}
+        ogType="product"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": product.name,
+          "image": product.imageUrl || "https://www.martsystemkh.software/mart.jpg",
+          "description": product.description || `Authentic ${product.name} available at Mart System with Bakong KHQR checkout.`,
+          "sku": product.sku || String(product.id),
+          "offers": {
+            "@type": "Offer",
+            "price": String(product.price || 0),
+            "priceCurrency": "USD",
+            "availability": (product.stockQuantity ?? 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            "url": `https://www.martsystemkh.software/product/${product.id}`,
+            "seller": {
+              "@type": "Organization",
+              "name": "Mart System"
+            }
+          }
+        }}
       />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-10 space-y-12">
@@ -351,7 +373,7 @@ export default function ProductDetail() {
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
               Related Products
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
               {relatedProducts.map((p) => (
                 <ProductCard
                   key={p.id}

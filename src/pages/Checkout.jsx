@@ -65,10 +65,12 @@ export default function Checkout() {
 
       const sale = await saleApi.create(payload, { isGuest });
 
+      const authoritativeTotal = sale.finalTotal ?? sale.total ?? sale.amount ?? total;
+
       const orderData = {
         ...sale,
         items,
-        total,
+        total: authoritativeTotal,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
         deliveryAddress: `${deliveryAddress.trim()}${note ? ` (Note: ${note.trim()})` : ''}`,

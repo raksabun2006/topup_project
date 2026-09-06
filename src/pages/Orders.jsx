@@ -1,19 +1,25 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Receipt, CheckCircle2, Clock, Eye, ShoppingBag, ArrowRight,
   Package, Search, Filter
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { getCustomerOrders } from '../components/pos/CustomerOrdersModal';
 import SaleSuccessModal from '../components/pos/SaleSuccessModal';
 import { formatCurrency, formatDate } from '../utils/format';
 import SEO from '../components/SEO';
 
 export default function Orders() {
-  const [orders] = useState(getCustomerOrders);
+  const { isAuthenticated, user } = useAuth();
+  const [orders, setOrders] = useState(getCustomerOrders);
   const [tab, setTab] = useState('ALL'); // 'ALL', 'COMPLETED', 'PENDING'
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    setOrders(getCustomerOrders());
+  }, [isAuthenticated, user]);
 
   const filtered = useMemo(() => {
     let list = [...orders];

@@ -4,12 +4,30 @@ import { usersApi } from '../api/userApi';
 
 const AuthContext = createContext(null);
 
-function buildUserObject(profileData = {}, fallbackClaims = {}) {
-  const role = profileData.role || fallbackClaims.role || 'USER';
-  const roles = Array.isArray(profileData.roles)
-    ? [...profileData.roles]
-    : (fallbackClaims.roles || (fallbackClaims.realm_access?.roles ? [...fallbackClaims.realm_access.roles] : [role]));
+export function normalizeRole(rawRole) {
+  if (!rawRole || typeof rawRole !== 'string') return 'CUSTOMER';
+  const clean = rawRole.toUpperCase().replace(/^ROLE_/, '').trim();
+  if (clean === 'ADMIN') return 'ADMIN';
+  if (clean === 'STAFF' || clean === 'MANAGER' || clean === 'CASHIER') return 'STAFF';
+  return 'CUSTOMER';
+}
 
+export function getRoleDashboardPath(role) {
+  const norm = normalizeRole(role);
+  if (norm === 'ADMIN') return '/admin/dashboard';
+  if (norm === 'STAFF') return '/staff/dashboard';
+  return '/customer/dashboard';
+}
+
+function buildUserObject(profileData = {}, fallbackClaims = {}) {
+  const rawRole = profileData.role || fallbackClaims.role || fallbackClaims.roles?.[0] || 'CUSTOMER';
+  const role = normalizeRole(rawRole);
+  
+  const rawRoles = Array.isArray(profileData.roles)
+    ? [...profileData.roles]
+    : (fallbackClaims.roles || (fallbackClaims.realm_access?.roles ? [...fallbackClaims.realm_access.roles] : [rawRole]));
+
+  const roles = Array.from(new Set(rawRoles.map(normalizeRole)));
   if (role && !roles.includes(role)) {
     roles.push(role);
   }
@@ -25,6 +43,7 @@ function buildUserObject(profileData = {}, fallbackClaims = {}) {
     phoneNumber: profileData.phoneNumber || fallbackClaims.phoneNumber || '',
     avatarUrl: profileData.avatarUrl || fallbackClaims.avatarUrl || '',
     status: profileData.status || 'ACTIVE',
+    rawRole,
     role,
     roles,
   };
@@ -105,34 +124,55 @@ export function AuthProvider({ children }) {
     try {
       const profile = await usersApi.me();
       if (profile) {
-        setUser(buildUserObject(profile, claims));
+        const updatedUser = buildUserObject(profile, claims);
+        setUser(updatedUser);
+        return updatedUser;
       }
     } catch {
       // Profile fetch can fallback to login claims
     }
+    return initialUser;
   }, []);
 
   const logout = useCallback(async () => {
+    try {
+      localStorage.removeItem('pos_cart');
+      localStorage.removeItem('cart');
+      localStorage.removeItem('mart_customer_orders');
+    } catch {
+      // ignore
+    }
     await authClient.logout();
     setIsAuthenticated(false);
     setUser(null);
   }, []);
 
+  const role = user?.role || 'CUSTOMER';
+  const isAdmin = role === 'ADMIN';
+  const isStaff = role === 'STAFF' || role === 'ADMIN';
+  const isCustomer = role === 'CUSTOMER';
+  const isManagerOrAdmin = isAdmin || user?.rawRole?.toUpperCase()?.includes('MANAGER');
+
+  const token = authClient.getAccessToken();
+
+  // Resolve clean display role name
+  const displayRole = isAdmin ? 'Admin' : role === 'STAFF' ? 'Staff' : 'Customer';
+
   const value = {
     user,
+    role,
+    token,
     loading,
     login,
     logout,
     refreshProfile,
     isAuthenticated,
-    isAdmin: !!(user?.role === 'ADMIN' || user?.roles?.includes('ADMIN')),
-    isManager: !!(user?.role === 'MANAGER' || user?.roles?.includes('MANAGER')),
-    isManagerOrAdmin: !!(
-      user?.role === 'ADMIN' ||
-      user?.role === 'MANAGER' ||
-      user?.roles?.includes('ADMIN') ||
-      user?.roles?.includes('MANAGER')
-    ),
+    isAdmin,
+    isStaff,
+    isCustomer,
+    isManagerOrAdmin,
+    displayRole,
+    getDashboardPath: () => getRoleDashboardPath(role),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -141,7 +181,8 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth ត្រូវប្រើក្នុង AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }
+
