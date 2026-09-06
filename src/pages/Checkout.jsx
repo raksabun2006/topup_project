@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   User, Phone, MapPin, Truck, QrCode, ArrowRight,
   AlertCircle, Loader2, ShoppingBag, Printer, FileText,
