@@ -5,8 +5,10 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { salePaymentApi } from '../../api/salePaymentApi';
+import { orderPaymentApi } from '../../api/orderPaymentApi';
 import { useSalePaymentPolling } from '../../hooks/useSalePaymentPolling';
 import { saleApi } from '../../api/saleApi';
+import { orderApi } from '../../api/orderApi';
 import { getErrorMessage } from '../../api/client';
 import { formatCurrency, parseBackendDate, formatCountdown } from '../../utils/format';
 
@@ -57,8 +59,15 @@ function clearPaymentSession() {
 export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const { isAuthenticated } = useAuth();
   const isGuest = Boolean(sale?.isGuest ?? !isAuthenticated);
+  const isOrder = Boolean(
+    sale?.isOrder ||
+    sale?.orderId ||
+    (sale?.id && !sale?.saleId && (sale?.orderNumber || sale?.deliveryAddressSnapshot)) ||
+    sale?.entityType === 'orders'
+  );
+  const activePaymentApi = isOrder ? orderPaymentApi : salePaymentApi;
 
-  // 1. Resolve and strictly lock the original Sale ID from sale creation
+  // 1. Resolve and strictly lock the original Sale / Order ID
   const originalSaleId = useRef(
     (typeof sale === 'string' ? sale : null) ||
     sale?.saleId ||
@@ -74,6 +83,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   // 2. Track paymentId separately from saleId
   const paymentIdRef = useRef(
     sale?.paymentId ||
+    sale?.payment?.paymentId ||
+    sale?.payment?.id ||
     (typeof sale?.getPaymentId === 'function' ? sale.getPaymentId() : null) ||
     null
   );
@@ -90,8 +101,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const [isExpiredLocal, setIsExpiredLocal] = useState(false);
 
   // Payment polling always uses originalSaleId and options via single controller
-  const pollingOptions = useRef({ isGuest });
-  pollingOptions.current = { isGuest };
+  const pollingOptions = useRef({ isGuest, isOrder, entityType: isOrder ? 'orders' : 'sales' });
+  pollingOptions.current = { isGuest, isOrder, entityType: isOrder ? 'orders' : 'sales' };
   const {
     payment,
     paymentState,
@@ -264,8 +275,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
     (async () => {
       try {
-        console.log(`[BakongPaymentModal] Creating payment (POST /payment) for originalSaleId:`, originalSaleId);
-        const created = await salePaymentApi.create(originalSaleId, 'BAKONG', {
+        console.log(`[BakongPaymentModal] Creating payment (POST ${isOrder ? '/orders/{id}/payment' : '/sales/{id}/payment'}) for originalSaleId:`, originalSaleId);
+        const created = await activePaymentApi.create(originalSaleId, 'BAKONG', {
           isGuest,
           signal: controller.signal,
         });
@@ -307,18 +318,19 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
             billNumber: created?.billNumber || created?.invoiceNumber || sale?.invoiceNumber,
             createdAt: created?.createdAt || new Date().toISOString(),
             isGuest,
+            isOrder,
             sale,
           });
           setPollingEnabled(true);
         }
       } catch (err) {
-        if (!isMounted || salePaymentApi.isCancel(err)) return;
+        if (!isMounted || activePaymentApi.isCancel(err)) return;
 
-        // If backend returned 409 Conflict (payment already created for this sale)
+        // If backend returned 409 Conflict (payment already created for this sale/order)
         if (err?.response?.status === 409) {
           try {
-            console.log(`[BakongPaymentModal] 409 Conflict: payment already exists. Fetching existing payment for saleId:`, originalSaleId);
-            const fallback = await salePaymentApi.get(originalSaleId, {
+            console.log(`[BakongPaymentModal] 409 Conflict: payment already exists. Fetching existing payment for ID:`, originalSaleId);
+            const fallback = await activePaymentApi.get(originalSaleId, {
               isGuest,
               signal: controller.signal,
             });
@@ -354,23 +366,23 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                 billNumber: fallback?.billNumber || fallback?.invoiceNumber || sale?.invoiceNumber,
                 createdAt: fallback?.createdAt || new Date().toISOString(),
                 isGuest,
+                isOrder,
                 sale,
               });
               setPollingEnabled(true);
             }
             return;
           } catch (fallbackErr) {
-            if (!isMounted || salePaymentApi.isCancel(fallbackErr)) return;
+            if (!isMounted || activePaymentApi.isCancel(fallbackErr)) return;
             setCreateError(getErrorMessage(fallbackErr));
-            return;
           }
+        } else {
+          setCreateError(getErrorMessage(err));
         }
-
-        setCreateError(getErrorMessage(err));
       } finally {
-        paymentCreatingRef.current = false;
         if (isMounted) {
           setCreating(false);
+          paymentCreatingRef.current = false;
         }
       }
     })();
@@ -416,8 +428,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     clearPaymentSession();
 
     try {
-      console.log(`[BakongPaymentModal.regenerateQr] Creating new payment QR with originalSaleId:`, originalSaleId);
-      const created = await salePaymentApi.create(originalSaleId, 'BAKONG', { isGuest });
+      console.log(`[BakongPaymentModal.regenerateQr] Creating new payment QR with ID:`, originalSaleId);
+      const created = await activePaymentApi.create(originalSaleId, 'BAKONG', { isGuest });
       if (created?.paymentId) {
         paymentIdRef.current = created.paymentId;
       }
@@ -442,6 +454,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
           billNumber: created?.billNumber || created?.invoiceNumber || sale?.invoiceNumber,
           createdAt: created?.createdAt || new Date().toISOString(),
           isGuest,
+          isOrder,
           sale,
         });
         setPollingEnabled(true);
@@ -452,7 +465,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
       isRegeneratingRef.current = false;
       setRegenerating(false);
     }
-  }, [originalSaleId, isPaid, isGuest, stopPolling, setPayment, sale]);
+  }, [originalSaleId, isPaid, isGuest, isOrder, activePaymentApi, stopPolling, setPayment, sale]);
 
   // Dynamic Countdown calculation derived strictly from backend expiresAt
   const [secondsLeft, setSecondsLeft] = useState(null);
@@ -511,11 +524,11 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
     // Cancellation uses paymentId for payment cancellation
     const activePaymentId = paymentIdRef.current || payment?.paymentId || payment?.id;
-    console.log(`[BakongPaymentModal.handleCancel] Canceling payment with paymentId:`, activePaymentId, `and saleId:`, originalSaleId);
+    console.log(`[BakongPaymentModal.handleCancel] Canceling payment with paymentId:`, activePaymentId, `and ID:`, originalSaleId);
 
     if (activePaymentId) {
       try {
-        await salePaymentApi.cancel(activePaymentId, { isGuest });
+        await activePaymentApi.cancel(activePaymentId, { isGuest });
       } catch (err) {
         console.warn('Notice canceling payment:', err?.message);
       }
@@ -523,7 +536,11 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
     try {
       if (originalSaleId) {
-        await saleApi.cancel(originalSaleId, { isGuest });
+        if (isOrder) {
+          await orderApi.cancel(originalSaleId, { isGuest });
+        } else {
+          await saleApi.cancel(originalSaleId, { isGuest });
+        }
       }
     } catch {
       // Close modal regardless

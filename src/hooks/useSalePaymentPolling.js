@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { salePaymentApi } from '../api/salePaymentApi';
+import { orderPaymentApi } from '../api/orderPaymentApi';
 import { getErrorMessage } from '../api/client';
 import { env } from '../config/env';
 
@@ -124,8 +125,11 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
       setPaymentState((prev) => (TERMINAL_SUCCESS.includes(prev) ? prev : 'CHECKING'));
 
       try {
-        console.log(`[useSalePaymentPolling] GET /api/v1/sales/${currentSaleId}/payment/status (cadence: ${isManual ? 'manual' : 'polling'})`);
-        const result = await salePaymentApi.checkStatus(currentSaleId, {
+        const isOrder = Boolean(optionsRef.current?.entityType === 'orders' || optionsRef.current?.isOrder);
+        const paymentApi = isOrder ? orderPaymentApi : salePaymentApi;
+        const endpointLabel = isOrder ? `/api/v1/orders/${currentSaleId}/payment/status` : `/api/v1/sales/${currentSaleId}/payment/status`;
+        console.log(`[useSalePaymentPolling] GET ${endpointLabel} (cadence: ${isManual ? 'manual' : 'polling'})`);
+        const result = await paymentApi.checkStatus(currentSaleId, {
           ...optionsRef.current,
           signal: controller.signal,
         });

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { saleApi } from '../api/saleApi';
+import { orderApi } from '../api/orderApi';
 import { getErrorMessage } from '../api/client';
 import { formatCurrency } from '../utils/format';
 import BakongPaymentModal from '../components/pos/BakongPaymentModal';
@@ -53,33 +53,60 @@ export default function Checkout() {
 
     try {
       const isGuest = !isAuthenticated;
-      const payload = {
-        customer: null,
-        discount: 0,
-        tax: 0,
-        items: items.map((item) => ({
-          productId: item.product.id,
-          quantity: item.quantity,
-          discount: 0,
-        })),
-      };
 
-      const sale = await saleApi.create(payload, { isGuest });
+      // 1. Synchronize frontend cart items with backend customer cart
+      await orderApi.syncCart(items);
 
-      const authoritativeTotal = sale.finalTotal ?? sale.total ?? sale.amount ?? total;
+      // 2. Optionally create delivery address record if logged in
+      let deliveryAddressId = null;
+      if (isAuthenticated) {
+        try {
+          const addr = await orderApi.createAddress({
+            receiverName: customerName.trim(),
+            phoneNumber: customerPhone.trim(),
+            address: deliveryAddress.trim(),
+            note: note.trim(),
+          });
+          deliveryAddressId = addr?.id || null;
+        } catch {
+          // address creation is optional, continue with checkout
+        }
+      }
+
+      // 3. Perform Customer E-Commerce Order Checkout: POST /api/v1/orders/checkout
+      const fullDeliveryNote = `${deliveryAddress.trim()}${note ? ` (Note: ${note.trim()})` : ''}`;
+      const checkoutRes = await orderApi.checkout({
+        deliveryAddressId,
+        note: fullDeliveryNote,
+      });
+
+      const orderId = checkoutRes.orderId || checkoutRes.id || checkoutRes.order?.id;
+      const orderNumber = checkoutRes.orderNumber || checkoutRes.order?.orderNumber || (orderId ? `ORD-${orderId.slice(0, 8).toUpperCase()}` : 'ORD');
+      const invoiceNumber = checkoutRes.payment?.billNumber || checkoutRes.order?.orderNumber || orderNumber;
+      const authoritativeTotal = checkoutRes.amount ?? checkoutRes.order?.amount ?? checkoutRes.finalTotal ?? total;
 
       const orderData = {
-        ...sale,
+        ...checkoutRes,
+        id: orderId,
+        orderId,
+        orderNumber,
+        invoiceNumber,
+        isOrder: true,
+        entityType: 'orders',
         items,
         total: authoritativeTotal,
+        subtotal,
+        deliveryFee,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
-        deliveryAddress: `${deliveryAddress.trim()}${note ? ` (Note: ${note.trim()})` : ''}`,
+        deliveryAddress: fullDeliveryNote,
         paymentMethod: 'KHQR',
+        paymentStatus: 'PENDING',
+        status: 'PENDING_PAYMENT',
       };
 
       saveCustomerOrder(orderData);
-      setPendingSale({ ...sale, isGuest });
+      setPendingSale({ ...orderData, isGuest });
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
