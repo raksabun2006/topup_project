@@ -3,7 +3,6 @@ import {
   ScanBarcode,
   Keyboard,
   X,
-  CheckCircle2,
   AlertCircle,
   Package,
   ShoppingBag,
@@ -24,6 +23,7 @@ export default function BarcodeScannerModal({
   onClose,
   products = [],
   onAddProduct,
+  onProcessBarcode,
   cartItems = [],
 }) {
   const [activeTab, setActiveTab] = useState('camera'); // 'camera' | 'manual'
@@ -72,7 +72,7 @@ export default function BarcodeScannerModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Fast barcode processor: Scan -> Beep -> Add -> Ready for next scan
+  // Unified barcode processor: Scan -> Beep -> Add -> Ready for next scan
   const handleBarcodeProcess = useCallback(
     async (code) => {
       const trimmed = String(code || '').trim();
@@ -87,61 +87,97 @@ export default function BarcodeScannerModal({
       }
 
       try {
-        const result = await lookupProductByBarcode(trimmed, products);
+        if (typeof onProcessBarcode === 'function') {
+          // Use the single global shared processBarcode function
+          const res = await onProcessBarcode(trimmed, products);
+          if (res?.success && res?.product) {
+            setLastScannedProduct({
+              product: res.product,
+              quantity: res.quantity,
+              timestamp: Date.now(),
+            });
 
-        if (result.status === 'found' && result.product) {
-          // 1. Instantly play authentic supermarket beep
-          playBeepSound();
+            setScanFeedback({
+              type: 'success',
+              product: res.product,
+              quantity: res.quantity,
+              code: trimmed,
+            });
 
-          // 2. Instantly add to cart
-          onAddProduct(result.product);
+            feedbackTimeoutRef.current = setTimeout(() => {
+              setScanFeedback(null);
+            }, 900);
+          } else if (res?.reason === 'not_found') {
+            setScanFeedback({
+              type: 'not_found',
+              code: trimmed,
+              message: `រកមិនឃើញបាកូដ "${trimmed}" (Product not found)`,
+            });
 
-          // 3. Compute updated quantity in cart
-          const existingItem = cartItems.find((i) => i?.product?.id === result.product.id);
-          const nextQty = (existingItem?.quantity || 0) + 1;
+            feedbackTimeoutRef.current = setTimeout(() => {
+              setScanFeedback(null);
+            }, 2400);
+          } else {
+            setScanFeedback({
+              type: 'error',
+              code: trimmed,
+              message: 'បញ្ហាតភ្ជាប់ សូមព្យាយាមម្តងទៀត',
+            });
 
-          // 4. Update Last Scanned product display
-          setLastScannedProduct({
-            product: result.product,
-            quantity: nextQty,
-            timestamp: Date.now(),
-          });
-
-          // 5. Short visual confirmation banner (~700ms, non-blocking)
-          setScanFeedback({
-            type: 'success',
-            product: result.product,
-            quantity: nextQty,
-            code: trimmed,
-          });
-
-          feedbackTimeoutRef.current = setTimeout(() => {
-            setScanFeedback(null);
-          }, 800);
-        } else if (result.status === 'not_found') {
-          // Distinct error sound for unknown barcode
-          playErrorSound();
-          setScanFeedback({
-            type: 'not_found',
-            code: trimmed,
-            message: `រកមិនឃើញបាកូដ "${trimmed}" (Product not found)`,
-          });
-
-          feedbackTimeoutRef.current = setTimeout(() => {
-            setScanFeedback(null);
-          }, 2400);
+            feedbackTimeoutRef.current = setTimeout(() => {
+              setScanFeedback(null);
+            }, 2400);
+          }
         } else {
-          // Network / Server error
-          playErrorSound();
-          setScanFeedback({
-            type: 'error',
-            code: trimmed,
-            message: result.message || 'បញ្ហាតភ្ជាប់ សូមព្យាយាមម្តងទៀត',
-          });
+          // Fallback if rendered outside GlobalBarcodeScanner
+          const result = await lookupProductByBarcode(trimmed, products);
 
-          feedbackTimeoutRef.current = setTimeout(() => {
-            setScanFeedback(null);
-          }, 2400);
+          if (result.status === 'found' && result.product) {
+            playBeepSound();
+            onAddProduct?.(result.product);
+
+            const existingItem = cartItems.find((i) => i?.product?.id === result.product.id);
+            const nextQty = (existingItem?.quantity || 0) + 1;
+
+            setLastScannedProduct({
+              product: result.product,
+              quantity: nextQty,
+              timestamp: Date.now(),
+            });
+
+            setScanFeedback({
+              type: 'success',
+              product: result.product,
+              quantity: nextQty,
+              code: trimmed,
+            });
+
+            feedbackTimeoutRef.current = setTimeout(() => {
+              setScanFeedback(null);
+            }, 900);
+          } else if (result.status === 'not_found') {
+            playErrorSound();
+            setScanFeedback({
+              type: 'not_found',
+              code: trimmed,
+              message: `រកមិនឃើញបាកូដ "${trimmed}" (Product not found)`,
+            });
+
+            feedbackTimeoutRef.current = setTimeout(() => {
+              setScanFeedback(null);
+            }, 2400);
+          } else {
+            playErrorSound();
+            setScanFeedback({
+              type: 'error',
+              code: trimmed,
+              message: result.message || 'បញ្ហាតភ្ជាប់ សូមព្យាយាមម្តងទៀត',
+            });
+
+            feedbackTimeoutRef.current = setTimeout(() => {
+              setScanFeedback(null);
+            }, 2400);
+          }
         }
       } catch (err) {
         console.error('Scan processing error:', err);
@@ -155,7 +191,7 @@ export default function BarcodeScannerModal({
         setIsProcessing(false);
       }
     },
-    [products, onAddProduct, cartItems]
+    [products, onProcessBarcode, onAddProduct, cartItems]
   );
 
   if (!isOpen) return null;

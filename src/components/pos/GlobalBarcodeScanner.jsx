@@ -25,7 +25,7 @@ export default function GlobalBarcodeScanner() {
     processBarcode,
     openDrawer,
   } = useGlobalScanner();
-  const { items: cartItems, addItem } = useCart();
+  const { items: cartItems } = useCart();
 
   // Global Hardware USB / Bluetooth Scanner listener (works from ANY screen)
   useBarcodeScanner(
@@ -47,9 +47,7 @@ export default function GlobalBarcodeScanner() {
       <BarcodeScannerModal
         isOpen={isScannerOpen}
         onClose={closeScanner}
-        onAddProduct={(product) => {
-          addItem(product, 1);
-        }}
+        onProcessBarcode={processBarcode}
         cartItems={cartItems}
       />
 

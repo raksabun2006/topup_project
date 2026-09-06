@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { RefreshCw, Zap, ZapOff, AlertCircle, ShieldAlert } from 'lucide-react';
+import { unlockAudioContext } from '../../utils/sound';
 
 const SUPPORTED_FORMATS = [
   Html5QrcodeSupportedFormats.EAN_13,
@@ -77,6 +78,9 @@ export default function BarcodeScanner({
     const startCamera = async () => {
       setStatus('initializing');
       setErrorMessage('');
+
+      // Unlock Web Audio immediately on start
+      await unlockAudioContext().catch(() => {});
 
       try {
         // Enumerate video devices

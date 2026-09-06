@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { useCart } from './CartContext';
 import { lookupProductByBarcode, prefetchCatalogCache } from '../utils/barcodeLookup';
-import { initAudioContext, playBeepSound, playErrorSound, playInvalidBarcodeSound } from '../utils/sound';
+import { unlockAudioContext, initAudioContext, playBeepSound, playErrorSound, playInvalidBarcodeSound } from '../utils/sound';
 
 const GlobalScannerContext = createContext(null);
 
@@ -11,9 +11,14 @@ export function GlobalScannerProvider({ children }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [globalToast, setGlobalToast] = useState(null); // { id, isError, name, price, quantity, message }
   const toastTimerRef = useRef(null);
+  const cartItemsRef = useRef(cartItems);
+
+  useEffect(() => {
+    cartItemsRef.current = cartItems;
+  }, [cartItems]);
 
   const openScanner = useCallback(() => {
-    initAudioContext();
+    unlockAudioContext().catch(() => {});
     prefetchCatalogCache();
     setIsScannerOpen(true);
   }, []);
@@ -72,8 +77,9 @@ export function GlobalScannerProvider({ children }) {
           // Add to active cart
           addItem(result.product, 1);
 
-          // Compute updated quantity
-          const existing = (cartItems || []).find((i) => i?.product?.id === result.product.id);
+          // Compute updated quantity from latest ref
+          const currentItems = cartItemsRef.current || [];
+          const existing = currentItems.find((i) => i?.product?.id === result.product.id);
           const nextQty = (existing?.quantity || 0) + 1;
 
           showToast({
@@ -113,7 +119,7 @@ export function GlobalScannerProvider({ children }) {
         return { success: false, reason: 'error', error: err };
       }
     },
-    [addItem, cartItems, showToast]
+    [addItem, showToast]
   );
 
   const value = {

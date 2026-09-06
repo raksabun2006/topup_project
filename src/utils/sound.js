@@ -6,20 +6,18 @@
  */
 
 let audioCtx = null;
+let isAudioUnlocked = false;
 
 /**
- * Initialize / unlock the Web Audio context on user gesture (e.g. click "Scan Barcode")
+ * Get or create the singleton Web Audio context
  */
-export function initAudioContext() {
+export function getAudioContext() {
   if (typeof window === 'undefined') return null;
   try {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return null;
     if (!audioCtx) {
       audioCtx = new AudioContextClass();
-    }
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume().catch(() => {});
     }
     return audioCtx;
   } catch {
@@ -28,13 +26,61 @@ export function initAudioContext() {
 }
 
 /**
+ * Explicitly unlock the Web Audio context on user gesture (e.g. click "Start Scanner").
+ * Spec:
+ * 1. Create AudioContext if it does not exist.
+ * 2. Call audioContext.resume().
+ * 3. Wait until audioContext.state === "running".
+ * 4. Mark audio as unlocked.
+ */
+export async function unlockAudioContext() {
+  const ctx = getAudioContext();
+  if (!ctx) return false;
+
+  try {
+    if (ctx.state === 'suspended') {
+      await ctx.resume();
+    }
+    // Play a silent 1ms buffer to force mobile iOS/Android Safari & Chrome to unlock hardware audio output
+    const buffer = ctx.createBuffer(1, 1, 22050);
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start(0);
+
+    if (ctx.state === 'running') {
+      isAudioUnlocked = true;
+      return true;
+    }
+  } catch (err) {
+    console.warn('Web Audio unlock failed:', err);
+  }
+  return ctx.state === 'running';
+}
+
+/**
+ * Initialize / unlock the Web Audio context on user gesture
+ */
+export function initAudioContext() {
+  const ctx = getAudioContext();
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume().catch(() => {});
+  }
+  return ctx;
+}
+
+/**
  * Professional supermarket scanner success beep (crystal clear 1850Hz chime, ~75ms)
  * Instant, short, professional, not annoying, distinct in noisy checkout counters.
  */
 export function playBeepSound() {
   try {
-    const ctx = initAudioContext();
+    const ctx = getAudioContext();
     if (!ctx) return;
+
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
 
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
@@ -45,7 +91,7 @@ export function playBeepSound() {
 
     // Extremely fast attack (< 3ms) and clean, crisp decay (~75ms)
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.exponentialRampToValueAtTime(0.35, now + 0.003);
+    gain.gain.exponentialRampToValueAtTime(0.4, now + 0.003);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.075);
 
     osc.connect(gain);
@@ -58,13 +104,19 @@ export function playBeepSound() {
   }
 }
 
+export const playBarcodeBeep = playBeepSound;
+
 /**
  * Supermarket product not found warning sound (distinct low double-tone buzz, ~140ms)
  */
 export function playErrorSound() {
   try {
-    const ctx = initAudioContext();
+    const ctx = getAudioContext();
     if (!ctx) return;
+
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
 
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
@@ -87,6 +139,8 @@ export function playErrorSound() {
     // Non-blocking
   }
 }
+
+export const playBarcodeError = playErrorSound;
 
 /**
  * Invalid barcode format short error blip (240Hz, ~80ms)
