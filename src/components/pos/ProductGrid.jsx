@@ -1,126 +1,20 @@
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useRef, useCallback } from 'react';
 import {
   Search, AlertCircle, ChevronLeft, ChevronRight, PackageX, Plus,
   ScanBarcode, X, CheckCircle2,
 } from 'lucide-react';
 import ProductCard from '../ProductCard';
 import ProductFormModal from '../admin/ProductFormModal';
+import BarcodeScannerModal from './BarcodeScannerModal';
 import { useProducts } from '../../hooks/useProducts';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { useBarcodeScanner } from '../../hooks/useBarcodeScanner';
+import { lookupProductByBarcode } from '../../utils/barcodeLookup';
+import { initAudioContext, playBeepSound, playErrorSound } from '../../utils/sound';
+import { formatCurrency } from '../../utils/format';
 import { getCategoryIcon, AllCategoriesIcon } from '../../utils/categoryIcons';
 import { env } from '../../config/env';
-
-/**
- * Barcode Quick Scanner Dialog:
- * Allows cashiers to quickly type or use a USB/Bluetooth barcode scanner.
- */
-function BarcodeScanModal({ products, onAdd, onClose }) {
-  const [barcodeInput, setBarcodeInput] = useState('');
-  const [feedback, setFeedback] = useState(null);
-  const inputRef = useRef(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  const handleScanSubmit = (e) => {
-    e.preventDefault();
-    const code = barcodeInput.trim().toLowerCase();
-    if (!code) return;
-
-    const matched = products.find(
-      (p) =>
-        p.barcode?.toLowerCase() === code ||
-        p.sku?.toLowerCase() === code ||
-        p.name?.toLowerCase() === code
-    );
-
-    if (matched) {
-      onAdd(matched);
-      setFeedback({ success: true, message: `បានបន្ថែម៖ ${matched.name}` });
-      setBarcodeInput('');
-    } else {
-      setFeedback({ success: false, message: `រកមិនឃើញទំនិញដែលមានកូដ "${barcodeInput}" ទេ` });
-    }
-
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 50);
-  };
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xl animate-scale-in"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#009F6B] text-white">
-              <ScanBarcode size={18} />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-[#172033] dark:text-white">ស្កេន Barcode ទំនិញ</h3>
-              <p className="text-[11px] text-[#667085] dark:text-slate-400">ប្រើឧបករណ៍ស្កេន ឬ វាយបញ្ចូលលេខកូដ</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <form onSubmit={handleScanSubmit} className="mt-4 space-y-3">
-          <div className="relative">
-            <input
-              ref={inputRef}
-              type="text"
-              value={barcodeInput}
-              onChange={(e) => setBarcodeInput(e.target.value)}
-              placeholder="ស្កេន ឬ វាយលេខ Barcode / SKU នៅទីនេះ..."
-              className="w-full rounded-xl border-2 border-[#009F6B] bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm font-bold text-[#172033] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none"
-            />
-          </div>
-
-          {feedback && (
-            <div
-              className={`flex items-center gap-2 rounded-xl p-3 text-xs font-semibold animate-fade-in ${
-                feedback.success
-                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                  : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
-              }`}
-            >
-              {feedback.success ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-              <span>{feedback.message}</span>
-            </div>
-          )}
-
-          <div className="flex gap-2 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 text-xs font-bold text-[#172033] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
-            >
-              បិទ (Close)
-            </button>
-            <button
-              type="submit"
-              className="flex-1 rounded-xl bg-[#009F6B] py-2.5 text-xs font-bold text-white shadow-md shadow-[#009F6B]/25 hover:bg-[#00845A] transition"
-            >
-              ស្វែងរក & បន្ថែម
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 export default function ProductGrid({
   category = '',
@@ -135,7 +29,7 @@ export default function ProductGrid({
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
-  const [toastMessage, setToastMessage] = useState(null);
+  const [toastData, setToastData] = useState(null);
   const { isAdmin } = useAuth();
   const { items: cartItems } = useCart();
   const internalInputRef = useRef(null);
@@ -156,7 +50,10 @@ export default function ProductGrid({
     return map;
   }, [cartItems]);
 
-  const productList = Array.isArray(products) ? products.filter(Boolean) : [];
+  const productList = useMemo(
+    () => (Array.isArray(products) ? products.filter(Boolean) : []),
+    [products]
+  );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -169,30 +66,72 @@ export default function ProductGrid({
     );
   }, [productList, search]);
 
-  const triggerToast = (productName) => {
-    setToastMessage(`បានបន្ថែម៖ ${productName}`);
-    setTimeout(() => setToastMessage(null), 2000);
-  };
+  const triggerToast = useCallback((product) => {
+    const existing = (cartItems || []).find((i) => i?.product?.id === product.id);
+    const nextQty = (existing?.quantity || 0) + 1;
+    setToastData({
+      name: product.name,
+      price: product.price,
+      quantity: nextQty,
+    });
+    setTimeout(() => setToastData(null), 2500);
+  }, [cartItems]);
 
-  const handleSearchKeyDown = (e) => {
+  // Hardware USB/Bluetooth Barcode Scanner support
+  useBarcodeScanner(async (scannedCode) => {
+    if (!scannedCode) return;
+    initAudioContext();
+    try {
+      const result = await lookupProductByBarcode(scannedCode, productList);
+      if (result.status === 'found' && result.product) {
+        playBeepSound();
+        onAdd(result.product);
+        triggerToast(result.product);
+      } else {
+        playErrorSound();
+        setToastData({
+          isError: true,
+          message: `រកមិនឃើញទំនិញដែលមានបាកូដ "${scannedCode}" ទេ`,
+        });
+        setTimeout(() => setToastData(null), 3000);
+      }
+    } catch (err) {
+      console.error('Hardware scan error:', err);
+    }
+  });
+
+  const handleSearchKeyDown = async (e) => {
     if (e.key === 'Enter') {
-      const q = search.trim().toLowerCase();
+      const q = search.trim();
       if (!q) return;
 
       const exact = productList.find(
-        (p) => p.barcode?.toLowerCase() === q || p.sku?.toLowerCase() === q
+        (p) =>
+          p.barcode?.toLowerCase() === q.toLowerCase() ||
+          p.sku?.toLowerCase() === q.toLowerCase()
       );
 
       if (exact) {
         onAdd(exact);
-        triggerToast(exact.name);
+        playBeepSound();
+        triggerToast(exact);
         setSearch('');
         return;
       }
 
       if (filtered.length === 1) {
         onAdd(filtered[0]);
-        triggerToast(filtered[0].name);
+        playBeepSound();
+        triggerToast(filtered[0]);
+        setSearch('');
+        return;
+      }
+
+      const lookup = await lookupProductByBarcode(q, productList);
+      if (lookup.status === 'found' && lookup.product) {
+        onAdd(lookup.product);
+        playBeepSound();
+        triggerToast(lookup.product);
         setSearch('');
       }
     }
@@ -269,15 +208,19 @@ export default function ProductGrid({
             </div>
           </div>
 
-          {/* Barcode Scanner Action Button */}
+          {/* Prominent Barcode Scanner Action Button */}
           <button
             type="button"
-            onClick={() => setShowScanner(true)}
-            className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-[#172033] dark:text-slate-200 shadow-xs hover:border-[#009F6B] hover:text-[#009F6B] dark:hover:text-emerald-400 transition-all active:scale-95 cursor-pointer"
-            title="ស្កេន Barcode"
+            onClick={() => {
+              initAudioContext();
+              setShowScanner(true);
+            }}
+            className="flex h-11 sm:h-12 shrink-0 items-center gap-1.5 sm:gap-2 rounded-2xl border-2 border-emerald-600/80 bg-emerald-50 dark:bg-emerald-950/50 px-3 sm:px-3.5 text-xs sm:text-sm font-bold text-emerald-800 dark:text-emerald-300 shadow-xs hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all active:scale-95 cursor-pointer"
+            title="ស្កេន Barcode (Scan Barcode)"
             aria-label="Scan barcode"
           >
-            <ScanBarcode size={20} />
+            <ScanBarcode size={19} className="text-emerald-700 dark:text-emerald-400 shrink-0" />
+            <span className="hidden xs:inline">ស្កេន Barcode</span>
           </button>
 
           {/* Admin: Quick Create Product */}
@@ -335,11 +278,34 @@ export default function ProductGrid({
           </div>
         )}
 
-        {/* Micro-toast Feedback for Quick Add */}
-        {toastMessage && (
-          <div className="flex items-center gap-2 rounded-xl bg-emerald-600 text-white px-3 py-1.5 text-xs font-bold shadow-md animate-slide-down">
-            <CheckCircle2 size={14} />
-            <span>{toastMessage}</span>
+        {/* Micro-toast Feedback for Quick Add / Barcode Scan */}
+        {toastData && (
+          <div
+            className={`flex items-center justify-between gap-3 rounded-2xl px-3.5 py-2 text-xs font-semibold shadow-lg animate-slide-down ${
+              toastData.isError
+                ? 'bg-rose-600 text-white border border-rose-400/40'
+                : 'bg-emerald-700 text-white border border-emerald-400/40'
+            }`}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-white/20 text-white shrink-0">
+                {toastData.isError ? <AlertCircle size={15} /> : <CheckCircle2 size={15} />}
+              </div>
+              <div className="min-w-0">
+                <span className="text-[10px] font-bold text-white/80 uppercase tracking-wide">
+                  {toastData.isError ? 'រកមិនឃើញទំនិញ' : '✓ Added to order'}
+                </span>
+                <p className="font-bold text-white text-xs truncate max-w-[200px] sm:max-w-[280px]">
+                  {toastData.isError ? toastData.message : toastData.name}
+                </p>
+              </div>
+            </div>
+            {!toastData.isError && (
+              <div className="text-right shrink-0">
+                <span className="font-extrabold text-white">{formatCurrency(toastData.price)}</span>
+                <span className="text-[11px] text-emerald-200 ml-1 font-bold">× {toastData.quantity}</span>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -456,13 +422,16 @@ export default function ProductGrid({
       )}
 
       {/* Barcode Scanner Modal */}
-      {showScanner && (
-        <BarcodeScanModal
-          products={products}
-          onAdd={onAdd}
-          onClose={() => setShowScanner(false)}
-        />
-      )}
+      <BarcodeScannerModal
+        isOpen={showScanner}
+        onClose={() => setShowScanner(false)}
+        products={products}
+        onAddProduct={(product) => {
+          onAdd(product);
+          triggerToast(product);
+        }}
+        cartItems={cartItems}
+      />
 
       {/* Admin: Product Form Modal */}
       {showCreate && (

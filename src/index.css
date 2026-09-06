@@ -164,6 +164,25 @@ body {
   animation: slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@keyframes scanner-laser {
+  0% {
+    top: 6%;
+    opacity: 0.85;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 6%;
+    opacity: 0.85;
+  }
+}
+
+.animate-scanner-laser {
+  animation: scanner-laser 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
 @keyframes wiggle {
   0%, 100% { transform: rotate(0deg); }
   15% { transform: rotate(-10deg); }
