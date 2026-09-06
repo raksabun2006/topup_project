@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   User, Phone, MapPin, Truck, QrCode, ShieldCheck, ArrowRight,
-  AlertCircle, Loader2, CheckCircle, ShoppingBag, ArrowLeft
+  AlertCircle, Loader2, CheckCircle, ShoppingBag, ArrowLeft, Printer, FileText
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +11,7 @@ import { getErrorMessage } from '../api/client';
 import { formatCurrency } from '../utils/format';
 import BakongPaymentModal from '../components/pos/BakongPaymentModal';
 import { saveCustomerOrder } from '../components/pos/CustomerOrdersModal';
+import Receipt from '../components/pos/Receipt';
 import SEO from '../components/SEO';
 
 export default function Checkout() {
@@ -94,56 +95,67 @@ export default function Checkout() {
   };
 
   if (completedOrder) {
+    const formattedItems = (completedOrder.items || items || []).map((i) => ({
+      productName: i.product?.name || i.productName || i.name,
+      quantity: i.quantity || i.qty || 1,
+      unitPrice: i.unitPrice || i.product?.price || i.price || 0,
+      lineTotal: (i.unitPrice || i.product?.price || i.price || 0) * (i.quantity || 1),
+    }));
+
+    const enrichedSale = {
+      ...completedOrder,
+      items: formattedItems.length > 0 ? formattedItems : completedOrder.items,
+      customerName: customerName.trim() || completedOrder.customerName,
+      customerPhone: customerPhone.trim() || completedOrder.customerPhone,
+      deliveryAddress: `${deliveryAddress.trim()}${note ? ` (Note: ${note.trim()})` : ''}`,
+      total: completedOrder.finalTotal ?? completedOrder.total ?? total,
+      subtotal: completedOrder.subtotal ?? subtotal,
+      deliveryFee,
+      paymentMethod: completedOrder.paymentMethod || 'KHQR',
+      paymentStatus: completedOrder.paymentStatus || 'PAID',
+      status: completedOrder.status || 'COMPLETED',
+    };
+
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center px-4 py-16">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:py-14 animate-fade-in">
         <SEO title="Order Confirmed | Mart System" canonical="/checkout" />
-        <div className="w-full max-w-lg rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-8 shadow-xl text-center space-y-5 animate-scale-in">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mx-auto shadow-xs">
-            <CheckCircle size={36} />
-          </div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            Order Confirmed!
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto">
-            Thank you for shopping with Mart System. Your invoice number is{' '}
-            <span className="font-bold text-slate-900 dark:text-white font-mono">
-              #{completedOrder.invoiceNumber || completedOrder.id}
-            </span>
-            . We will deliver your package shortly.
-          </p>
+        
+        <div className="max-w-2xl mx-auto space-y-6">
+          {/* Top Receipt Container */}
+          <Receipt
+            sale={enrichedSale}
+            showTaxDiscount={true}
+            mode="ecommerce"
+            showSuccessBadge={true}
+          />
 
-          <div className="rounded-2xl bg-white dark:bg-slate-800 p-4 text-xs space-y-2 text-left border border-slate-100 dark:border-slate-700">
-            <div className="flex justify-between">
-              <span className="text-slate-400">Customer:</span>
-              <span className="font-bold text-slate-900 dark:text-white">{customerName}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400">Phone:</span>
-              <span className="font-bold text-slate-900 dark:text-white">{customerPhone}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400">Payment:</span>
-              <span className="font-bold text-emerald-600">Bakong KHQR (Paid)</span>
-            </div>
-            <div className="flex justify-between pt-2 border-t border-slate-100 dark:border-slate-700 font-bold">
-              <span className="text-slate-900 dark:text-white">Total Amount:</span>
-              <span className="text-base font-black text-slate-900 dark:text-white">{formatCurrency(total)}</span>
-            </div>
-          </div>
+          {/* Action Buttons Below Receipt */}
+          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 print:hidden">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="flex flex-1 sm:flex-initial items-center justify-center gap-1.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-5 py-3 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+            >
+              <Printer size={16} />
+              <span>បោះពុម្ព (Print Receipt)</span>
+            </button>
 
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <Link
-              to="/orders"
-              className="flex items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-3 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50"
-            >
-              My Orders
-            </Link>
-            <Link
-              to="/shop"
-              className="flex items-center justify-center rounded-full bg-[#18181B] py-3 text-xs font-bold text-white hover:bg-black transition shadow-sm"
-            >
-              Shop Again
-            </Link>
+            <div className="flex flex-1 items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+              <Link
+                to="/orders"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition text-center"
+              >
+                <FileText size={16} />
+                <span>ការបញ្ជាទិញ (My Orders)</span>
+              </Link>
+              <Link
+                to="/shop"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 px-5 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/25 transition active:scale-[0.98] text-center"
+              >
+                <ShoppingBag size={16} />
+                <span>ទិញបន្ត (Shop Again)</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

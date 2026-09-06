@@ -154,7 +154,7 @@ export default function SaleDetail() {
       </div>
 
       {/* Receipt Display Area */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+      <div className="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 p-3 sm:p-8 shadow-xs flex justify-center">
         <Receipt sale={sale} showTaxDiscount={true} />
       </div>
     </div>

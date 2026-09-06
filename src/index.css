@@ -275,21 +275,52 @@ a {
   overscroll-behavior: contain;
 }
 
-/* បោះពុម្ពវិក្កយបត្រ POS - លាក់អ្វីៗទាំងអស់ក្រៅពី #receipt-print-area */
+/* E-Commerce & POS Receipt Print Stylesheet (A4, A5, Standard) */
 @media print {
+  @page {
+    margin: 12mm 10mm;
+    size: auto;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
   body * {
     visibility: hidden;
   }
+
   #receipt-print-area,
   #receipt-print-area * {
     visibility: visible;
   }
+
   #receipt-print-area {
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
     background: #ffffff !important;
     color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Hide buttons, navbars, floating elements during print */
+  header,
+  footer,
+  nav,
+  button,
+  .print\:hidden {
+    display: none !important;
+    visibility: hidden !important;
   }
 }

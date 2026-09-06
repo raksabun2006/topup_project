@@ -218,7 +218,7 @@ export default function Orders() {
       {/* Sale / Invoice Receipt Modal */}
       {selectedReceipt && (
         <SaleSuccessModal
-          sale={selectedReceipt}
+          sale={selectedReceipt.rawOrder || selectedReceipt}
           onClose={() => setSelectedReceipt(null)}
           onNewSale={() => setSelectedReceipt(null)}
         />
