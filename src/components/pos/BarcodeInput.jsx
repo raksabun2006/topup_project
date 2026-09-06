@@ -21,6 +21,7 @@ export default function BarcodeInput({ onSubmit, onCancel, isSearching = false }
     e.preventDefault();
     const code = value.trim();
     if (!code || isSearching) return;
+    console.log('[SCANNER 1] barcode detected (Manual):', code);
     onSubmit(code);
   };
 

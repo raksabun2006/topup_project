@@ -8,7 +8,6 @@ import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../ui/ThemeToggle';
 import UserAvatar from '../ui/UserAvatar';
 import NotificationDropdown from '../ui/NotificationDropdown';
-import ActiveOrderIndicator from '../pos/ActiveOrderIndicator';
 import { env } from '../../config/env';
 
 const NAV_ITEMS = [
@@ -187,9 +186,6 @@ export default function AdminLayout() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Global Mini Active Order Indicator */}
-            <ActiveOrderIndicator variant="admin" />
-
             <ThemeToggle variant="admin" />
 
             {/* Interactive Notification Bell with Dropdown */}

@@ -63,6 +63,10 @@ export function useBarcodeScanner(onScan, { enabled = true, maxInterval = 60, mi
           if (isScanner) {
             const scannedCode = strokes.map((s) => s.char).join('').trim();
             if (scannedCode.length >= minLength) {
+              console.log('[HARDWARE] strokes:', strokes);
+              console.log('[HARDWARE] completed barcode:', scannedCode);
+              console.log('[SCANNER 1] barcode detected (USB/Bluetooth):', scannedCode);
+
               e.preventDefault();
               e.stopPropagation();
 

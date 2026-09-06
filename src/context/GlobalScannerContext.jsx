@@ -56,82 +56,149 @@ export function GlobalScannerProvider({ children }) {
     setGlobalToast(null);
   }, []);
 
+  // Serialized queue to prevent async race conditions during rapid supermarket scanning
+  const queueRef = useRef(Promise.resolve());
+
   // Centralized barcode processor that adds directly to active order
   const processBarcode = useCallback(
-    async (code, localProducts = []) => {
+    (code, localProducts = []) => {
       const trimmed = String(code || '').trim();
+      console.log('[SCANNER 2] processBarcode:', trimmed || code);
+
       if (!trimmed) {
         playInvalidBarcodeSound();
-        return { success: false, reason: 'invalid' };
+        const res = { success: false, reason: 'invalid' };
+        console.log('[SCANNER ERROR] invalid empty barcode');
+        return Promise.resolve(res);
       }
 
-      console.log('[Scanner] processing:', trimmed);
+      // Chain execution sequentially to avoid racing
+      const task = async () => {
+        try {
+          const result = await lookupProductByBarcode(trimmed, localProducts);
 
-      try {
-        const result = await lookupProductByBarcode(trimmed, localProducts);
+          if (result.status === 'found' && result.product) {
+            const product = result.product;
+            const currentItems = cartItemsRef.current || [];
+            const existing = currentItems.find((i) => i?.product?.id === product.id);
+            const currentQty = existing?.quantity || 0;
+            const stock = product.stockQuantity;
+            const isStockFinite = typeof stock === 'number' && !isNaN(stock);
 
-        if (result.status === 'found' && result.product) {
-          // Play supermarket beep immediately on verified real product
-          playBeepSound();
+            // Stock Check 1: Out of stock (0 units in store)
+            if (isStockFinite && stock <= 0) {
+              console.log('[SCANNER ERROR] out of stock (0 units):', product.name);
+              playErrorSound();
+              showToast(
+                {
+                  isError: true,
+                  barcode: trimmed,
+                  message: `ស្តុកមិនគ្រប់គ្រាន់ (${product.name}) - អស់ស្តុក (Out of stock)`,
+                },
+                3200
+              );
+              return {
+                success: false,
+                reason: 'out_of_stock',
+                message: `ស្តុកមិនគ្រប់គ្រាន់ (${product.name}) - អស់ស្តុក`,
+              };
+            }
 
-          // Add to active cart (increments quantity if already in cart)
-          addItem(result.product, 1);
+            // Stock Check 2: Cart already has all available stock
+            if (isStockFinite && currentQty >= stock) {
+              console.log(`[SCANNER ERROR] max stock reached in cart (${currentQty}/${stock}):`, product.name);
+              playErrorSound();
+              showToast(
+                {
+                  isError: true,
+                  barcode: trimmed,
+                  message: `ចំនួនក្នុងរទេះ (${currentQty}) ស្មើនឹងស្តុកដែលមាន (${stock}) ហើយ`,
+                },
+                3200
+              );
+              return {
+                success: false,
+                reason: 'out_of_stock',
+                message: `ចំនួនក្នុងរទេះ (${currentQty}) ស្មើនឹងស្តុកដែលមាន (${stock}) ហើយ`,
+              };
+            }
 
-          // Compute updated quantity from latest ref
-          const currentItems = cartItemsRef.current || [];
-          const existing = currentItems.find((i) => i?.product?.id === result.product.id);
-          const nextQty = (existing?.quantity || 0) + 1;
+            console.log('[SCANNER 6] adding to cart:', product.name);
 
-          console.log('[Scanner] product:', result.product);
-          console.log('[Scanner] cart updated:', nextQty);
+            // Add to active cart (increments quantity if already in cart)
+            addItem(product, 1);
 
-          showToast({
-            isError: false,
-            product: result.product,
-            name: result.product.name,
-            imageUrl: result.product.imageUrl,
-            barcode: result.product.barcode || result.product.sku || trimmed,
-            price: result.product.price,
-            quantity: nextQty,
-          });
+            const nextQty = currentQty + 1;
 
-          return {
-            success: true,
-            product: result.product,
-            quantity: nextQty,
-          };
-        } else {
-          // Product not found
+            // Synchronously update ref for sequential rapid-scan accuracy
+            const existingIndex = currentItems.findIndex((i) => i?.product?.id === product.id);
+            if (existingIndex >= 0) {
+              cartItemsRef.current = currentItems.map((item, idx) =>
+                idx === existingIndex ? { ...item, quantity: nextQty } : item
+              );
+            } else {
+              cartItemsRef.current = [...currentItems, { product, quantity: 1, discount: 0 }];
+            }
+
+            console.log('[SCANNER 7] cart quantity:', nextQty);
+
+            // Play supermarket beep immediately on verified real product
+            console.log('[SCANNER 8] success beep');
+            playBeepSound();
+
+            showToast({
+              isError: false,
+              product,
+              name: product.name,
+              imageUrl: product.imageUrl,
+              barcode: product.barcode || product.sku || trimmed,
+              price: product.price,
+              quantity: nextQty,
+            });
+
+            return {
+              success: true,
+              product,
+              quantity: nextQty,
+            };
+          } else {
+            // Product not found
+            console.log('[SCANNER ERROR] product not found for barcode:', trimmed);
+            playErrorSound();
+            showToast(
+              {
+                isError: true,
+                barcode: trimmed,
+                message: `រកមិនឃើញទំនិញដែលមានបាកូដ "${trimmed}" ទេ (Not Found)`,
+              },
+              3400
+            );
+            return {
+              success: false,
+              reason: 'not_found',
+            };
+          }
+        } catch (err) {
+          console.error('[SCANNER ERROR] global process error:', err);
           playErrorSound();
           showToast(
             {
               isError: true,
-              barcode: trimmed,
-              message: `រកមិនឃើញទំនិញដែលមានបាកូដ "${trimmed}" ទេ (Not Found)`,
+              message: err?.message || 'មានបញ្ហាក្នុងការស្វែងរកទំនិញ (Connection error)',
             },
-            3400
+            3000
           );
           return {
             success: false,
-            reason: 'not_found',
+            reason: 'error',
+            message: err?.message || 'Connection error',
           };
         }
-      } catch (err) {
-        console.error('Global barcode process error:', err);
-        playErrorSound();
-        showToast(
-          {
-            isError: true,
-            message: 'មានបញ្ហាក្នុងការស្វែងរកទំនិញ (Connection error)',
-          },
-          3000
-        );
-        return {
-          success: false,
-          reason: 'error',
-          message: err?.message || 'Connection error',
-        };
-      }
+      };
+
+      const queuedPromise = queueRef.current.then(task, task);
+      queueRef.current = queuedPromise.catch(() => {});
+      return queuedPromise;
     },
     [addItem, showToast]
   );
