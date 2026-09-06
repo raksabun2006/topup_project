@@ -11,7 +11,6 @@ import { env } from '../../config/env';
 import { formatCurrency } from '../../utils/format';
 import ThemeToggle from '../ui/ThemeToggle';
 import UserAvatar from '../ui/UserAvatar';
-
 import BrandLogo from '../ui/BrandLogo';
 
 export default function Navbar({ onOpenCart }) {
@@ -55,16 +54,8 @@ export default function Navbar({ onOpenCart }) {
 
       {/* 2. Main Clean Navbar Bar */}
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
-        {/* Left: Brand Logo & Mobile Trigger */}
+        {/* Left: Brand Logo (clean, without left hamburger button) */}
         <div className="flex items-center gap-3 shrink-0">
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="rounded-xl p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden"
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-
           <Link to="/" className="flex items-center gap-2.5 group">
             <BrandLogo size={36} className="group-hover:scale-105 transition-transform" />
             <div className="flex flex-col">
@@ -111,8 +102,8 @@ export default function Navbar({ onOpenCart }) {
           </div>
         </form>
 
-        {/* Right Nav Links & Actions */}
-        <div className="flex items-center gap-3 sm:gap-5">
+        {/* Right Nav Links, Actions & Mobile Hamburger on RIGHT */}
+        <div className="flex items-center gap-2.5 sm:gap-4">
           {/* Main Desktop Links */}
           <div className="hidden lg:flex items-center gap-5 text-xs font-bold text-slate-700 dark:text-slate-300">
             <NavLink
@@ -149,8 +140,6 @@ export default function Navbar({ onOpenCart }) {
             </NavLink>
           </div>
 
-          <ThemeToggle variant="navbar" />
-
           {/* Cart Pill Button */}
           <button
             type="button"
@@ -181,7 +170,7 @@ export default function Navbar({ onOpenCart }) {
               </Link>
               <Link
                 to="/register"
-                className="rounded-full bg-[#18181B] dark:bg-white text-white dark:text-slate-900 px-3.5 py-1.5 hover:bg-black transition shadow-2xs"
+                className="hidden sm:inline-block rounded-full bg-[#18181B] dark:bg-white text-white dark:text-slate-900 px-3.5 py-1.5 hover:bg-black transition shadow-2xs"
               >
                 Register
               </Link>
@@ -239,6 +228,16 @@ export default function Navbar({ onOpenCart }) {
               )}
             </div>
           )}
+
+          {/* Mobile Hamburger Menu Button (Positioned on the RIGHT) */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="rounded-xl p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden cursor-pointer"
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X size={21} /> : <Menu size={21} />}
+          </button>
         </div>
       </nav>
 
