@@ -9,9 +9,10 @@ import {
 } from 'lucide-react';
 import BarcodeScanner from './BarcodeScanner';
 import BarcodeInput from './BarcodeInput';
-import { lookupProductByBarcode, prefetchCatalogCache } from '../../utils/barcodeLookup';
-import { initAudioContext, playBeepSound, playErrorSound, playInvalidBarcodeSound } from '../../utils/sound';
+import { prefetchCatalogCache } from '../../utils/barcodeLookup';
+import { playInvalidBarcodeSound } from '../../utils/sound';
 import { formatCurrency } from '../../utils/format';
+import { useGlobalScanner } from '../../context/GlobalScannerContext';
 
 /**
  * Supermarket POS Barcode Scanner Modal
@@ -22,7 +23,6 @@ export default function BarcodeScannerModal({
   isOpen,
   onClose,
   products = [],
-  onAddProduct,
   onProcessBarcode,
   cartItems = [],
 }) {
@@ -31,6 +31,9 @@ export default function BarcodeScannerModal({
   const [scanFeedback, setScanFeedback] = useState(null); // { type: 'success' | 'not_found' | 'error', message, code }
   const [isProcessing, setIsProcessing] = useState(false);
   const feedbackTimeoutRef = useRef(null);
+
+  const globalScanner = useGlobalScanner();
+  const sharedProcessBarcode = onProcessBarcode || globalScanner?.processBarcode;
 
   // Total items scanned and subtotal in cart for live supermarket counter
   const totalItemCount = useMemo(
@@ -46,10 +49,9 @@ export default function BarcodeScannerModal({
     [cartItems]
   );
 
-  // Initialize audio and warm up catalog cache immediately on open
+  // Warm up catalog cache when opened (Audio unlock happens on user tap "Start Scanner")
   useEffect(() => {
     if (isOpen) {
-      initAudioContext();
       prefetchCatalogCache();
     } else {
       setScanFeedback(null);
@@ -87,9 +89,10 @@ export default function BarcodeScannerModal({
       }
 
       try {
-        if (typeof onProcessBarcode === 'function') {
-          // Use the single global shared processBarcode function
-          const res = await onProcessBarcode(trimmed, products);
+        if (typeof sharedProcessBarcode === 'function') {
+          // Shared global processBarcode pipeline (handles lookup, beep/error sound, active cart update)
+          const res = await sharedProcessBarcode(trimmed, products);
+
           if (res?.success && res?.product) {
             setLastScannedProduct({
               product: res.product,
@@ -106,7 +109,7 @@ export default function BarcodeScannerModal({
 
             feedbackTimeoutRef.current = setTimeout(() => {
               setScanFeedback(null);
-            }, 900);
+            }, 1200);
           } else if (res?.reason === 'not_found') {
             setScanFeedback({
               type: 'not_found',
@@ -121,57 +124,7 @@ export default function BarcodeScannerModal({
             setScanFeedback({
               type: 'error',
               code: trimmed,
-              message: 'បញ្ហាតភ្ជាប់ សូមព្យាយាមម្តងទៀត',
-            });
-
-            feedbackTimeoutRef.current = setTimeout(() => {
-              setScanFeedback(null);
-            }, 2400);
-          }
-        } else {
-          // Fallback if rendered outside GlobalBarcodeScanner
-          const result = await lookupProductByBarcode(trimmed, products);
-
-          if (result.status === 'found' && result.product) {
-            playBeepSound();
-            onAddProduct?.(result.product);
-
-            const existingItem = cartItems.find((i) => i?.product?.id === result.product.id);
-            const nextQty = (existingItem?.quantity || 0) + 1;
-
-            setLastScannedProduct({
-              product: result.product,
-              quantity: nextQty,
-              timestamp: Date.now(),
-            });
-
-            setScanFeedback({
-              type: 'success',
-              product: result.product,
-              quantity: nextQty,
-              code: trimmed,
-            });
-
-            feedbackTimeoutRef.current = setTimeout(() => {
-              setScanFeedback(null);
-            }, 900);
-          } else if (result.status === 'not_found') {
-            playErrorSound();
-            setScanFeedback({
-              type: 'not_found',
-              code: trimmed,
-              message: `រកមិនឃើញបាកូដ "${trimmed}" (Product not found)`,
-            });
-
-            feedbackTimeoutRef.current = setTimeout(() => {
-              setScanFeedback(null);
-            }, 2400);
-          } else {
-            playErrorSound();
-            setScanFeedback({
-              type: 'error',
-              code: trimmed,
-              message: result.message || 'បញ្ហាតភ្ជាប់ សូមព្យាយាមម្តងទៀត',
+              message: res?.message || 'បញ្ហាតភ្ជាប់ សូមព្យាយាមម្តងទៀត',
             });
 
             feedbackTimeoutRef.current = setTimeout(() => {
@@ -181,7 +134,6 @@ export default function BarcodeScannerModal({
         }
       } catch (err) {
         console.error('Scan processing error:', err);
-        playErrorSound();
         setScanFeedback({
           type: 'error',
           code: trimmed,
@@ -191,7 +143,7 @@ export default function BarcodeScannerModal({
         setIsProcessing(false);
       }
     },
-    [products, onProcessBarcode, onAddProduct, cartItems]
+    [products, sharedProcessBarcode]
   );
 
   if (!isOpen) return null;

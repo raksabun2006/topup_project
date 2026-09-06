@@ -26,12 +26,19 @@ export function getAudioContext() {
 }
 
 /**
+ * Check if the AudioContext is running and unlocked
+ */
+export function isAudioRunning() {
+  return !!audioCtx && audioCtx.state === 'running';
+}
+
+/**
  * Explicitly unlock the Web Audio context on user gesture (e.g. click "Start Scanner").
  * Spec:
  * 1. Create AudioContext if it does not exist.
  * 2. Call audioContext.resume().
- * 3. Wait until audioContext.state === "running".
- * 4. Mark audio as unlocked.
+ * 3. Play a 1ms silent buffer to force mobile Safari & Chrome to unlock hardware audio.
+ * 4. Verify AudioContext.state === "running".
  */
 export async function unlockAudioContext() {
   const ctx = getAudioContext();
@@ -50,12 +57,18 @@ export async function unlockAudioContext() {
 
     if (ctx.state === 'running') {
       isAudioUnlocked = true;
-      return true;
     }
   } catch (err) {
     console.warn('Web Audio unlock failed:', err);
   }
-  return ctx.state === 'running';
+
+  const unlocked = ctx.state === 'running';
+  isAudioUnlocked = unlocked;
+
+  console.log('[Audio] state:', ctx?.state);
+  console.log('[Audio] unlocked:', isAudioUnlocked);
+
+  return unlocked;
 }
 
 /**
@@ -147,8 +160,12 @@ export const playBarcodeError = playErrorSound;
  */
 export function playInvalidBarcodeSound() {
   try {
-    const ctx = initAudioContext();
+    const ctx = getAudioContext();
     if (!ctx) return;
+
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
 
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();

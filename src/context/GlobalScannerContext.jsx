@@ -62,25 +62,28 @@ export function GlobalScannerProvider({ children }) {
       const trimmed = String(code || '').trim();
       if (!trimmed) {
         playInvalidBarcodeSound();
-        return { success: false, reason: 'empty' };
+        return { success: false, reason: 'invalid' };
       }
 
-      initAudioContext();
+      console.log('[Scanner] processing:', trimmed);
 
       try {
         const result = await lookupProductByBarcode(trimmed, localProducts);
 
         if (result.status === 'found' && result.product) {
-          // Play supermarket beep immediately
+          // Play supermarket beep immediately on verified real product
           playBeepSound();
 
-          // Add to active cart
+          // Add to active cart (increments quantity if already in cart)
           addItem(result.product, 1);
 
           // Compute updated quantity from latest ref
           const currentItems = cartItemsRef.current || [];
           const existing = currentItems.find((i) => i?.product?.id === result.product.id);
           const nextQty = (existing?.quantity || 0) + 1;
+
+          console.log('[Scanner] product:', result.product);
+          console.log('[Scanner] cart updated:', nextQty);
 
           showToast({
             isError: false,
@@ -92,7 +95,11 @@ export function GlobalScannerProvider({ children }) {
             quantity: nextQty,
           });
 
-          return { success: true, product: result.product, quantity: nextQty };
+          return {
+            success: true,
+            product: result.product,
+            quantity: nextQty,
+          };
         } else {
           // Product not found
           playErrorSound();
@@ -104,7 +111,10 @@ export function GlobalScannerProvider({ children }) {
             },
             3400
           );
-          return { success: false, reason: 'not_found', code: trimmed };
+          return {
+            success: false,
+            reason: 'not_found',
+          };
         }
       } catch (err) {
         console.error('Global barcode process error:', err);
@@ -116,7 +126,11 @@ export function GlobalScannerProvider({ children }) {
           },
           3000
         );
-        return { success: false, reason: 'error', error: err };
+        return {
+          success: false,
+          reason: 'error',
+          message: err?.message || 'Connection error',
+        };
       }
     },
     [addItem, showToast]
