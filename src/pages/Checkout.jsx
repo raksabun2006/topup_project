@@ -88,10 +88,20 @@ export default function Checkout() {
   };
 
   const handlePaymentSuccess = (sale) => {
-    saveCustomerOrder(sale);
+    const fullOrder = {
+      ...sale,
+      items: (sale.items && sale.items.length > 0) ? sale.items : items,
+      customerName: customerName.trim() || sale.customerName,
+      customerPhone: customerPhone.trim() || sale.customerPhone,
+      deliveryAddress: `${deliveryAddress.trim()}${note ? ` (Note: ${note.trim()})` : ''}` || sale.deliveryAddress,
+      total: sale.finalTotal ?? sale.total ?? total,
+      subtotal: sale.subtotal ?? subtotal,
+      deliveryFee,
+    };
+    saveCustomerOrder(fullOrder);
     setPendingSale(null);
     clear();
-    setCompletedOrder(sale);
+    setCompletedOrder(fullOrder);
   };
 
   if (completedOrder) {
