@@ -301,10 +301,7 @@ export default function AdminDashboard() {
             <RefreshCw size={13} className={salesLoading ? 'animate-spin text-emerald-600' : ''} />
           </button>
 
-          {/* Notification Bell */}
-          <div className="relative shrink-0">
-            <NotificationDropdown variant="admin" />
-          </div>
+
 
           {/* Theme Toggle */}
           <div className="shrink-0">

@@ -255,7 +255,6 @@ export default function AdminLayout() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle variant="admin" />
-            <NotificationDropdown variant="admin" />
             <Link to="/dashboard/profile">
               <UserAvatar user={user} className="h-8 w-8 text-xs" />
             </Link>
