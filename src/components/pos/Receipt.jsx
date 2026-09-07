@@ -61,6 +61,21 @@ export default function Receipt({
 
   if (!sale) return null;
 
+  // Helper to format object or string addresses safely
+  const formatAddressObj = (addr) => {
+    if (!addr) return '';
+    if (typeof addr === 'string') return addr;
+    if (typeof addr === 'object') {
+      const parts = [addr.address, addr.district, addr.province].filter(Boolean);
+      let text = parts.join(', ');
+      if (addr.note) {
+        text += text ? ` (Note: ${addr.note})` : addr.note;
+      }
+      return text || addr.address || '';
+    }
+    return String(addr);
+  };
+
   // 1. Resolve Raw Customer Fields
   let rawName =
     sale.customerName ||
@@ -69,17 +84,30 @@ export default function Receipt({
     (typeof sale.customer === 'string' && !UUID_RE.test(sale.customer) ? sale.customer : '') ||
     '';
 
+  if (typeof rawName === 'object' && rawName !== null) {
+    rawName = rawName.name || rawName.displayName || rawName.receiverName || '';
+  }
+
   let rawPhone =
     sale.customerPhone ||
-    (typeof sale.customer === 'object' ? sale.customer?.phone : null) ||
+    (typeof sale.customer === 'object' ? sale.customer?.phone || sale.customer?.phoneNumber : null) ||
     customerData?.phone ||
+    customerData?.phoneNumber ||
     '';
 
-  const rawEmail =
+  if (typeof rawPhone === 'object' && rawPhone !== null) {
+    rawPhone = rawPhone.phone || rawPhone.phoneNumber || '';
+  }
+
+  let rawEmail =
     sale.customerEmail ||
     (typeof sale.customer === 'object' ? sale.customer?.email : null) ||
     customerData?.email ||
     '';
+
+  if (typeof rawEmail === 'object' && rawEmail !== null) {
+    rawEmail = rawEmail.email || '';
+  }
 
   // Smart sanitization: if phone is non-numeric text (e.g. "Hour"), combine with name
   if (rawPhone && !isNumericPhone(rawPhone)) {
@@ -95,19 +123,41 @@ export default function Receipt({
 
   // 2. Resolve Delivery Info
   const rawDeliveryMethod = sale.deliveryMethod || sale.order?.deliveryMethod || (sale.deliveryAddress ? 'DELIVERY' : null);
-  const deliveryMethod = rawDeliveryMethod ? rawDeliveryMethod.toUpperCase() : null;
+  const deliveryMethod = rawDeliveryMethod
+    ? (typeof rawDeliveryMethod === 'string' ? rawDeliveryMethod.toUpperCase() : String(rawDeliveryMethod?.name || 'DELIVERY').toUpperCase())
+    : null;
   const isDelivery = deliveryMethod === 'DELIVERY';
   const isPickup = deliveryMethod === 'PICKUP';
 
-  const deliveryAddress =
+  const rawAddrObj =
+    (typeof sale.deliveryAddress === 'object' ? sale.deliveryAddress : null) ||
+    (typeof sale.shippingAddress === 'object' ? sale.shippingAddress : null) ||
+    (typeof sale.deliveryAddressSnapshot === 'object' ? sale.deliveryAddressSnapshot : null) ||
+    (typeof sale.address === 'object' ? sale.address : null) ||
+    (typeof sale.deliveryInfo === 'object' ? sale.deliveryInfo : null);
+
+  const deliveryAddress = formatAddressObj(
     sale.deliveryAddress ||
     sale.shippingAddress ||
+    sale.deliveryAddressSnapshot ||
     sale.address ||
-    (typeof sale.deliveryInfo === 'object' ? sale.deliveryInfo?.address : sale.deliveryInfo) ||
+    sale.deliveryInfo ||
+    ''
+  );
+
+  const receiverName =
+    (typeof sale.receiverName === 'string' ? sale.receiverName : '') ||
+    (typeof sale.recipientName === 'string' ? sale.recipientName : '') ||
+    (typeof rawAddrObj?.receiverName === 'string' ? rawAddrObj.receiverName : '') ||
+    (typeof rawAddrObj?.recipientName === 'string' ? rawAddrObj.recipientName : '') ||
     '';
 
-  const receiverName = sale.receiverName || sale.recipientName || '';
-  const receiverPhone = sale.receiverPhone || sale.recipientPhone || '';
+  const receiverPhone =
+    (typeof sale.receiverPhone === 'string' ? sale.receiverPhone : '') ||
+    (typeof sale.recipientPhone === 'string' ? sale.recipientPhone : '') ||
+    (typeof rawAddrObj?.phoneNumber === 'string' ? rawAddrObj.phoneNumber : '') ||
+    (typeof rawAddrObj?.phone === 'string' ? rawAddrObj.phone : '') ||
+    '';
 
   // 3. Order & Invoice Numbers
   const invoiceNumber = sale.invoiceNumber || sale.billNumber || sale.billNo || `INV-${String(sale.id || '').slice(-6)}`;
