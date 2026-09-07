@@ -13,6 +13,7 @@ import Cart from '../pages/Cart';
 import Checkout from '../pages/Checkout';
 import Orders from '../pages/Orders';
 import Account from '../pages/Account';
+import AboutDeveloper from '../pages/AboutDeveloper';
 import Pos from '../pages/Pos';
 import Sales from '../pages/Sales';
 import SaleDetail from '../pages/SaleDetail';
@@ -58,6 +59,9 @@ export default function AppRoutes() {
         <Route path="/orders" element={<Orders />} />
         <Route path="/my-orders" element={<Orders />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/about" element={<AboutDeveloper />} />
+        <Route path="/about-developer" element={<AboutDeveloper />} />
+        <Route path="/developer" element={<AboutDeveloper />} />
 
         {/* Dedicated Customer Dashboard */}
         <Route

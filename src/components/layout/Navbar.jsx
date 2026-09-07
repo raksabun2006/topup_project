@@ -332,20 +332,20 @@ export default function Navbar({ onOpenCart }) {
               {t('shop')}
             </NavLink>
             <NavLink
-              to="/categories"
-              className={({ isActive }) =>
-                `hover:text-black dark:hover:text-white transition ${isActive ? 'text-black dark:text-white font-extrabold' : ''}`
-              }
-            >
-              {t('categories')}
-            </NavLink>
-            <NavLink
               to="/orders"
               className={({ isActive }) =>
                 `hover:text-black dark:hover:text-white transition ${isActive ? 'text-black dark:text-white font-extrabold' : ''}`
               }
             >
               {t('orders')}
+            </NavLink>
+            <NavLink
+              to="/about"
+              className={({ isActive }) =>
+                `hover:text-black dark:hover:text-white transition ${isActive ? 'text-black dark:text-white font-extrabold' : ''}`
+              }
+            >
+              {t('about')}
             </NavLink>
           </div>
 

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Store, Layers, Receipt, ShoppingCart, User, ShoppingBag } from 'lucide-react';
+import { Store, Code2, Receipt, ShoppingCart, User, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 
@@ -10,7 +10,7 @@ export default function CustomerBottomNav({ onOpenCart }) {
 
   const isHome = pathname === '/';
   const isShop = pathname === '/shop' || pathname === '/products';
-  const isCategories = pathname === '/categories';
+  const isAbout = pathname === '/about' || pathname === '/about-developer' || pathname === '/developer';
   const isOrders = pathname === '/orders';
   const isCart = pathname === '/cart';
   const isAccount = pathname === '/account' || pathname === '/profile' || pathname === '/login';
@@ -44,20 +44,7 @@ export default function CustomerBottomNav({ onOpenCart }) {
           <span>Shop</span>
         </Link>
 
-        {/* 3. Categories */}
-        <Link
-          to="/categories"
-          className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition ${
-            isCategories
-              ? 'text-emerald-600 dark:text-emerald-400 font-black'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'
-          }`}
-        >
-          <Layers size={19} className={isCategories ? 'stroke-[2.5]' : ''} />
-          <span>Categories</span>
-        </Link>
-
-        {/* 4. Orders */}
+        {/* 3. Orders */}
         <Link
           to="/orders"
           className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition ${
@@ -68,6 +55,19 @@ export default function CustomerBottomNav({ onOpenCart }) {
         >
           <Receipt size={19} className={isOrders ? 'stroke-[2.5]' : ''} />
           <span>Orders</span>
+        </Link>
+
+        {/* 4. About */}
+        <Link
+          to="/about"
+          className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition ${
+            isAbout
+              ? 'text-emerald-600 dark:text-emerald-400 font-black'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'
+          }`}
+        >
+          <Code2 size={19} className={isAbout ? 'stroke-[2.5]' : ''} />
+          <span>About</span>
         </Link>
 
         {/* 5. Cart */}
