@@ -702,8 +702,8 @@ export default function Navbar({ onOpenCart }) {
             {[
               { to: '/', label: t('home'), icon: Home },
               { to: '/shop', label: t('shop'), icon: ShoppingBag },
-              { to: '/categories', label: t('categories'), icon: Layers },
               { to: '/orders', label: t('myOrders'), icon: Package },
+              { to: '/about', label: t('about'), icon: Sparkles },
               { to: '/cart', label: t('myCart'), icon: ShoppingCart },
             ].map(({ to, label, icon: Icon }) => (
               <Link
