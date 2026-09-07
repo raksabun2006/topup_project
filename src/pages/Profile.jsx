@@ -116,18 +116,59 @@ export default function Profile() {
 
           <div className="min-w-0 w-full flex-1">
             <label className="mb-1 block text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 text-left">
-              តំណភ្ជាប់រូបភាព
+              តំណភ្ជាប់រូបភាព (Profile Image URL)
             </label>
-            <input
-              type="url"
-              value={form.avatarUrl}
-              onChange={set('avatarUrl')}
-              placeholder="https://example.com/avatar.png"
-              className={inputClass}
-            />
-            <p className="mt-1.5 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 text-left">
-              ត្រូវជា https។ រូបភាពរក្សាទុកនៅ server ដើម - បើវាដួល
-              រូបភាពនឹងបាត់។
+            <div className="relative flex items-center">
+              <input
+                type="url"
+                value={form.avatarUrl}
+                onChange={set('avatarUrl')}
+                placeholder="https://example.com/avatar.png"
+                className={inputClass}
+              />
+              {form.avatarUrl && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForm((prev) => ({ ...prev, avatarUrl: '' }));
+                    setImageBroken(false);
+                  }}
+                  className="absolute right-3 text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Quick Presets */}
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span className="text-[11px] text-slate-400 block w-full text-left">ជ្រើសរើសរូបតំណាងគំរូ:</span>
+              {[
+                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
+                'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
+                'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=250&q=80',
+                'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&q=80',
+                'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=250&q=80',
+                'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=250&q=80',
+              ].map((preset, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setForm((prev) => ({ ...prev, avatarUrl: preset }));
+                    setImageBroken(false);
+                  }}
+                  className={`h-8 w-8 rounded-full overflow-hidden border-2 transition hover:scale-105 cursor-pointer ${
+                    form.avatarUrl === preset ? 'border-emerald-500 ring-2 ring-emerald-500/30' : 'border-transparent'
+                  }`}
+                >
+                  <img src={preset} alt="" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+
+            <p className="mt-2 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 text-left">
+              ត្រូវជាតំណភ្ជាប់ https។ រូបភាពនឹងបង្ហាញលើគ្រប់ផ្ទាំងទាំងអស់ភ្លាមៗ។
             </p>
             {imageBroken && (
               <p className="mt-1 text-xs text-amber-700 dark:text-amber-400 text-left">

@@ -295,13 +295,16 @@ export default function AdminDashboard() {
             type="button"
             onClick={reloadSales}
             disabled={salesLoading}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-2xs transition active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
+            className="flex h-8.5 w-8.5 items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs transition active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
             title="Reload live store data"
           >
             <RefreshCw size={13} className={salesLoading ? 'animate-spin text-emerald-600' : ''} />
           </button>
 
-
+          {/* Notification Bell */}
+          <div className="relative shrink-0">
+            <NotificationDropdown variant="admin" />
+          </div>
 
           {/* Theme Toggle */}
           <div className="shrink-0">

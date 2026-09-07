@@ -112,28 +112,31 @@ export default function NotificationDropdown({ variant = 'admin' }) {
         onClick={() => setOpen((prev) => !prev)}
         aria-label="ការជូនដំណឹង"
         aria-expanded={open}
-        className={`relative transition-all duration-200 outline-none select-none active:scale-95 cursor-pointer flex items-center justify-center rounded-full ${
+        className={`group relative transition-all duration-200 outline-none select-none active:scale-95 cursor-pointer flex items-center justify-center rounded-full ${
           isNavbarVariant
             ? `h-10 w-10 text-white/90 hover:bg-white/15 hover:text-white ${
                 open ? 'bg-white/20 text-white' : ''
               }`
-            : `h-9 w-9 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white ${
-                open ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white' : ''
+            : `h-8.5 w-8.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-2xs ${
+                open ? 'ring-2 ring-emerald-500/30 border-emerald-500/50 text-emerald-600 dark:text-emerald-400' : ''
               }`
         }`}
         title="ការជូនដំណឹង (Notifications)"
       >
         <Bell
-          size={isNavbarVariant ? 19 : 17}
-          className={`transition-transform duration-200 ${
-            unreadCount > 0 ? 'animate-wiggle' : ''
+          size={isNavbarVariant ? 19 : 16}
+          className={`transition-transform duration-200 group-hover:rotate-12 ${
+            unreadCount > 0 ? 'text-slate-700 dark:text-slate-200' : ''
           }`}
         />
 
         {/* Unread count badge */}
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-black text-white shadow-sm shadow-rose-600/50 animate-scale-in">
-            {unreadCount > 99 ? '99+' : unreadCount}
+          <span className="absolute -top-1 -right-1 flex items-center justify-center pointer-events-none">
+            <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-rose-400 opacity-60" />
+            <span className="relative flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white ring-2 ring-white dark:ring-slate-900 shadow-xs">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
           </span>
         )}
       </button>

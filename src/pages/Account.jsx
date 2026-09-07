@@ -1,25 +1,58 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   User, Mail, Phone, ShieldCheck, LogOut, Receipt, ShoppingBag,
   ArrowRight, LayoutDashboard, ShoppingCart, Package, Users,
   BarChart3, WalletCards, Shield, Sparkles, ChevronRight, Tag,
   Clock, CheckCircle2, CreditCard, Settings, Eye, RefreshCw,
-  ExternalLink, ArrowUpRight, Globe
+  ExternalLink, ArrowUpRight, Globe, Camera, Check, AlertCircle,
+  Loader2, Image, Link2, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getCustomerOrders } from '../components/pos/CustomerOrdersModal';
 import { formatCurrency, formatDate } from '../utils/format';
+import { usersApi } from '../api/userApi';
+import { getErrorMessage } from '../api/client';
 import UserAvatar from '../components/ui/UserAvatar';
 import SEO from '../components/SEO';
 
+const AVATAR_PRESETS = [
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=250&q=80',
+];
+
 export default function Account() {
-  const { isAuthenticated, user, logout, isAdmin, isManager, isManagerOrAdmin, isStaff, displayRole } = useAuth();
+  const { isAuthenticated, user, logout, refreshProfile, isAdmin, isManager, isManagerOrAdmin, isStaff, displayRole } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const isDashboardRoute = pathname.startsWith('/dashboard');
 
   const [activeTab, setActiveTab] = useState('tools'); // 'tools' | 'orders' | 'profile'
+  const [profileForm, setProfileForm] = useState({
+    displayName: user?.displayName || user?.name || '',
+    email: user?.email || '',
+    phoneNumber: user?.phoneNumber || '',
+    avatarUrl: user?.avatarUrl || '',
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileSuccess, setProfileSuccess] = useState('');
+  const [profileError, setProfileError] = useState('');
+  const [avatarPreviewBroken, setAvatarPreviewBroken] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        displayName: user.displayName || user.name || '',
+        email: user.email || '',
+        phoneNumber: user.phoneNumber || '',
+        avatarUrl: user.avatarUrl || '',
+      });
+    }
+  }, [user]);
 
   const orders = getCustomerOrders();
   const recentOrders = orders.slice(0, 5);
@@ -195,8 +228,16 @@ export default function Account() {
           <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-5">
             {/* User Info Left */}
             <div className="flex items-start sm:items-center gap-4">
-              <div className="relative shrink-0">
-                <UserAvatar user={user} className="h-16 w-16 sm:h-20 sm:w-20 text-2xl ring-4 ring-slate-100 dark:ring-slate-800" />
+              <div className="relative shrink-0 group">
+                <UserAvatar user={{ ...user, avatarUrl: profileForm.avatarUrl || user?.avatarUrl }} className="h-16 w-16 sm:h-20 sm:w-20 text-2xl ring-4 ring-slate-100 dark:ring-slate-800" />
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('profile')}
+                  className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity cursor-pointer"
+                  title="Change profile photo"
+                >
+                  <Camera size={20} />
+                </button>
                 <span className="absolute bottom-0 right-0 block h-4 w-4 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
               </div>
 
@@ -462,45 +503,203 @@ export default function Account() {
         {/* TAB 3: PROFILE & SECURITY */}
         {activeTab === 'profile' && (
           <div className="space-y-4 animate-fade-in">
-            <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 sm:p-7 space-y-6 shadow-2xs">
-              <div>
-                <h3 className="text-base font-black text-slate-900 dark:text-white">Account Details & Profile</h3>
-                <p className="text-xs text-slate-400">Personal information and store credentials</p>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setSavingProfile(true);
+                setProfileError('');
+                setProfileSuccess('');
+                try {
+                  await usersApi.updateMe({
+                    displayName: profileForm.displayName.trim() || undefined,
+                    email: profileForm.email.trim() || undefined,
+                    phoneNumber: profileForm.phoneNumber.trim() || undefined,
+                    avatarUrl: profileForm.avatarUrl.trim() || null,
+                  });
+                  await refreshProfile?.();
+                  setProfileSuccess('Profile photo and details saved successfully!');
+                  setTimeout(() => setProfileSuccess(''), 4000);
+                } catch (err) {
+                  setProfileError(getErrorMessage(err));
+                } finally {
+                  setSavingProfile(false);
+                }
+              }}
+              className="rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 sm:p-7 space-y-6 shadow-2xs"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">Profile Photo & Account Details</h3>
+                  <p className="text-xs text-slate-400">Update your avatar image link, name, and contact details</p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={savingProfile}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white px-5 py-2 text-xs font-bold transition shadow-xs disabled:opacity-50 cursor-pointer self-start sm:self-auto"
+                >
+                  {savingProfile ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                  <span>{savingProfile ? 'Saving...' : 'Save Profile'}</span>
+                </button>
               </div>
 
+              {profileSuccess && (
+                <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 p-3 text-xs font-bold text-emerald-700 dark:text-emerald-400 animate-fade-in">
+                  <CheckCircle2 size={16} className="shrink-0" />
+                  <span>{profileSuccess}</span>
+                </div>
+              )}
+
+              {profileError && (
+                <div className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-50 dark:bg-rose-950/40 p-3 text-xs font-bold text-rose-700 dark:text-rose-400 animate-fade-in">
+                  <AlertCircle size={16} className="shrink-0" />
+                  <span>{profileError}</span>
+                </div>
+              )}
+
+              {/* 1. Avatar Image URL & Live Preview */}
+              <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 bg-slate-50/50 dark:bg-slate-800/30 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  {/* Live Avatar Preview */}
+                  <div className="relative shrink-0 flex items-center justify-center">
+                    <UserAvatar
+                      user={{ ...user, avatarUrl: profileForm.avatarUrl || user?.avatarUrl }}
+                      className="h-16 w-16 sm:h-20 sm:w-20 text-2xl ring-4 ring-white dark:ring-slate-800 shadow-md"
+                    />
+                  </div>
+
+                  {/* URL Input Box */}
+                  <div className="flex-1 space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <Link2 size={13} className="text-[#164E87] dark:text-blue-400" />
+                      <span>Profile Image URL (Link)</span>
+                    </label>
+
+                    <div className="relative flex items-center">
+                      <input
+                        type="url"
+                        value={profileForm.avatarUrl}
+                        onChange={(e) => {
+                          setProfileForm((prev) => ({ ...prev, avatarUrl: e.target.value }));
+                          setAvatarPreviewBroken(false);
+                        }}
+                        placeholder="https://example.com/my-photo.jpg (or select a preset below)"
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#164E87] focus:ring-1 focus:ring-[#164E87] focus:outline-none transition pr-8"
+                      />
+                      {profileForm.avatarUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setProfileForm((prev) => ({ ...prev, avatarUrl: '' }))}
+                          className="absolute right-2.5 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                          title="Clear avatar URL"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+
+                    <p className="text-[11px] text-slate-400">
+                      Paste any direct image link from Imgur, Discord, Unsplash, Google Drive, or your website.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Preset Avatars */}
+                <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2">
+                    Quick Preset Avatars
+                  </span>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {AVATAR_PRESETS.map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setProfileForm((prev) => ({ ...prev, avatarUrl: preset }))}
+                        className={`relative h-10 w-10 rounded-full overflow-hidden border-2 transition active:scale-95 cursor-pointer ${
+                          profileForm.avatarUrl === preset
+                            ? 'border-emerald-500 ring-2 ring-emerald-500/40 scale-105'
+                            : 'border-transparent hover:border-slate-300 dark:hover:border-slate-600'
+                        }`}
+                        title={`Select preset ${idx + 1}`}
+                      >
+                        <img src={preset} alt="" className="h-full w-full object-cover" />
+                      </button>
+                    ))}
+                    {profileForm.avatarUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setProfileForm((prev) => ({ ...prev, avatarUrl: '' }))}
+                        className="px-2.5 py-1 text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition"
+                      >
+                        Reset to Initial
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Text Fields (Display Name, Email, Phone, Username) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-800/40">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Username</span>
-                  <p className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mt-1 font-mono">@{user?.username}</p>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Display Name</label>
+                  <input
+                    type="text"
+                    value={profileForm.displayName}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, displayName: e.target.value }))}
+                    placeholder="Your full name"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#164E87] focus:ring-1 focus:ring-[#164E87] focus:outline-none transition"
+                  />
                 </div>
 
-                <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-800/40">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Display Name</span>
-                  <p className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mt-1">
-                    {user?.displayName || user?.name || user?.username}
-                  </p>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Email Address</label>
+                  <input
+                    type="email"
+                    value={profileForm.email}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, email: e.target.value }))}
+                    placeholder="name@example.com"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#164E87] focus:ring-1 focus:ring-[#164E87] focus:outline-none transition"
+                  />
                 </div>
 
-                <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-800/40">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Email Address</span>
-                  <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white mt-1">
-                    {user?.email || 'No email configured'}
-                  </p>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={profileForm.phoneNumber}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, phoneNumber: e.target.value }))}
+                    placeholder="012 345 678"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#164E87] focus:ring-1 focus:ring-[#164E87] focus:outline-none transition"
+                  />
                 </div>
 
-                <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-800/40">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Phone Number</span>
-                  <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white mt-1">
-                    {user?.phoneNumber || '0968782196'}
-                  </p>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-400">Username (Account ID)</label>
+                  <input
+                    type="text"
+                    disabled
+                    value={user?.username || ''}
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/60 px-3.5 py-2.5 text-xs text-slate-500 font-mono cursor-not-allowed"
+                  />
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500">
-                <span>To update your credentials or role privileges, please contact the administrator.</span>
-                <span className="font-mono text-[11px] text-slate-400">Support: 0968782196</span>
+              {/* Form Bottom Save Actions */}
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <span className="text-xs text-slate-400">
+                  Role: <span className="font-bold text-slate-700 dark:text-slate-200">{displayRole}</span>
+                </span>
+
+                <button
+                  type="submit"
+                  disabled={savingProfile}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white px-6 py-2.5 text-xs font-bold transition shadow-md hover:shadow-lg active:scale-98 disabled:opacity-50 cursor-pointer"
+                >
+                  {savingProfile ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                  <span>{savingProfile ? 'Saving Changes...' : 'Save Profile Changes'}</span>
+                </button>
               </div>
-            </div>
+            </form>
           </div>
         )}
 

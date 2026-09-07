@@ -7,8 +7,8 @@ export default function UserAvatar({
   fallbackClass = 'bg-white/20 text-white',
 }) {
   const [imgError, setImgError] = useState(false);
-  const avatarUrl = user?.avatarUrl;
-  const initial = (user?.displayName || user?.username || '').charAt(0).toUpperCase();
+  const avatarUrl = user?.avatarUrl || user?.avatar || user?.image || user?.profileImageUrl || user?.profileImage;
+  const initial = (user?.displayName || user?.name || user?.username || '').charAt(0).toUpperCase();
 
   // Reset img error if avatarUrl changes
   useEffect(() => {
