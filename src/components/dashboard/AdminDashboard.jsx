@@ -483,27 +483,22 @@ export default function AdminDashboard() {
     <div className="space-y-6 max-w-[1400px] mx-auto animate-fade-in font-sans pb-12">
       <SEO title="Admin Overview | Saledash" robots="noindex, nofollow" />
 
-      {/* ------- 1. Top Header Bar (Greeting + Date + Profile) ------- */}
+      {/* ------- 1. Top Header Bar (Greeting + Live Date + Quick Actions) ------- */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0">
-          <h1 className="text-lg xs:text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
             {greeting}, {displayName}!
           </h1>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">
             Here's what's happening with your store today
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+        <div className="flex items-center gap-2 sm:gap-2.5 self-start sm:self-auto">
           {/* Real Live Date Badge Pill */}
-          <div className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 shadow-2xs shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-2xs shrink-0">
             <CalendarIcon size={13} className="text-slate-400 shrink-0" />
             <span>{todayFormatted}</span>
-          </div>
-
-          {/* Notification Bell */}
-          <div className="relative shrink-0">
-            <NotificationDropdown variant="admin" />
           </div>
 
           {/* Refresh Data Button */}
@@ -517,21 +512,26 @@ export default function AdminDashboard() {
             <RefreshCw size={13} className={isLoading ? 'animate-spin text-emerald-600' : ''} />
           </button>
 
-          {/* Theme Toggle */}
-          <div className="shrink-0">
-            <ThemeToggle variant="admin" />
-          </div>
+          {/* Desktop Only Extra Controls (Already present in Mobile Top Navbar) */}
+          <div className="hidden sm:flex items-center gap-2">
+            <div className="relative shrink-0">
+              <NotificationDropdown variant="admin" />
+            </div>
 
-          {/* User Profile Pill */}
-          <Link
-            to="/dashboard/profile"
-            className="flex items-center gap-2 rounded-full border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 pl-1 pr-2.5 py-1 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition shrink-0"
-          >
-            <UserAvatar user={user} className="h-6 w-6 sm:h-7 sm:w-7 text-xs" />
-            <span className="hidden sm:inline text-xs font-bold text-slate-800 dark:text-slate-200 max-w-[120px] truncate">
-              {displayName}
-            </span>
-          </Link>
+            <div className="shrink-0">
+              <ThemeToggle variant="admin" />
+            </div>
+
+            <Link
+              to="/dashboard/profile"
+              className="flex items-center gap-2 rounded-full border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 pl-1 pr-2.5 py-1 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition shrink-0"
+            >
+              <UserAvatar user={user} className="h-6 w-6 sm:h-7 sm:w-7 text-xs" />
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 max-w-[120px] truncate">
+                {displayName}
+              </span>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -550,22 +550,22 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ------- 2. Top 4 Metric KPI Cards Row (Real Data, Responsive 2-4 cols) ------- */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+      {/* ------- 2. Top 4 Metric KPI Cards Row ------- */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
         {/* Card 1: Total products */}
-        <div className="rounded-xl border border-slate-200/70 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-2 sm:p-2.5 lg:p-3 shadow-2xs flex items-center justify-between min-w-0">
-          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 dark:bg-slate-800 text-white shadow-2xs">
-              <Package size={14} className="sm:w-4 sm:h-4" />
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-3.5 shadow-2xs flex items-center justify-between min-w-0 hover:border-slate-300 dark:hover:border-slate-700 transition">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="flex h-8.5 w-8.5 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-white shadow-2xs">
+              <Package size={16} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate">Total products</p>
-              <div className="flex items-baseline gap-1 sm:gap-1.5 mt-0.2">
-                <span className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-white leading-tight">
+              <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate">Total products</p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-base sm:text-lg lg:text-xl font-black text-slate-900 dark:text-white leading-tight">
                   {kpiStats.totalProducts}
                 </span>
-                <span className="inline-flex items-center gap-0.5 text-[8px] sm:text-[9px] font-bold text-emerald-500 shrink-0">
-                  <span className="h-1 w-1 rounded-full bg-emerald-500 inline-block" />
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-emerald-500 shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
                   Active
                 </span>
               </div>
@@ -574,19 +574,19 @@ export default function AdminDashboard() {
         </div>
 
         {/* Card 2: Completed order */}
-        <div className="rounded-xl border border-slate-200/70 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-2 sm:p-2.5 lg:p-3 shadow-2xs flex items-center justify-between min-w-0">
-          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 dark:bg-slate-800 text-white shadow-2xs">
-              <CheckSquare size={14} className="sm:w-4 sm:h-4" />
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-3.5 shadow-2xs flex items-center justify-between min-w-0 hover:border-slate-300 dark:hover:border-slate-700 transition">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="flex h-8.5 w-8.5 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-white shadow-2xs">
+              <CheckSquare size={16} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate">Completed order</p>
-              <div className="flex items-baseline gap-1 sm:gap-1.5 mt-0.2">
-                <span className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-white leading-tight">
+              <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate">Completed order</p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-base sm:text-lg lg:text-xl font-black text-slate-900 dark:text-white leading-tight">
                   {kpiStats.completedOrders}
                 </span>
-                <span className="inline-flex items-center gap-0.5 text-[8px] sm:text-[9px] font-bold text-emerald-500 shrink-0">
-                  <span className="h-1 w-1 rounded-full bg-emerald-500 inline-block" />
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-emerald-500 shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
                   {kpiStats.completionRate}%
                 </span>
               </div>
@@ -595,19 +595,19 @@ export default function AdminDashboard() {
         </div>
 
         {/* Card 3: Canceled order */}
-        <div className="rounded-xl border border-slate-200/70 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-2 sm:p-2.5 lg:p-3 shadow-2xs flex items-center justify-between min-w-0">
-          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 dark:bg-slate-800 text-white shadow-2xs">
-              <XSquare size={14} className="sm:w-4 sm:h-4" />
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-3.5 shadow-2xs flex items-center justify-between min-w-0 hover:border-slate-300 dark:hover:border-slate-700 transition">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="flex h-8.5 w-8.5 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-white shadow-2xs">
+              <XSquare size={16} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate">Canceled order</p>
-              <div className="flex items-baseline gap-1 sm:gap-1.5 mt-0.2">
-                <span className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-white leading-tight">
+              <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate">Canceled order</p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-base sm:text-lg lg:text-xl font-black text-slate-900 dark:text-white leading-tight">
                   {kpiStats.canceledOrders}
                 </span>
-                <span className="inline-flex items-center gap-0.5 text-[8px] sm:text-[9px] font-bold text-rose-500 shrink-0">
-                  <span className="h-1 w-1 rounded-full bg-rose-500 inline-block" />
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-rose-500 shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-rose-500 inline-block" />
                   {kpiStats.canceledOrders > 0 ? `-${Math.round((kpiStats.canceledOrders / Math.max(1, kpiStats.totalCount)) * 100)}%` : '0%'}
                 </span>
               </div>
@@ -616,19 +616,19 @@ export default function AdminDashboard() {
         </div>
 
         {/* Card 4: Top customers */}
-        <div className="rounded-xl border border-slate-200/70 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-2 sm:p-2.5 lg:p-3 shadow-2xs flex items-center justify-between min-w-0">
-          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 dark:bg-slate-800 text-white shadow-2xs">
-              <Users size={14} className="sm:w-4 sm:h-4" />
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-3.5 shadow-2xs flex items-center justify-between min-w-0 hover:border-slate-300 dark:hover:border-slate-700 transition">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="flex h-8.5 w-8.5 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-white shadow-2xs">
+              <Users size={16} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate">Top customers</p>
-              <div className="flex items-baseline gap-1 sm:gap-1.5 mt-0.2">
-                <span className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-white leading-tight">
+              <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate">Top customers</p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-base sm:text-lg lg:text-xl font-black text-slate-900 dark:text-white leading-tight">
                   {kpiStats.topProducts}
                 </span>
-                <span className="inline-flex items-center gap-0.5 text-[8px] sm:text-[9px] font-bold text-emerald-500 shrink-0">
-                  <span className="h-1 w-1 rounded-full bg-emerald-500 inline-block" />
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-emerald-500 shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
                   Profiles
                 </span>
               </div>
@@ -637,8 +637,8 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* ------- 3. Main Chart: "Your sales report" (Real Revenue Spline) ------- */}
-      <div className="rounded-3xl border border-slate-200/70 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-4 sm:p-6 lg:p-7 shadow-2xs space-y-4 sm:space-y-6">
+      {/* ------- 3. Main Chart: "Your sales report" ------- */}
+      <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 lg:p-7 shadow-2xs space-y-4 sm:space-y-6">
         {/* Top Header of Chart */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
@@ -663,26 +663,46 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Large Amount & Growth */}
-        <div>
-          <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-            {formatCurrency(kpiStats.totalRevenue)}
-          </h3>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-500 mt-1">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
-            <span>{kpiStats.completedOrders} Completed Orders ({kpiStats.completionRate}% Paid)</span>
+        {/* Large Amount & Growth + Interactive Selection Chip */}
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+              {formatCurrency(kpiStats.totalRevenue)}
+            </h3>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-500 mt-1">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+              <span>{kpiStats.completedOrders} Completed Orders ({kpiStats.completionRate}% Paid)</span>
+            </div>
           </div>
+
+          {/* Dynamic Active Point Detail Ribbon when tapped/selected */}
+          {activePointIndex !== null && activePoint && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold animate-fade-in">
+              <span className="text-slate-700 dark:text-slate-200">{activePoint.fullDate}:</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-black">{formatCurrency(activePoint.revenue)}</span>
+              <span className="text-slate-400">•</span>
+              <span className="text-blue-600 dark:text-blue-400">{activePoint.transactions} orders</span>
+              <button
+                type="button"
+                onClick={() => setActivePointIndex(null)}
+                className="ml-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer text-sm font-bold"
+                title="Reset selection"
+              >
+                ×
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* SVG Spline Graph with Responsive Safe-Anchored Tooltip */}
-        <div className="relative select-none pt-8 sm:pt-10 overflow-visible">
+        {/* SVG Spline Graph */}
+        <div className="relative select-none pt-4 sm:pt-6 overflow-visible">
           <svg
             viewBox={`0 0 ${chartWidth} ${chartHeight}`}
             className="w-full h-36 xs:h-44 sm:h-56 md:h-64 overflow-visible"
           >
             <defs>
               <linearGradient id="blueGlowReal" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
+                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.25" />
                 <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0" />
               </linearGradient>
             </defs>
@@ -719,12 +739,12 @@ export default function AdminDashboard() {
 
             {/* Points & Interactive Click Targets */}
             {pointsBlue.map((p, i) => {
-              const isActive = resolvedActiveIndex === i;
+              const isActive = activePointIndex === i;
               return (
                 <g
                   key={p.label + i}
                   className="cursor-pointer"
-                  onClick={() => setActivePointIndex(i)}
+                  onClick={() => setActivePointIndex(activePointIndex === i ? null : i)}
                 >
                   <rect
                     x={p.x - 20}
@@ -737,7 +757,7 @@ export default function AdminDashboard() {
                     <circle
                       cx={p.x}
                       cy={p.y}
-                      r={7}
+                      r={6}
                       fill="#3b82f6"
                       stroke="#ffffff"
                       strokeWidth={3}
@@ -749,56 +769,15 @@ export default function AdminDashboard() {
             })}
           </svg>
 
-          {/* Floating Tooltip Card: dynamically anchored to never overflow left or right */}
-          {activePoint && (() => {
-            const rawPercent = (activePoint.x / chartWidth) * 100;
-            let alignClass = '-translate-x-1/2';
-            let extraOffset = '0px';
-            if (rawPercent > 65) {
-              alignClass = '-translate-x-full';
-              extraOffset = '-10px';
-            } else if (rawPercent < 35) {
-              alignClass = 'translate-x-0';
-              extraOffset = '10px';
-            }
-
-            return (
-              <div
-                className={`pointer-events-none absolute top-0 rounded-2xl bg-[#18181B] dark:bg-slate-800 text-white p-2.5 sm:p-3 shadow-2xl z-20 min-w-32 sm:min-w-36 text-left animate-scale-in border border-slate-700/50 ${alignClass} -translate-y-full`}
-                style={{
-                  left: `calc(${rawPercent}% + ${extraOffset})`,
-                }}
-              >
-                <p className="text-[11px] sm:text-xs font-bold text-white mb-1">
-                  {activePoint.fullDate}
-                </p>
-                <div className="space-y-0.5 sm:space-y-1 text-[10px] sm:text-[11px] font-medium text-slate-300">
-                  <p className="flex items-center gap-1.5 font-bold text-emerald-400">
-                    <span className="h-2.5 w-0.5 bg-emerald-400 rounded-full" />
-                    <span>{formatCurrency(activePoint.revenue)}</span>
-                  </p>
-                  <p className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-0.5 bg-blue-500 rounded-full" />
-                    <span>{activePoint.transactions} Transactions</span>
-                  </p>
-                  <p className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-0.5 bg-orange-500 rounded-full" />
-                    <span>{activePoint.products} Products Sold</span>
-                  </p>
-                </div>
-              </div>
-            );
-          })()}
-
           {/* Labels along the bottom */}
-          <div className="flex justify-between items-center text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 pt-2 px-1 sm:px-2">
+          <div className="flex justify-between items-center text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 pt-3 px-1 sm:px-2">
             {chartData.map((d, i) => (
               <button
                 key={d.label + i}
-                onClick={() => setActivePointIndex(i)}
-                className={`transition-colors cursor-pointer px-1 py-0.5 rounded ${
-                  resolvedActiveIndex === i
-                    ? 'text-slate-900 dark:text-white font-black scale-105 sm:scale-110'
+                onClick={() => setActivePointIndex(activePointIndex === i ? null : i)}
+                className={`transition-all cursor-pointer px-1.5 py-0.5 rounded-lg ${
+                  activePointIndex === i
+                    ? 'text-slate-900 dark:text-white font-black bg-slate-100 dark:bg-slate-800 scale-105'
                     : 'hover:text-slate-700 dark:hover:text-slate-300'
                 }`}
               >
@@ -809,7 +788,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Time Period Filter Pills */}
-        <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 overflow-x-auto pb-1 scrollbar-none">
           {[
             { key: '1d', label: '1d' },
             { key: '7d', label: '7d' },
