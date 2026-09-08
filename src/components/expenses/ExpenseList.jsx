@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Plus, Edit2, Trash2, Calendar, Tag, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Calendar, Tag, Loader2, AlertCircle, RefreshCw, FileSpreadsheet } from 'lucide-react';
 import { expenseApi } from '../../api/expenseApi';
 import { getErrorMessage } from '../../api/client';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { EXPENSE_CATEGORIES, getCategoryMeta, formatToDateString } from '../../utils/dateFilter';
+import { exportExpensesListToExcel } from '../../utils/excelExport';
 import ExpenseModal from './ExpenseModal';
 
 export default function ExpenseList({
@@ -114,6 +115,18 @@ export default function ExpenseList({
               </option>
             ))}
           </select>
+
+          {/* Export to Excel Button */}
+          <button
+            type="button"
+            onClick={() => exportExpensesListToExcel(expenses, 'Mart_Expenses')}
+            disabled={expenses.length === 0}
+            className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-2xs transition active:scale-95 disabled:opacity-50 cursor-pointer"
+            title="ទាញយកបញ្ជីចំណាយជាឯកសារ Excel (.xls)"
+          >
+            <FileSpreadsheet size={15} className="text-emerald-600 dark:text-emerald-400" />
+            <span className="hidden sm:inline">Export Excel</span>
+          </button>
 
           {/* Add Expense Button */}
           <button

@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, Check } from 'lucide-react';
 import { DATE_PRESETS, getDateRangeForPreset, formatToDateString } from '../../utils/dateFilter';
 
 export default function ReportDateFilter({
-  currentPreset = 'today',
+  currentPreset = 'this_month',
   fromDate = '',
   toDate = '',
   onChange,
@@ -12,6 +12,15 @@ export default function ReportDateFilter({
   const [selectedPreset, setSelectedPreset] = useState(currentPreset);
   const [customFrom, setCustomFrom] = useState(fromDate || formatToDateString(new Date()));
   const [customTo, setCustomTo] = useState(toDate || formatToDateString(new Date()));
+
+  useEffect(() => {
+    setSelectedPreset(currentPreset);
+  }, [currentPreset]);
+
+  useEffect(() => {
+    if (fromDate) setCustomFrom(fromDate);
+    if (toDate) setCustomTo(toDate);
+  }, [fromDate, toDate]);
 
   const handleSelectPreset = (presetId) => {
     setSelectedPreset(presetId);

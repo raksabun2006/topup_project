@@ -3,13 +3,14 @@ import {
   Plus, Edit2, Trash2, Loader2, AlertCircle, RefreshCw,
   Package, ChevronLeft, ChevronRight, Tags, Search, X,
   LayoutGrid, List, AlertTriangle,
-  Boxes, Layers, Tag, Sparkles, Check
+  Boxes, Layers, Tag, Sparkles, Check, FileSpreadsheet
 } from 'lucide-react';
 import { adminProductApi } from '../api/adminProductApi';
 import { getErrorMessage } from '../api/client';
 import { formatCurrency } from '../utils/format';
 import { useCategories } from '../hooks/useCategories';
 import { DEFAULT_PRODUCTS } from '../constants/products';
+import { exportProductsListToExcel } from '../utils/excelExport';
 import ProductFormModal from '../components/admin/ProductFormModal';
 import CategoryManagerModal from '../components/admin/CategoryManagerModal';
 import SEO from '../components/SEO';
@@ -245,6 +246,19 @@ export default function Products() {
               <span>Import 20 Products</span>
             </>
           )}
+        </button>
+
+        <button
+          onClick={() => {
+            const catMap = new Map(categories.map((c) => [c.id || c.name, c.name]));
+            exportProductsListToExcel(filteredProducts, catMap, 'Mart_Products_Catalog');
+          }}
+          disabled={filteredProducts.length === 0}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-2xs transition active:scale-95 disabled:opacity-50 cursor-pointer"
+          title="ទាញយកកាតាឡុកទំនិញជាឯកសារ Excel (.xls)"
+        >
+          <FileSpreadsheet size={16} className="text-emerald-600 dark:text-emerald-400" />
+          <span>Export Excel</span>
         </button>
 
         <button

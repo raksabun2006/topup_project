@@ -55,16 +55,16 @@ export function getDateRangeForPreset(presetId) {
       return { from: todayStr, to: todayStr };
 
     case 'yesterday': {
-      const yesterday = new Date(now);
-      yesterday.setDate(now.getDate() - 1);
+      const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
       const yStr = formatToDateString(yesterday);
       return { from: yStr, to: yStr };
     }
 
     case 'this_week': {
-      const day = now.getDay();
-      const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday start
-      const monday = new Date(now.setDate(diff));
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday start
+      const monday = new Date(d.setDate(diff));
       return { from: formatToDateString(monday), to: todayStr };
     }
 

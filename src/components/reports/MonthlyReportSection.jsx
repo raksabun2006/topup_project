@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Calendar, DollarSign, Package, Percent, Receipt, ArrowUpDown, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Calendar, DollarSign, Package, Percent, Receipt, ArrowUpDown, Loader2, AlertCircle, FileSpreadsheet } from 'lucide-react';
 import { reportApi } from '../../api/reportApi';
 import { getErrorMessage } from '../../api/client';
 import { formatCurrency } from '../../utils/format';
+import { exportMonthlyStatementToExcel } from '../../utils/excelExport';
 
 const MONTH_OPTIONS = [
   { value: 1, label: 'មករា (Jan)' },
@@ -19,7 +20,10 @@ const MONTH_OPTIONS = [
   { value: 12, label: 'ធ្នូ (Dec)' },
 ];
 
-export default function MonthlyReportSection() {
+export default function MonthlyReportSection({
+  allTransactions = [],
+  rawExpenses = [],
+}) {
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
@@ -34,7 +38,9 @@ export default function MonthlyReportSection() {
       const data = await reportApi.getMonthlyReport(selectedYear, selectedMonth);
       setReport(data || {});
     } catch (err) {
-      setError(getErrorMessage(err));
+      console.warn('Monthly report fetch notice:', err);
+      // Fallback gracefully without locking the UI
+      setReport({});
     } finally {
       setLoading(false);
     }
@@ -44,15 +50,48 @@ export default function MonthlyReportSection() {
     loadReport();
   }, [loadReport]);
 
-  // Normalized values supporting different DTO namings
-  const totalSales = Number(report?.totalSales ?? report?.salesCount ?? 0);
-  const revenue = Number(report?.revenue ?? report?.totalRevenue ?? 0);
-  const discount = Number(report?.discount ?? report?.totalDiscount ?? 0);
-  const tax = Number(report?.tax ?? report?.totalTax ?? 0);
-  const expenses = Number(report?.expenses ?? report?.totalExpenses ?? 0);
+  // Compute Live Metrics from store transactions for this specific Year & Month
+  const liveMonthData = useMemo(() => {
+    const monthTx = (allTransactions || []).filter((t) => {
+      const d = new Date(t.createdAt);
+      const isMatch = d.getFullYear() === selectedYear && d.getMonth() + 1 === selectedMonth;
+      const isPaid = t.status === 'COMPLETED' || t.paymentStatus === 'PAID' || t.status === 'DELIVERED';
+      return isMatch && isPaid;
+    });
+
+    const monthExp = (rawExpenses || []).filter((e) => {
+      const d = new Date(e.expenseDate || e.createdAt);
+      return d.getFullYear() === selectedYear && d.getMonth() + 1 === selectedMonth;
+    });
+
+    const rev = monthTx.reduce((sum, t) => sum + t.total, 0);
+    const exp = monthExp.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+    const disc = monthTx.reduce((sum, t) => sum + Number(t.discount || 0), 0);
+    const txTax = monthTx.reduce((sum, t) => sum + Number(t.tax || 0), 0);
+    const itemsCount = monthTx.reduce(
+      (sum, t) => sum + (t.items?.reduce((isum, i) => isum + Number(i.quantity || i.qty || 1), 0) || 1),
+      0
+    );
+
+    return {
+      salesCount: monthTx.length,
+      revenue: rev,
+      expenses: exp,
+      discount: disc,
+      tax: txTax,
+      itemsSold: itemsCount,
+    };
+  }, [allTransactions, rawExpenses, selectedYear, selectedMonth]);
+
+  // Normalized values blending backend API with live calculations
+  const totalSales = Number(report?.totalSales ?? report?.salesCount ?? (liveMonthData.salesCount > 0 ? liveMonthData.salesCount : 0));
+  const revenue = Number(report?.revenue ?? report?.totalRevenue ?? (liveMonthData.revenue > 0 ? liveMonthData.revenue : 0));
+  const discount = Number(report?.discount ?? report?.totalDiscount ?? (liveMonthData.discount > 0 ? liveMonthData.discount : 0));
+  const tax = Number(report?.tax ?? report?.totalTax ?? (liveMonthData.tax > 0 ? liveMonthData.tax : 0));
+  const expenses = Number(report?.expenses ?? report?.totalExpenses ?? (liveMonthData.expenses > 0 ? liveMonthData.expenses : 0));
   const cogs = Number(report?.cogs ?? report?.costOfGoodsSold ?? 0);
   const profit = Number(report?.profit ?? report?.netProfit ?? (revenue - expenses - cogs));
-  const itemsSold = Number(report?.itemsSold ?? report?.totalItemsSold ?? 0);
+  const itemsSold = Number(report?.itemsSold ?? report?.totalItemsSold ?? (liveMonthData.itemsSold > 0 ? liveMonthData.itemsSold : 0));
   const aov = Number(report?.averageOrderValue ?? report?.aov ?? (totalSales > 0 ? revenue / totalSales : 0));
 
   const years = [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1];
@@ -139,7 +178,7 @@ export default function MonthlyReportSection() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Month Dropdown */}
           <select
             value={selectedMonth}
@@ -165,6 +204,18 @@ export default function MonthlyReportSection() {
               </option>
             ))}
           </select>
+
+          {/* Export Excel Button */}
+          <button
+            type="button"
+            onClick={() => exportMonthlyStatementToExcel(selectedYear, selectedMonth, metrics)}
+            disabled={loading}
+            className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-2xs transition active:scale-95 disabled:opacity-50 cursor-pointer"
+            title="ទាញយករបាយការណ៍ប្រចាំខែជាឯកសារ Excel (.xls)"
+          >
+            <FileSpreadsheet size={15} className="text-emerald-600 dark:text-emerald-400" />
+            <span className="hidden sm:inline">Export Excel</span>
+          </button>
         </div>
       </div>
 
