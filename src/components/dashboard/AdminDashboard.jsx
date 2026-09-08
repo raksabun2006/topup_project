@@ -1,14 +1,19 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Calendar as CalendarIcon, Search, SlidersHorizontal,
   Package, CheckSquare, XSquare, Users, ChevronLeft, ChevronRight,
-  TrendingUp, ArrowRight, ShoppingCart, RefreshCw, AlertCircle
+  TrendingUp, ArrowRight, ShoppingCart, RefreshCw, AlertCircle,
+  Receipt as ReceiptIcon, Eye, ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSales } from '../../hooks/useSales';
 import { useProducts } from '../../hooks/useProducts';
 import { useCustomers } from '../../hooks/useCustomers';
+import { adminApi } from '../../api/adminApi';
+import { reportApi } from '../../api/reportApi';
+import { getCustomerOrders } from '../pos/CustomerOrdersModal';
+import SaleSuccessModal from '../pos/SaleSuccessModal';
 import { formatCurrency, formatDate } from '../../utils/format';
 import UserAvatar from '../ui/UserAvatar';
 import ThemeToggle from '../ui/ThemeToggle';
@@ -25,12 +30,60 @@ export default function AdminDashboard() {
   const { products, totalElements: totalProductsCount } = useProducts();
   const { customers } = useCustomers();
 
+  // Online Customer Orders & Backend Stats from API
+  const [onlineOrders, setOnlineOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
+  const [ordersError, setOrdersError] = useState('');
+  const [reportStats, setReportStats] = useState(null);
+
   const [activeRange, setActiveRange] = useState('7d');
   const [selectedReportType, setSelectedReportType] = useState('Total Sales');
   const [activePointIndex, setActivePointIndex] = useState(null);
   const [searchTx, setSearchTx] = useState('');
   const [selectedTxIds, setSelectedTxIds] = useState(new Set());
   const [spotlightIndex, setSpotlightIndex] = useState(0);
+  const [selectedReceiptSale, setSelectedReceiptSale] = useState(null);
+
+  // Fetch online customer orders and backend dashboard report
+  const fetchOrdersAndReports = useCallback(async () => {
+    setOrdersLoading(true);
+    setOrdersError('');
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const [ordersRes, reportRes] = await Promise.allSettled([
+        adminApi.getAllOrders({ page: 0, size: 500, sort: 'createdAt,desc' }),
+        reportApi.getDashboardReport(todayStr),
+      ]);
+
+      if (ordersRes.status === 'fulfilled' && ordersRes.value) {
+        const raw = ordersRes.value;
+        const list = Array.isArray(raw) ? raw : (raw.content ?? raw.orders ?? []);
+        setOnlineOrders(list);
+      }
+
+      if (reportRes.status === 'fulfilled' && reportRes.value) {
+        setReportStats(reportRes.value);
+      }
+    } catch (err) {
+      console.warn('Dashboard orders/reports fetch error:', err);
+    } finally {
+      setOrdersLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchOrdersAndReports();
+  }, [fetchOrdersAndReports]);
+
+  // Combined Refresh Handler
+  const handleRefreshAll = async () => {
+    await Promise.allSettled([
+      reloadSales(),
+      fetchOrdersAndReports(),
+    ]);
+  };
+
+  const isLoading = salesLoading || ordersLoading;
 
   // Time-based Greeting
   const greeting = useMemo(() => {
@@ -48,22 +101,105 @@ export default function AdminDashboard() {
     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   }, []);
 
+  // Merge and Normalize all Transactions (POS sales + Online customer orders + Local session orders)
+  const allTransactions = useMemo(() => {
+    const map = new Map();
+
+    // 1. Process POS Sales
+    (sales ?? []).forEach((s) => {
+      const id = String(s.id);
+      const invoiceNumber = s.invoiceNumber || `INV-${id.slice(0, 8).toUpperCase()}`;
+      map.set(id, {
+        id: s.id,
+        invoiceNumber,
+        type: 'POS',
+        total: Number(s.total ?? s.finalTotal ?? 0),
+        subtotal: Number(s.subtotal ?? s.total ?? 0),
+        status: (s.status || 'COMPLETED').toUpperCase(),
+        paymentStatus: (s.paymentStatus || (s.status === 'COMPLETED' ? 'PAID' : 'PENDING')).toUpperCase(),
+        paymentMethod: typeof s.paymentMethod === 'string' ? s.paymentMethod : s.paymentMethod?.name || 'CASH',
+        items: s.items || [],
+        customerName: s.customerName || (typeof s.customer === 'string' ? s.customer : '') || 'Store Customer',
+        cashierName: s.cashierName || s.cashier || '',
+        createdAt: s.createdAt || new Date().toISOString(),
+        raw: s,
+      });
+    });
+
+    // 2. Process Online Orders from adminApi
+    (onlineOrders ?? []).forEach((o) => {
+      const id = String(o.id);
+      const invoiceNumber = o.invoiceNumber || o.orderNumber || `ORD-${id.slice(0, 8).toUpperCase()}`;
+      if (!map.has(id)) {
+        map.set(id, {
+          id: o.id,
+          invoiceNumber,
+          type: 'ONLINE',
+          deliveryMethod: o.deliveryMethod || 'DELIVERY',
+          total: Number(o.finalTotal ?? o.total ?? o.amount ?? 0),
+          subtotal: Number(o.subtotal ?? o.total ?? 0),
+          status: (o.status || 'COMPLETED').toUpperCase(),
+          paymentStatus: (o.paymentStatus || (o.status === 'COMPLETED' ? 'PAID' : 'PENDING')).toUpperCase(),
+          paymentMethod: typeof o.paymentMethod === 'string' ? o.paymentMethod : o.paymentMethod?.name || 'KHQR',
+          items: o.items || o.orderItems || [],
+          customerName: o.customerName || o.customer?.name || o.receiverName || 'Online Shopper',
+          cashierName: 'Online Store',
+          createdAt: o.createdAt || o.orderDate || new Date().toISOString(),
+          raw: o,
+        });
+      }
+    });
+
+    // 3. Process Local Customer Orders (if any from session)
+    const localOrders = getCustomerOrders();
+    (localOrders ?? []).forEach((lo) => {
+      const id = String(lo.id);
+      if (!map.has(id)) {
+        map.set(id, {
+          id: lo.id,
+          invoiceNumber: lo.invoiceNumber || `ORD-${id.slice(0, 8).toUpperCase()}`,
+          type: 'ONLINE',
+          deliveryMethod: lo.rawOrder?.deliveryMethod || 'DELIVERY',
+          total: Number(lo.total ?? lo.rawOrder?.finalTotal ?? 0),
+          subtotal: Number(lo.rawOrder?.subtotal ?? lo.total ?? 0),
+          status: (lo.status || 'COMPLETED').toUpperCase(),
+          paymentStatus: (lo.paymentStatus || 'PAID').toUpperCase(),
+          paymentMethod: lo.paymentMethod || 'KHQR',
+          items: lo.rawOrder?.items || [],
+          customerName: lo.rawOrder?.customerName || 'Online Shopper',
+          cashierName: 'Online Store',
+          createdAt: lo.createdAt || new Date().toISOString(),
+          raw: lo.rawOrder || lo,
+        });
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [sales, onlineOrders]);
+
   // Compute Real KPI Metrics
   const kpiStats = useMemo(() => {
-    const completed = sales.filter((s) => s.status === 'COMPLETED' || s.paymentStatus === 'PAID');
-    const cancelled = sales.filter((s) => s.status === 'CANCELLED' || s.status === 'REFUNDED');
-    const totalRevenue = completed.reduce((sum, s) => sum + (s.total || s.finalTotal || 0), 0);
+    const completed = allTransactions.filter(
+      (t) => t.status === 'COMPLETED' || t.paymentStatus === 'PAID' || t.status === 'DELIVERED'
+    );
+    const cancelled = allTransactions.filter(
+      (t) => t.status === 'CANCELLED' || t.status === 'REFUNDED'
+    );
+    const totalRevenue = completed.reduce((sum, t) => sum + t.total, 0);
 
-    // Calculate real total products from catalog
+    // Real total catalog products
     const totalProducts = totalProductsCount > 0 ? totalProductsCount : products.length;
 
-    // Unique customers count
-    const uniqueCustomers = customers.length > 0
-      ? customers.length
-      : new Set(sales.map((s) => s.customer || s.customerName).filter(Boolean)).size;
+    // Real unique customers count (combining catalog customers & order customers)
+    const customerNamesSet = new Set(
+      allTransactions.map((t) => t.customerName).filter((c) => c && c !== 'Store Customer')
+    );
+    const uniqueCustomers = Math.max(customers.length, customerNamesSet.size, 1);
 
-    // Real completion rate
-    const completionRate = sales.length > 0 ? Math.round((completed.length / sales.length) * 100) : 100;
+    // Completion Rate
+    const completionRate = allTransactions.length > 0
+      ? Math.round((completed.length / allTransactions.length) * 100)
+      : 100;
 
     return {
       totalProducts,
@@ -72,26 +208,34 @@ export default function AdminDashboard() {
       topProducts: uniqueCustomers,
       totalRevenue,
       completionRate,
+      totalCount: allTransactions.length,
     };
-  }, [sales, products, totalProductsCount, customers]);
+  }, [allTransactions, products, totalProductsCount, customers]);
 
-  // Compute Real Top Selling Products from Sales
+  // Compute Real Top Selling Products from All Sales & Orders
   const topSellingProducts = useMemo(() => {
     const salesMap = new Map();
 
-    sales.forEach((s) => {
-      (s.items ?? []).forEach((item) => {
-        if (!item.productId && !item.productName) return;
-        const key = item.productId || item.productName;
+    allTransactions.forEach((tx) => {
+      (tx.items ?? []).forEach((item) => {
+        const key = item.productId || item.product?.id || item.productName || item.title || item.name;
+        if (!key) return;
+        const name = item.productName || item.product?.name || item.title || item.name || 'Mart Item';
+        const image = item.image || item.imageUrl || item.product?.image || item.product?.imageUrl || '';
         const prev = salesMap.get(key) || {
           id: key,
-          name: item.productName || 'Product',
+          name,
           soldQty: 0,
           revenue: 0,
-          image: item.image || item.imageUrl || '',
+          image,
         };
-        prev.soldQty += item.quantity || 1;
-        prev.revenue += item.lineTotal || (item.price * (item.quantity || 1)) || 0;
+        const qty = Number(item.quantity || item.qty || 1);
+        const price = Number(item.price || item.unitPrice || 0);
+        const lineTotal = Number(item.lineTotal || (price * qty) || 0);
+
+        prev.soldQty += qty;
+        prev.revenue += lineTotal;
+        if (!prev.image && image) prev.image = image;
         salesMap.set(key, prev);
       });
     });
@@ -99,10 +243,10 @@ export default function AdminDashboard() {
     const ranked = Array.from(salesMap.values()).sort((a, b) => b.soldQty - a.soldQty);
 
     // Join with catalog products to enrich images
-    const catalogMap = new Map(products.map((p) => [p.id, p]));
+    const catalogMap = new Map(products.map((p) => [String(p.id), p]));
 
     const enriched = ranked.map((item) => {
-      const p = catalogMap.get(item.id);
+      const p = catalogMap.get(String(item.id));
       return {
         ...item,
         name: p?.name || item.name,
@@ -110,7 +254,7 @@ export default function AdminDashboard() {
       };
     });
 
-    // If no sales items yet, show top products from catalog
+    // Fallback if no order items yet: populate from catalog
     if (enriched.length === 0 && products.length > 0) {
       return products.slice(0, 5).map((p) => ({
         id: p.id,
@@ -128,11 +272,48 @@ export default function AdminDashboard() {
         image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=60',
       }
     ];
-  }, [sales, products]);
+  }, [allTransactions, products]);
 
   // Compute Real Chart Data based on selected Time Range
   const chartData = useMemo(() => {
-    const completedSales = sales.filter((s) => s.status === 'COMPLETED' || s.paymentStatus === 'PAID');
+    const completedTx = allTransactions.filter(
+      (t) => t.status === 'COMPLETED' || t.paymentStatus === 'PAID' || t.status === 'DELIVERED'
+    );
+
+    if (activeRange === '1d') {
+      // Group by Today's 2-hour slots (08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00, 22:00)
+      const slots = [
+        { label: '08:00', startH: 8, endH: 10 },
+        { label: '10:00', startH: 10, endH: 12 },
+        { label: '12:00', startH: 12, endH: 14 },
+        { label: '14:00', startH: 14, endH: 16 },
+        { label: '16:00', startH: 16, endH: 18 },
+        { label: '18:00', startH: 18, endH: 20 },
+        { label: '20:00', startH: 20, endH: 22 },
+        { label: '22:00', startH: 22, endH: 24 },
+      ];
+
+      const now = new Date();
+      return slots.map((s) => {
+        const slotTx = completedTx.filter((t) => {
+          const d = new Date(t.createdAt);
+          const isToday = d.toDateString() === now.toDateString();
+          const hour = d.getHours();
+          return isToday && hour >= s.startH && hour < s.endH;
+        });
+
+        const revenue = slotTx.reduce((sum, t) => sum + t.total, 0);
+        const productsCount = slotTx.reduce((sum, t) => sum + (t.items?.reduce((isum, i) => isum + (i.quantity || 1), 0) || 1), 0);
+
+        return {
+          label: s.label,
+          fullDate: `Today at ${s.label}`,
+          revenue,
+          transactions: slotTx.length,
+          products: productsCount,
+        };
+      });
+    }
 
     if (activeRange === '7d') {
       // Group by the last 7 days
@@ -146,47 +327,76 @@ export default function AdminDashboard() {
         const nextD = new Date(d);
         nextD.setDate(nextD.getDate() + 1);
 
-        const daySales = completedSales.filter((s) => {
-          const sDate = new Date(s.createdAt);
-          return sDate >= d && sDate < nextD;
+        const dayTx = completedTx.filter((t) => {
+          const tDate = new Date(t.createdAt);
+          return tDate >= d && tDate < nextD;
         });
 
-        const dayRevenue = daySales.reduce((sum, s) => sum + (s.total || s.finalTotal || 0), 0);
-        const dayProducts = daySales.reduce((sum, s) => sum + (s.items?.reduce((isum, item) => isum + (item.quantity || 1), 0) || 1), 0);
+        const dayRevenue = dayTx.reduce((sum, t) => sum + t.total, 0);
+        const dayProducts = dayTx.reduce((sum, t) => sum + (t.items?.reduce((isum, item) => isum + (item.quantity || 1), 0) || 1), 0);
 
         days.push({
           label: DAY_NAMES[d.getDay()],
           fullDate: d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
           revenue: dayRevenue,
-          transactions: daySales.length,
+          transactions: dayTx.length,
           products: dayProducts,
         });
       }
       return days;
     }
 
-    // Default: Group by 12 Months
+    if (activeRange === '30d') {
+      // Group by 6 intervals of 5 days
+      const intervals = [];
+      const now = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const endDay = new Date(now);
+        endDay.setDate(endDay.getDate() - (i * 5));
+        const startDay = new Date(endDay);
+        startDay.setDate(startDay.getDate() - 5);
+
+        const intTx = completedTx.filter((t) => {
+          const tDate = new Date(t.createdAt);
+          return tDate >= startDay && tDate <= endDay;
+        });
+
+        const intRevenue = intTx.reduce((sum, t) => sum + t.total, 0);
+        const intProducts = intTx.reduce((sum, t) => sum + (t.items?.reduce((isum, item) => isum + (item.quantity || 1), 0) || 1), 0);
+
+        intervals.push({
+          label: `${startDay.getDate()}-${endDay.getDate()} ${MONTH_NAMES[endDay.getMonth()]}`,
+          fullDate: `${startDay.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} - ${endDay.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}`,
+          revenue: intRevenue,
+          transactions: intTx.length,
+          products: intProducts,
+        });
+      }
+      return intervals;
+    }
+
+    // Default (Year / Max): Group by 12 Months
     const currentYear = new Date().getFullYear();
     const months = MONTH_NAMES.map((mName, mIdx) => {
-      const mSales = completedSales.filter((s) => {
-        const sDate = new Date(s.createdAt);
-        return sDate.getMonth() === mIdx && sDate.getFullYear() === currentYear;
+      const mTx = completedTx.filter((t) => {
+        const tDate = new Date(t.createdAt);
+        return tDate.getMonth() === mIdx && tDate.getFullYear() === currentYear;
       });
 
-      const mRevenue = mSales.reduce((sum, s) => sum + (s.total || s.finalTotal || 0), 0);
-      const mProducts = mSales.reduce((sum, s) => sum + (s.items?.reduce((isum, item) => isum + (item.quantity || 1), 0) || 1), 0);
+      const mRevenue = mTx.reduce((sum, t) => sum + t.total, 0);
+      const mProducts = mTx.reduce((sum, t) => sum + (t.items?.reduce((isum, item) => isum + (item.quantity || 1), 0) || 1), 0);
 
       return {
         label: mName,
         fullDate: `${mName} ${currentYear}`,
         revenue: mRevenue,
-        transactions: mSales.length,
+        transactions: mTx.length,
         products: mProducts,
       };
     });
 
     return months;
-  }, [sales, activeRange]);
+  }, [allTransactions, activeRange]);
 
   // Real Chart Geometry
   const chartWidth = 700;
@@ -242,14 +452,15 @@ export default function AdminDashboard() {
   // Real Last Transactions Filtered
   const filteredSalesList = useMemo(() => {
     const term = searchTx.trim().toLowerCase();
-    return sales.filter((s) => {
+    return allTransactions.filter((tx) => {
       if (!term) return true;
-      const inv = (s.invoiceNumber || '').toLowerCase();
-      const cust = (s.customerName || s.customer || '').toLowerCase();
-      const firstItem = (s.items?.[0]?.productName || '').toLowerCase();
-      return inv.includes(term) || cust.includes(term) || firstItem.includes(term);
+      const inv = (tx.invoiceNumber || '').toLowerCase();
+      const cust = (tx.customerName || '').toLowerCase();
+      const firstItem = (tx.items?.[0]?.productName || tx.items?.[0]?.title || tx.items?.[0]?.name || '').toLowerCase();
+      const method = (tx.paymentMethod || '').toLowerCase();
+      return inv.includes(term) || cust.includes(term) || firstItem.includes(term) || method.includes(term);
     });
-  }, [sales, searchTx]);
+  }, [allTransactions, searchTx]);
 
   const toggleSelectTx = (id) => {
     const next = new Set(selectedTxIds);
@@ -290,21 +501,21 @@ export default function AdminDashboard() {
             <span>{todayFormatted}</span>
           </div>
 
-          {/* Refresh Data Button */}
-          <button
-            type="button"
-            onClick={reloadSales}
-            disabled={salesLoading}
-            className="flex h-8.5 w-8.5 items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs transition active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
-            title="Reload live store data"
-          >
-            <RefreshCw size={13} className={salesLoading ? 'animate-spin text-emerald-600' : ''} />
-          </button>
-
           {/* Notification Bell */}
           <div className="relative shrink-0">
             <NotificationDropdown variant="admin" />
           </div>
+
+          {/* Refresh Data Button */}
+          <button
+            type="button"
+            onClick={handleRefreshAll}
+            disabled={isLoading}
+            className="flex h-8.5 w-8.5 items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs transition active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
+            title="Reload live store & order data"
+          >
+            <RefreshCw size={13} className={isLoading ? 'animate-spin text-emerald-600' : ''} />
+          </button>
 
           {/* Theme Toggle */}
           <div className="shrink-0">
@@ -324,14 +535,14 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {salesError && (
+      {(salesError || ordersError) && (
         <div className="flex items-center justify-between gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4 text-xs font-semibold text-rose-700 dark:text-rose-400">
           <span className="flex items-center gap-2">
             <AlertCircle size={16} />
-            <span>{salesError}</span>
+            <span>{salesError || ordersError}</span>
           </span>
           <button
-            onClick={reloadSales}
+            onClick={handleRefreshAll}
             className="font-bold underline cursor-pointer hover:text-rose-900"
           >
             Try again
@@ -397,7 +608,7 @@ export default function AdminDashboard() {
                 </span>
                 <span className="inline-flex items-center gap-0.5 text-[8px] sm:text-[9px] font-bold text-rose-500 shrink-0">
                   <span className="h-1 w-1 rounded-full bg-rose-500 inline-block" />
-                  {kpiStats.canceledOrders > 0 ? `-${Math.round((kpiStats.canceledOrders / Math.max(1, sales.length)) * 100)}%` : '0%'}
+                  {kpiStats.canceledOrders > 0 ? `-${Math.round((kpiStats.canceledOrders / Math.max(1, kpiStats.totalCount)) * 100)}%` : '0%'}
                 </span>
               </div>
             </div>
@@ -435,7 +646,7 @@ export default function AdminDashboard() {
               Your sales report
             </h2>
             <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-              Live store performance and sales volume
+              Live store performance and sales volume from POS & online orders
             </p>
           </div>
 
@@ -541,10 +752,6 @@ export default function AdminDashboard() {
           {/* Floating Tooltip Card: dynamically anchored to never overflow left or right */}
           {activePoint && (() => {
             const rawPercent = (activePoint.x / chartWidth) * 100;
-            // Dynamic placement:
-            // > 65%: anchor to the left of the point (-translate-x-full) so it stays inside the right edge
-            // < 35%: anchor to the right of the point (translate-x-0) so it stays inside the left edge
-            // Middle: center directly above point (-translate-x-1/2)
             let alignClass = '-translate-x-1/2';
             let extraOffset = '0px';
             if (rawPercent > 65) {
@@ -635,7 +842,7 @@ export default function AdminDashboard() {
                 Last transaction
               </h3>
               <p className="text-[11px] text-slate-400 font-medium">
-                {filteredSalesList.length} recent orders from API
+                {filteredSalesList.length} live orders & POS sales from API
               </p>
             </div>
 
@@ -668,7 +875,7 @@ export default function AdminDashboard() {
                 No transactions found.
               </div>
             ) : (
-              <table className="w-full text-xs min-w-[500px]">
+              <table className="w-full text-xs min-w-[520px]">
                 <thead>
                   <tr className="text-left text-[11px] font-bold text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800/60 pb-2">
                     <th className="py-2.5 px-2 font-bold w-8">
@@ -680,58 +887,84 @@ export default function AdminDashboard() {
                       />
                     </th>
                     <th className="py-2.5 px-2 font-bold">Order ID</th>
-                    <th className="py-2.5 px-2 font-bold">Item</th>
+                    <th className="py-2.5 px-2 font-bold">Item / Customer</th>
                     <th className="py-2.5 px-2 font-bold">Date</th>
                     <th className="py-2.5 px-2 font-bold">Price</th>
-                    <th className="py-2.5 px-2 font-bold text-right">Platform</th>
+                    <th className="py-2.5 px-2 font-bold text-right">Platform & Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-semibold">
-                  {filteredSalesList.slice(0, 6).map((sale) => {
-                    const isSelected = selectedTxIds.has(sale.id);
-                    const isBakong = sale.paymentMethod === 'KHQR';
-                    const firstItemName = sale.items?.[0]?.productName || sale.customerName || 'Store Order';
-                    const itemsExtra = (sale.items?.length || 0) > 1 ? ` (+${sale.items.length - 1})` : '';
+                  {filteredSalesList.slice(0, 8).map((tx) => {
+                    const isSelected = selectedTxIds.has(tx.id);
+                    const isBakong = tx.paymentMethod === 'KHQR';
+                    const isOnline = tx.type === 'ONLINE';
+                    const firstItemName = tx.items?.[0]?.productName || tx.items?.[0]?.title || tx.items?.[0]?.name || tx.customerName || 'Store Order';
+                    const itemsExtra = (tx.items?.length || 0) > 1 ? ` (+${tx.items.length - 1})` : '';
 
                     return (
                       <tr
-                        key={sale.id}
-                        onClick={() => navigate(`/dashboard/sales/${sale.id}`)}
-                        className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition cursor-pointer ${
+                        key={tx.id}
+                        className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition ${
                           isSelected ? 'bg-slate-50/60 dark:bg-slate-800/30' : ''
                         }`}
                       >
-                        <td className="py-3 px-2" onClick={(e) => { e.stopPropagation(); toggleSelectTx(sale.id); }}>
+                        <td className="py-3 px-2" onClick={(e) => { e.stopPropagation(); toggleSelectTx(tx.id); }}>
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => toggleSelectTx(sale.id)}
+                            onChange={() => toggleSelectTx(tx.id)}
                             className="rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
                           />
                         </td>
-                        <td className="py-3 px-2 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                          {sale.invoiceNumber || sale.id}
+                        <td
+                          onClick={() => {
+                            if (tx.type === 'POS') {
+                              navigate(`/dashboard/sales/${tx.id}`);
+                            } else {
+                              setSelectedReceiptSale(tx.raw);
+                            }
+                          }}
+                          className="py-3 px-2 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap cursor-pointer hover:underline"
+                        >
+                          {tx.invoiceNumber || tx.id}
                         </td>
-                        <td className="py-3 px-2 text-slate-700 dark:text-slate-300 truncate max-w-[130px]">
-                          {firstItemName}{itemsExtra}
+                        <td className="py-3 px-2 text-slate-700 dark:text-slate-300 truncate max-w-[140px]">
+                          <span className="font-semibold text-slate-900 dark:text-slate-100">{firstItemName}</span>
+                          {itemsExtra && <span className="text-slate-400 text-[10px] ml-1">{itemsExtra}</span>}
+                          {tx.customerName && tx.customerName !== 'Store Customer' && (
+                            <p className="text-[10px] text-slate-400 truncate">{tx.customerName}</p>
+                          )}
                         </td>
                         <td className="py-3 px-2 text-slate-400 dark:text-slate-500 font-mono text-[11px] whitespace-nowrap">
-                          {formatDate(sale.createdAt)}
+                          {formatDate(tx.createdAt)}
                         </td>
                         <td className="py-3 px-2 font-black text-slate-900 dark:text-white whitespace-nowrap">
-                          {formatCurrency(sale.total || sale.finalTotal || 0)}
+                          {formatCurrency(tx.total)}
                         </td>
                         <td className="py-3 px-2 text-right whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
-                            <span className={`h-4 w-4 rounded flex items-center justify-center text-[8px] font-black shrink-0 ${
-                              isBakong
-                                ? 'bg-rose-500 text-white'
-                                : 'bg-emerald-600 text-white'
-                            }`}>
-                              {isBakong ? 'KH' : 'POS'}
+                          <div className="flex items-center justify-end gap-1.5">
+                            <span className="inline-flex items-center gap-1 font-bold text-slate-700 dark:text-slate-300 text-[11px]">
+                              <span className={`h-4.5 px-1.5 rounded flex items-center justify-center text-[9px] font-black shrink-0 ${
+                                isBakong
+                                  ? 'bg-rose-500 text-white'
+                                  : isOnline
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-emerald-600 text-white'
+                              }`}>
+                                {isBakong ? 'KHQR' : isOnline ? 'ONLINE' : 'POS'}
+                              </span>
                             </span>
-                            <span>{isBakong ? 'Bakong KHQR' : 'Point of Sale'}</span>
-                          </span>
+
+                            {/* View Receipt Trigger Button */}
+                            <button
+                              type="button"
+                              onClick={() => setSelectedReceiptSale(tx.raw)}
+                              title="View & Print Receipt"
+                              className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
+                            >
+                              <ReceiptIcon size={12} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -749,7 +982,7 @@ export default function AdminDashboard() {
               Congratulations!
             </h3>
             <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">
-              Some of your products already have the highest buyers
+              Top products with highest sales volume across store
             </p>
           </div>
 
@@ -817,11 +1050,19 @@ export default function AdminDashboard() {
               {activeSpotlight?.name}
             </h4>
             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">
-              {activeSpotlight?.soldQty || 0} sold
+              {activeSpotlight?.soldQty || 0} units sold
             </p>
           </div>
         </div>
       </div>
+
+      {/* ------- 5. Real Receipt Modal Viewer ------- */}
+      {selectedReceiptSale && (
+        <SaleSuccessModal
+          sale={selectedReceiptSale}
+          onClose={() => setSelectedReceiptSale(null)}
+        />
+      )}
     </div>
   );
 }
