@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import {
   Search, SlidersHorizontal, ArrowUpDown, X, PackageX, ChevronLeft,
-  ChevronRight, Tag, Check, Filter, RotateCcw, Sparkles, TrendingUp,
+  ChevronRight, ChevronDown, Tag, Check, Filter, RotateCcw, Sparkles, TrendingUp,
   Percent, ArrowRight, ArrowLeft, Send, Home as HomeIcon, Smartphone,
   Headphones, HardDrive, ShoppingBag
 } from 'lucide-react';
@@ -14,6 +14,14 @@ import SEO from '../components/SEO';
 import { env } from '../config/env';
 import { getCategoryIcon, AllCategoriesIcon, getCategoryTheme } from '../utils/categoryIcons';
 import { useActiveDiscounts } from '../hooks/useDiscounts';
+
+const SORT_OPTIONS = [
+  { value: 'DEFAULT', label: 'Recommended' },
+  { value: 'PRICE_ASC', label: 'Price: Low to High' },
+  { value: 'PRICE_DESC', label: 'Price: High to Low' },
+  { value: 'NAME', label: 'Name: A to Z' },
+];
+
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category') || '';
@@ -25,12 +33,14 @@ export default function Shop() {
   const [heroSlide, setHeroSlide] = useState(0);
   const [filterType, setFilterType] = useState('ALL'); // 'ALL', 'NEW', 'BEST_SELLER', 'DISCOUNT'
   const [sortBy, setSortBy] = useState('DEFAULT'); // 'DEFAULT', 'PRICE_ASC', 'PRICE_DESC', 'NAME'
+  const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [emailSubscribe, setEmailSubscribe] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
   const recommendationsRef = useRef(null);
+  const sortContainerRef = useRef(null);
   const navigate = useNavigate();
 
   const { categories } = useCategories();
@@ -39,6 +49,17 @@ export default function Shop() {
     category: selectedCategory || undefined,
   });
   const { items, addItem, setQuantity, removeItem } = useCart();
+
+  // Close custom sort dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (sortContainerRef.current && !sortContainerRef.current.contains(e.target)) {
+        setSortMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     setSelectedCategory(categoryParam);
@@ -408,9 +429,9 @@ export default function Shop() {
         )}
 
         {/* 1. Multi-Card Promotional Hero Showcase Grid (Bento Hero Dynamic with Category-Related Theme Colors) */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 sm:gap-4 select-none">
-          {/* Left Column: 2 Stacked Cards (3 cols on lg, 6 cols on md) */}
-          <div className="md:col-span-6 lg:col-span-3 flex flex-col gap-3.5 sm:gap-4 order-2 lg:order-1">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4 select-none">
+          {/* Left Column: 2 Stacked Cards (Desktop only ≥ lg) */}
+          <div className="hidden lg:flex lg:col-span-3 flex-col gap-3.5 sm:gap-4 order-2 lg:order-1">
             {/* Card 1 */}
             <div
               onClick={() => handleBentoClick(bentoPromos.card1)}
@@ -494,37 +515,37 @@ export default function Shop() {
             </div>
           </div>
 
-          {/* Center Column: Main Featured Showcase Slider (6 cols on lg, 12 cols on md) */}
-          <div className="md:col-span-12 lg:col-span-6 order-1 lg:order-2">
-            <div className={`relative min-h-[310px] sm:min-h-[350px] h-full rounded-3xl ${activeCenterSlide.theme.cardBg} border ${activeCenterSlide.theme.border} p-6 sm:p-8 flex flex-col justify-between overflow-hidden shadow-xs`}>
+          {/* Center Column: Main Featured Showcase Slider (Full width on mobile/tablet, 6 cols on lg) */}
+          <div className="col-span-1 lg:col-span-6 order-1 lg:order-2">
+            <div className={`relative min-h-[160px] sm:min-h-[200px] lg:min-h-[350px] h-full rounded-2xl sm:rounded-3xl ${activeCenterSlide.theme.cardBg} border ${activeCenterSlide.theme.border} p-3.5 sm:p-6 lg:p-8 flex flex-col justify-between overflow-hidden shadow-xs`}>
               {/* Decorative subtle background circle */}
-              <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-64 h-64 sm:w-80 sm:h-80 rounded-full ${activeCenterSlide.theme.glow} blur-2xl pointer-events-none`} />
+              <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-44 h-44 sm:w-80 sm:h-80 rounded-full ${activeCenterSlide.theme.glow} blur-2xl pointer-events-none`} />
 
-              <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6 h-full">
+              <div className="relative z-10 flex flex-row items-center justify-between gap-3 sm:gap-6 h-full">
                 {/* Left text content */}
-                <div className="space-y-3 sm:space-y-4 max-w-sm text-center sm:text-left">
-                  <span className={`inline-block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest ${activeCenterSlide.theme.badgeText}`}>
+                <div className="space-y-1.5 sm:space-y-3 max-w-[62%] sm:max-w-sm text-left">
+                  <span className={`inline-block text-[9px] sm:text-[11px] font-extrabold uppercase tracking-widest ${activeCenterSlide.theme.badgeText}`}>
                     {activeCenterSlide.tag}
                   </span>
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight line-clamp-2">
+                  <h2 className="text-xs sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight line-clamp-2">
                     {activeCenterSlide.title}
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium line-clamp-2">
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1 sm:line-clamp-2">
                     {activeCenterSlide.subtitle}
                   </p>
-                  <div className="pt-2 flex items-center justify-center sm:justify-start gap-3">
+                  <div className="pt-1 sm:pt-2 flex items-center gap-2 sm:gap-3 flex-wrap">
                     <button
                       type="button"
                       onClick={() => handleBentoClick(activeCenterSlide)}
-                      className={`inline-flex items-center gap-2 rounded-xl ${activeCenterSlide.theme.buttonBg} px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm font-black shadow-md transition active:scale-95 cursor-pointer`}
+                      className={`inline-flex items-center gap-1.5 rounded-xl ${activeCenterSlide.theme.buttonBg} px-3 sm:px-5 py-1.5 sm:py-2.5 text-[10px] sm:text-xs font-black shadow-md transition active:scale-95 cursor-pointer`}
                     >
                       <span>Shop Now</span>
-                      <ArrowRight size={14} />
+                      <ArrowRight size={12} />
                     </button>
                     {activeCenterSlide.price > 0 && (
                       <div className="text-left">
-                        <span className="text-[10px] text-slate-400 block font-bold">Price</span>
-                        <span className={`text-base sm:text-lg font-black ${activeCenterSlide.theme.priceColor}`}>
+                        <span className="text-[8px] sm:text-[10px] text-slate-400 block font-bold">Price</span>
+                        <span className={`text-xs sm:text-base font-black ${activeCenterSlide.theme.priceColor}`}>
                           ${Number(activeCenterSlide.price).toFixed(2)}
                         </span>
                       </div>
@@ -535,7 +556,7 @@ export default function Shop() {
                 {/* Right product hero image */}
                 <div
                   onClick={() => handleBentoClick(activeCenterSlide)}
-                  className="relative h-48 w-48 sm:h-56 sm:w-56 lg:h-60 lg:w-60 shrink-0 bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-5 shadow-xs border border-white/60 dark:border-slate-700/50 flex items-center justify-center cursor-pointer group"
+                  className="relative h-24 w-24 sm:h-36 sm:w-36 lg:h-56 lg:w-56 shrink-0 bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-2 sm:p-4 shadow-xs border border-white/60 dark:border-slate-700/50 flex items-center justify-center cursor-pointer group"
                 >
                   <img
                     src={activeCenterSlide.image}
@@ -549,16 +570,16 @@ export default function Shop() {
 
               {/* Slider Pagination Dots */}
               {bentoPromos.centerSlides.length > 1 && (
-                <div className="relative z-10 flex items-center gap-1.5 pt-4">
+                <div className="relative z-10 flex items-center gap-1 sm:gap-1.5 pt-2 sm:pt-4">
                   {bentoPromos.centerSlides.map((_, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => setHeroSlide(idx)}
-                      className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                      className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 cursor-pointer ${
                         (heroSlide % bentoPromos.centerSlides.length) === idx
-                          ? 'w-6 bg-slate-900 dark:bg-white'
-                          : 'w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400'
+                          ? 'w-4 sm:w-6 bg-slate-900 dark:bg-white'
+                          : 'w-1.5 sm:w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400'
                       }`}
                       aria-label={`Go to slide ${idx + 1}`}
                     />
@@ -568,8 +589,8 @@ export default function Shop() {
             </div>
           </div>
 
-          {/* Right Column: 2 Stacked Cards (3 cols on lg, 6 cols on md) */}
-          <div className="md:col-span-6 lg:col-span-3 flex flex-col gap-3.5 sm:gap-4 order-3">
+          {/* Right Column: 2 Stacked Cards (Desktop only ≥ lg) */}
+          <div className="hidden lg:flex lg:col-span-3 flex-col gap-3.5 sm:gap-4 order-3">
             {/* Card 3 */}
             <div
               onClick={() => handleBentoClick(bentoPromos.card3)}
@@ -823,20 +844,20 @@ export default function Shop() {
           {/* Right Product Grid Area */}
           <div className="lg:col-span-9 space-y-5">
             {/* Quick Category Chip Carousel on Top */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1.5 scrollbar-none -mx-1 px-1">
               <button
                 type="button"
                 onClick={() => handleSelectCategory('')}
-                className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition shrink-0 cursor-pointer ${
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition shrink-0 cursor-pointer ${
                   !selectedCategory && filterType === 'ALL'
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs'
-                    : 'border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs font-extrabold'
+                    : 'border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                 }`}
               >
                 <AllCategoriesIcon size={13} />
                 <span>All ({productList.length})</span>
               </button>
-              {categories.slice(0, 12).map((cat) => {
+              {categories.slice(0, 15).map((cat) => {
                 const catName = typeof cat === 'string' ? cat : cat?.name;
                 if (!catName) return null;
                 const Icon = getCategoryIcon(catName);
@@ -850,14 +871,14 @@ export default function Shop() {
                     onClick={() => handleSelectCategory(catName)}
                     className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition shrink-0 cursor-pointer ${
                       active
-                        ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                        ? 'bg-emerald-600 text-white shadow-xs font-extrabold'
+                        : 'border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                     }`}
                   >
                     <Icon size={13} />
                     <span>{catName}</span>
                     {count !== undefined && count > 0 && (
-                      <span className={`text-[10px] px-1 rounded-full font-bold ${active ? 'bg-white/20 text-white' : 'text-slate-400'}`}>
+                      <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-black ${active ? 'bg-white/25 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
                         {count}
                       </span>
                     )}
@@ -867,33 +888,68 @@ export default function Shop() {
             </div>
 
             {/* Top Toolbar (Sort & Mobile filter trigger) */}
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-xs font-bold text-slate-500">
-                Showing <strong className="text-slate-900 dark:text-white">{filteredProducts.length}</strong> products
-              </span>
+            <div className="flex items-center justify-between gap-2 pt-0.5 pb-1">
+              <div className="flex items-baseline gap-1 text-xs text-slate-500">
+                <span className="text-[11px] text-slate-400 hidden xs:inline">Showing</span>
+                <strong className="text-slate-900 dark:text-white font-extrabold text-xs sm:text-sm">{filteredProducts.length}</strong>
+                <span className="text-slate-500 text-xs font-semibold">products</span>
+              </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 {/* Mobile Filter trigger */}
                 <button
                   type="button"
                   onClick={() => setMobileFilterOpen(true)}
-                  className="lg:hidden flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300"
+                  className="lg:hidden flex items-center gap-1 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-2xs"
                 >
-                  <SlidersHorizontal size={14} />
-                  <span>Category ({selectedCategory || 'All'})</span>
+                  <SlidersHorizontal size={12} className="text-emerald-500" />
+                  <span className="max-w-[80px] truncate">{selectedCategory || 'All'}</span>
                 </button>
 
-                {/* Sort Dropdown */}
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
-                >
-                  <option value="DEFAULT">Recommended</option>
-                  <option value="PRICE_ASC">Price: Low to High</option>
-                  <option value="PRICE_DESC">Price: High to Low</option>
-                  <option value="NAME">Name: A to Z</option>
-                </select>
+                {/* Custom Sort Dropdown (Replaces native select) */}
+                <div ref={sortContainerRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setSortMenuOpen(!sortMenuOpen)}
+                    aria-expanded={sortMenuOpen}
+                    aria-haspopup="listbox"
+                    className="flex items-center gap-1.5 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer"
+                  >
+                    <span>{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || 'Recommended'}</span>
+                    <ChevronDown size={12} className={`text-slate-400 transition-transform duration-200 ${sortMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {sortMenuOpen && (
+                    <div
+                      role="listbox"
+                      className="absolute right-0 top-full mt-1.5 z-40 w-48 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-1.5 shadow-xl animate-scale-in space-y-0.5"
+                    >
+                      {SORT_OPTIONS.map((opt) => {
+                        const active = sortBy === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            role="option"
+                            aria-selected={active}
+                            onClick={() => {
+                              setSortBy(opt.value);
+                              setSortMenuOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold transition cursor-pointer ${
+                              active
+                                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-extrabold'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70'
+                            }`}
+                          >
+                            <span>{opt.label}</span>
+                            {active && <Check size={13} className="text-emerald-600 dark:text-emerald-400" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

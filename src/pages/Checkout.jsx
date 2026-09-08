@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  User, Phone, MapPin, Truck, QrCode, ArrowRight,
+  User, Phone, MapPin, Truck, QrCode, ArrowRight, ArrowLeft,
   AlertCircle, Loader2, ShoppingBag, Printer, FileText,
-  Store, ShieldCheck, CheckCircle2, Lock, X
+  Store, ShieldCheck, CheckCircle2, Lock, X, ChevronRight
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -288,9 +288,38 @@ export default function Checkout() {
     <div className="min-h-screen bg-white dark:bg-slate-950 pb-20">
       <SEO title="Checkout | Mart System" canonical="/checkout" />
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-10 space-y-6">
-        <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+      <div className="mx-auto max-w-6xl px-3 sm:px-6 py-4 sm:py-8 space-y-5">
+        {/* Navigation Breadcrumb & Step Progress Indicator */}
+        <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+          <button
+            type="button"
+            onClick={() => navigate('/cart')}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer active:scale-95"
+          >
+            <ArrowLeft size={14} className="text-slate-500 shrink-0" />
+            <span>Back to Cart</span>
+          </button>
+
+          {/* 3-Step Checkout Flow */}
+          <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs font-bold select-none">
+            <Link to="/cart" className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline">
+              <CheckCircle2 size={13} />
+              <span className="hidden xs:inline">1. Cart</span>
+            </Link>
+            <span className="text-slate-300 dark:text-slate-700">›</span>
+            <span className="flex items-center gap-1 rounded-full bg-[#18181B] dark:bg-white text-white dark:text-slate-900 px-2.5 py-0.5 text-[10px] font-black shadow-2xs">
+              <span>2. Checkout</span>
+            </span>
+            <span className="text-slate-300 dark:text-slate-700">›</span>
+            <span className="text-slate-400 dark:text-slate-600 flex items-center gap-1">
+              <span className="hidden xs:inline">3. Payment</span>
+              <span className="xs:hidden">3. Pay</span>
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <h1 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
             Checkout
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
@@ -601,6 +630,23 @@ export default function Checkout() {
                 </>
               )}
             </button>
+
+            {/* Quick Navigation Links */}
+            <div className="flex items-center justify-between text-xs pt-1 px-1 border-t border-slate-200/60 dark:border-slate-800">
+              <Link
+                to="/cart"
+                className="flex items-center gap-1 font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition"
+              >
+                <ArrowLeft size={13} />
+                <span>Return to Cart</span>
+              </Link>
+              <Link
+                to="/shop"
+                className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+              >
+                <span>+ Add more items</span>
+              </Link>
+            </div>
           </div>
         </form>
       </div>

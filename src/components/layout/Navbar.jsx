@@ -571,34 +571,36 @@ export default function Navbar({ onOpenCart }) {
         </div>
       </nav>
 
-      {/* Mobile Integrated Search */}
-      <div className="md:hidden px-3 sm:px-4 pb-2.5 pt-1">
-        <form onSubmit={handleSearchSubmit} className="flex items-center rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-1 pl-3.5 shadow-2xs">
-          <input
-            type="text"
-            placeholder={t('searchPlaceholder')}
-            value={headerSearch}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full bg-transparent text-base md:text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
-          />
-          {headerSearch && (
+      {/* Mobile Integrated Search (Hidden on Checkout & Auth flows for clean focus) */}
+      {!pathname.startsWith('/checkout') && pathname !== '/login' && pathname !== '/register' && pathname !== '/forgot-password' && (
+        <div className="md:hidden px-3 sm:px-4 pb-2.5 pt-1">
+          <form onSubmit={handleSearchSubmit} className="flex items-center rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-1 pl-3.5 shadow-2xs">
+            <input
+              type="text"
+              placeholder={t('searchPlaceholder')}
+              value={headerSearch}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full bg-transparent text-base md:text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+            />
+            {headerSearch && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="p-1 mr-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer rounded-full"
+                title={t('clearSearch')}
+              >
+                <X size={12} />
+              </button>
+            )}
             <button
-              type="button"
-              onClick={handleClearSearch}
-              className="p-1 mr-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer rounded-full"
-              title={t('clearSearch')}
+              type="submit"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-[#18181B] text-white shrink-0"
             >
-              <X size={12} />
+              <Search size={13} />
             </button>
-          )}
-          <button
-            type="submit"
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-[#18181B] text-white shrink-0"
-          >
-            <Search size={13} />
-          </button>
-        </form>
-      </div>
+          </form>
+        </div>
+      )}
 
       {/* Mobile Drawer */}
       {mobileOpen && (
