@@ -394,16 +394,16 @@ export default function Checkout() {
                   onClick={() => setDeliveryMethod('DELIVERY')}
                   className={`flex flex-col justify-between p-4 rounded-2xl border text-left transition-all cursor-pointer relative ${
                     deliveryMethod === 'DELIVERY'
-                      ? 'border-emerald-600 bg-white dark:bg-slate-850 ring-2 ring-emerald-600 shadow-xs'
-                      : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-800/50 hover:border-slate-300'
+                      ? 'border-emerald-600 dark:border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/40 ring-2 ring-emerald-600 dark:ring-emerald-500 shadow-xs'
+                      : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-800/60 hover:border-slate-300 dark:hover:border-slate-700'
                   }`}
                 >
                   <div className="flex items-center justify-between w-full mb-1.5">
                     <div className="flex items-center gap-2">
-                      <Truck size={17} className={deliveryMethod === 'DELIVERY' ? 'text-emerald-600' : 'text-slate-400'} />
+                      <Truck size={17} className={deliveryMethod === 'DELIVERY' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
                       <span className="font-extrabold text-sm text-slate-900 dark:text-white">សេវាដឹកជញ្ជូន (Delivery)</span>
                     </div>
-                    <span className="font-mono font-black text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                    <span className="font-mono font-black text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/60">
                       $1.50 USD
                     </span>
                   </div>
@@ -418,16 +418,16 @@ export default function Checkout() {
                   onClick={() => setDeliveryMethod('PICKUP')}
                   className={`flex flex-col justify-between p-4 rounded-2xl border text-left transition-all cursor-pointer relative ${
                     deliveryMethod === 'PICKUP'
-                      ? 'border-emerald-600 bg-white dark:bg-slate-850 ring-2 ring-emerald-600 shadow-xs'
-                      : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-800/50 hover:border-slate-300'
+                      ? 'border-emerald-600 dark:border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/40 ring-2 ring-emerald-600 dark:ring-emerald-500 shadow-xs'
+                      : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-800/60 hover:border-slate-300 dark:hover:border-slate-700'
                   }`}
                 >
                   <div className="flex items-center justify-between w-full mb-1.5">
                     <div className="flex items-center gap-2">
-                      <Store size={17} className={deliveryMethod === 'PICKUP' ? 'text-emerald-600' : 'text-slate-400'} />
+                      <Store size={17} className={deliveryMethod === 'PICKUP' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
                       <span className="font-extrabold text-sm text-slate-900 dark:text-white">មកយកផ្ទាល់ (Pickup)</span>
                     </div>
-                    <span className="font-mono font-black text-[11px] px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                    <span className="font-mono font-black text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                       Free ($0.00)
                     </span>
                   </div>
@@ -527,8 +527,13 @@ export default function Checkout() {
               </h3>
 
               <div className="flex items-center gap-3.5 rounded-2xl border border-emerald-500/40 bg-white dark:bg-slate-800 p-4 shadow-2xs">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 shadow-2xs">
-                  <QrCode size={24} />
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-700 p-1.5 shadow-2xs overflow-hidden">
+                  <img
+                    src="/bakong.png"
+                    alt="Bakong KHQR"
+                    className="h-full w-full object-contain"
+                    onError={(e) => { e.currentTarget.src = '/images/bakong.png'; }}
+                  />
                 </div>
                 <div className="min-w-0 flex-1 text-left">
                   <div className="flex items-center gap-2">

@@ -220,7 +220,12 @@ export default function CheckoutModal({
                       : 'border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/50 text-[#667085] dark:text-slate-300 hover:border-slate-300 dark:hover:bg-slate-800'
                   }`}
                 >
-                  <QrCode size={22} className={method === 'BAKONG' ? 'text-[#009F6B]' : ''} />
+                  <img
+                    src="/bakong.png"
+                    alt="Bakong"
+                    className="h-5 w-5 object-contain"
+                    onError={(e) => { e.currentTarget.src = '/images/bakong.png'; }}
+                  />
                   <span>Bakong KHQR</span>
                 </button>
 
@@ -253,8 +258,13 @@ export default function CheckoutModal({
             ) : (
               /* Online Customer: Strictly Bakong KHQR */
               <div className="flex items-center gap-3.5 rounded-2xl border-2 border-[#009F6B] bg-[#E8F8F2]/70 dark:bg-emerald-950/40 p-3.5 shadow-xs">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-slate-800 text-[#009F6B] shadow-xs border border-[#009F6B]/20">
-                  <QrCode size={24} />
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-slate-800 text-[#009F6B] shadow-xs border border-[#009F6B]/20 p-1 overflow-hidden">
+                  <img
+                    src="/bakong.png"
+                    alt="Bakong KHQR"
+                    className="h-full w-full object-contain"
+                    onError={(e) => { e.currentTarget.src = '/images/bakong.png'; }}
+                  />
                 </div>
                 <div className="min-w-0 flex-1 text-left">
                   <div className="flex items-center gap-1.5">
