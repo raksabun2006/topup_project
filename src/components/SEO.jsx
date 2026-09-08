@@ -2,15 +2,22 @@ import { useEffect } from 'react';
 import { env } from '../config/env';
 
 /**
- * Enterprise-grade, dynamic SEO & Social Graph Component.
- * Supports dynamic product metadata, pricing, in-stock status,
- * Open Graph, Twitter cards, and Schema.org JSON-LD structured data.
+ * Enterprise-grade, Dynamic SEO & Social Graph Component.
+ * Supports:
+ * - Dynamic Title, Description, Keywords, Canonical URLs, Robots
+ * - Open Graph & Twitter Card rich metadata
+ * - E-commerce Product Graph (price, availability, SKU, brand, category)
+ * - Breadcrumbs Schema generator
+ * - FAQ Schema generator
+ * - ItemList / Catalog Schema generator
+ * - Custom Schema.org JSON-LD structured data injection & clean teardown
  */
 export default function SEO({
-  title = 'Mart System | Official Online Store & Groceries Delivery',
+  title = 'Mart System | Official Online Store & Groceries Delivery Cambodia',
   description = 'Mart System — Official Online Store in Phnom Penh, Cambodia. Shop fresh everyday groceries, drinks, snacks, and lifestyle products with $1.50 express delivery and Bakong KHQR checkout.',
-  keywords = 'Mart System, Online Shopping Cambodia, Groceries Delivery Phnom Penh, Bakong KHQR Payment, Online Mart, Fresh Food',
+  keywords = 'Mart System, Mart Store Cambodia, Online Shopping Phnom Penh, Groceries Delivery Cambodia, Bakong KHQR Payment, Online Mart, Fresh Food Delivery',
   canonical,
+  author = 'Bun Raksa',
   ogTitle,
   ogDescription,
   ogImage,
@@ -22,11 +29,14 @@ export default function SEO({
   twitterImage,
   robots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
   productData = null, // { price, currency, availability, sku, brand, category }
-  jsonLd,
+  breadcrumbs = null, // Array of { name: string, url: string }
+  faq = null, // Array of { q: string, a: string }
+  itemList = null, // Array of { name: string, url: string, image?: string, price?: number, currency?: string }
+  jsonLd = null,
 }) {
   const baseSiteUrl = (env.siteUrl || 'https://martsystemkh.software').replace(/\/+$/, '');
 
-  // Compute canonical URL strictly using production domain
+  // Compute clean canonical URL
   let cleanCanonical = canonical;
   if (!cleanCanonical) {
     cleanCanonical = `${baseSiteUrl}/`;
@@ -42,7 +52,7 @@ export default function SEO({
     ? ogImage.startsWith('http')
       ? ogImage
       : `${baseSiteUrl}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`
-    : `${baseSiteUrl}/og-image.png`;
+    : `${baseSiteUrl}/mart.jpg`;
   const effectiveOgUrl = ogUrl || cleanCanonical;
 
   const effectiveTwitterTitle = twitterTitle || effectiveOgTitle;
@@ -54,10 +64,10 @@ export default function SEO({
     : effectiveOgImage;
 
   useEffect(() => {
-    // 1. Title
+    // 1. Page Title
     document.title = title;
 
-    // Helper to get or create a meta tag
+    // Helper for managing dynamic meta tags
     const setMetaTag = (attrName, attrVal, content) => {
       if (!content) return;
       let el = document.querySelector(`meta[${attrName}="${attrVal}"]`);
@@ -77,10 +87,13 @@ export default function SEO({
       }
     };
 
-    // 2. Standard Meta Tags
+    // 2. Standard Search Meta Tags
     setMetaTag('name', 'description', description);
     setMetaTag('name', 'keywords', keywords);
+    setMetaTag('name', 'author', author);
     setMetaTag('name', 'robots', robots);
+    setMetaTag('name', 'googlebot', robots);
+    setMetaTag('name', 'bingbot', robots);
 
     // 3. Canonical Link
     let canonicalLink = document.querySelector('link[rel="canonical"]');
@@ -99,13 +112,21 @@ export default function SEO({
     setMetaTag('property', 'og:url', effectiveOgUrl);
     setMetaTag('property', 'og:image', effectiveOgImage);
     setMetaTag('property', 'og:image:secure_url', effectiveOgImage);
+    setMetaTag('property', 'og:image:type', 'image/jpeg');
+    setMetaTag('property', 'og:image:width', '1200');
+    setMetaTag('property', 'og:image:height', '630');
+    setMetaTag('property', 'og:image:alt', effectiveOgTitle);
     setMetaTag('property', 'og:locale', 'km_KH');
+    setMetaTag('property', 'og:locale:alternate', 'en_US');
 
-    // 5. Twitter Meta Tags
+    // 5. Twitter / X Meta Tags
     setMetaTag('name', 'twitter:card', twitterCard);
+    setMetaTag('name', 'twitter:site', '@martsystemkh');
+    setMetaTag('name', 'twitter:creator', '@martsystemkh');
     setMetaTag('name', 'twitter:title', effectiveTwitterTitle);
     setMetaTag('name', 'twitter:description', effectiveTwitterDescription);
     setMetaTag('name', 'twitter:image', effectiveTwitterImage);
+    setMetaTag('name', 'twitter:image:alt', effectiveTwitterTitle);
     setMetaTag('name', 'twitter:url', effectiveOgUrl);
 
     // 6. Dynamic E-Commerce Product Graph Meta Tags
@@ -131,7 +152,6 @@ export default function SEO({
         setMetaTag('property', 'product:category', productData.category);
       }
     } else {
-      // Clean up product-specific tags if navigating to non-product page
       removeDynamicMeta('property', 'product:price:amount');
       removeDynamicMeta('property', 'product:price:currency');
       removeDynamicMeta('property', 'product:availability');
@@ -144,18 +164,96 @@ export default function SEO({
       removeDynamicMeta('name', 'twitter:data2');
     }
 
-    // 7. Dynamic JSON-LD Structured Data
+    // 7. Dynamic JSON-LD Structured Data Builder
     const scriptId = 'dynamic-seo-jsonld';
     let scriptEl = document.getElementById(scriptId);
 
+    // Assemble unified JSON-LD graph
+    const graphItems = [];
+
     if (jsonLd) {
+      if (Array.isArray(jsonLd)) {
+        graphItems.push(...jsonLd);
+      } else if (jsonLd['@graph'] && Array.isArray(jsonLd['@graph'])) {
+        graphItems.push(...jsonLd['@graph']);
+      } else {
+        graphItems.push(jsonLd);
+      }
+    }
+
+    // Breadcrumbs Schema
+    if (Array.isArray(breadcrumbs) && breadcrumbs.length > 0) {
+      graphItems.push({
+        '@type': 'BreadcrumbList',
+        '@id': `${cleanCanonical}#breadcrumb`,
+        'itemListElement': breadcrumbs.map((crumb, idx) => ({
+          '@type': 'ListItem',
+          'position': idx + 1,
+          'name': crumb.name,
+          'item': crumb.url.startsWith('http')
+            ? crumb.url
+            : `${baseSiteUrl}${crumb.url.startsWith('/') ? '' : '/'}${crumb.url}`,
+        })),
+      });
+    }
+
+    // FAQ Schema
+    if (Array.isArray(faq) && faq.length > 0) {
+      graphItems.push({
+        '@type': 'FAQPage',
+        '@id': `${cleanCanonical}#faq`,
+        'mainEntity': faq.map((item) => ({
+          '@type': 'Question',
+          'name': item.q,
+          'acceptedAnswer': {
+            '@type': 'Answer',
+            'text': item.a,
+          },
+        })),
+      });
+    }
+
+    // ItemList Catalog Schema
+    if (Array.isArray(itemList) && itemList.length > 0) {
+      graphItems.push({
+        '@type': 'ItemList',
+        '@id': `${cleanCanonical}#itemlist`,
+        'itemListElement': itemList.map((item, idx) => {
+          const itemUrl = item.url
+            ? (item.url.startsWith('http') ? item.url : `${baseSiteUrl}${item.url.startsWith('/') ? '' : '/'}${item.url}`)
+            : cleanCanonical;
+          return {
+            '@type': 'ListItem',
+            'position': idx + 1,
+            'name': item.name,
+            'url': itemUrl,
+            ...(item.image ? { 'image': item.image.startsWith('http') ? item.image : `${baseSiteUrl}/${item.image.replace(/^\//, '')}` } : {}),
+            ...(item.price != null ? {
+              'offers': {
+                '@type': 'Offer',
+                'price': Number(item.price).toFixed(2),
+                'priceCurrency': item.currency || 'USD',
+                'availability': 'https://schema.org/InStock',
+              }
+            } : {})
+          };
+        }),
+      });
+    }
+
+    if (graphItems.length > 0) {
+      const payload = {
+        '@context': 'https://schema.org',
+        '@graph': graphItems,
+      };
+
       if (!scriptEl) {
         scriptEl = document.createElement('script');
         scriptEl.id = scriptId;
         scriptEl.type = 'application/ld+json';
         document.head.appendChild(scriptEl);
       }
-      scriptEl.textContent = JSON.stringify(jsonLd);
+      scriptEl.textContent = JSON.stringify(payload);
     } else if (scriptEl) {
       scriptEl.remove();
     }
@@ -170,6 +268,7 @@ export default function SEO({
     title,
     description,
     keywords,
+    author,
     cleanCanonical,
     effectiveOgTitle,
     effectiveOgDescription,
@@ -182,6 +281,9 @@ export default function SEO({
     effectiveTwitterImage,
     robots,
     productData,
+    breadcrumbs,
+    faq,
+    itemList,
     jsonLd,
   ]);
 

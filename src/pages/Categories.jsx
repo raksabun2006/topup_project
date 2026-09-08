@@ -10,11 +10,22 @@ export default function Categories() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 pb-20">
       <SEO
-        title="Browse Grocery &amp; Lifestyle Categories | Mart System"
-        description="Explore fresh vegetables, drinks, meat, dairy, snacks, and everyday items organized by category in Mart System Online Store."
-        keywords="Mart Categories, Grocery Categories Cambodia, Drinks, Snacks, Fresh Food Phnom Penh"
+        title="Browse Grocery & Lifestyle Categories | Mart System Cambodia"
+        description="Explore fresh vegetables, drinks, meat, dairy, snacks, and everyday items organized by category in Mart System Online Store with $1.50 express delivery."
+        keywords="Mart Categories, Grocery Categories Cambodia, Drinks, Snacks, Fresh Food Phnom Penh, Online Mart Catalog"
         canonical="/categories"
         ogImage="/mart.jpg"
+        breadcrumbs={[
+          { name: 'Home', url: '/' },
+          { name: 'Categories', url: '/categories' },
+        ]}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          'name': 'Browse Grocery & Lifestyle Categories | Mart System Cambodia',
+          'description': 'Explore fresh vegetables, drinks, meat, dairy, snacks, and everyday items organized by category in Mart System Online Store.',
+          'url': 'https://martsystemkh.software/categories',
+        }}
       />
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12 space-y-10">

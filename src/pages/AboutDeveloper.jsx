@@ -492,7 +492,51 @@ export default function AboutDeveloper() {
       <SEO
         title={content.seoTitle}
         description={content.seoDesc}
+        keywords="Bun Raksa, Full Stack Developer Cambodia, Spring Boot React Developer, Mart System Creator, Software Engineer Phnom Penh, Bakong KHQR Integration"
         canonical="/about"
+        ogImage="/developer.jpg"
+        breadcrumbs={[
+          { name: 'Home', url: '/' },
+          { name: 'About Developer', url: '/about' },
+        ]}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            {
+              '@type': 'ProfilePage',
+              '@id': 'https://martsystemkh.software/about#profile',
+              'name': 'About Bun Raksa — Full-Stack Developer & Creator of Mart System',
+              'url': 'https://martsystemkh.software/about',
+              'mainEntity': {
+                '@type': 'Person',
+                '@id': 'https://martsystemkh.software/about#person',
+                'name': 'Bun Raksa',
+                'jobTitle': 'Full-Stack Software Engineer & Solutions Architect',
+                'image': 'https://martsystemkh.software/developer.jpg',
+                'email': 'raksabun2006@gmail.com',
+                'telephone': '+855-968782196',
+                'address': {
+                  '@type': 'PostalAddress',
+                  'addressLocality': 'Phnom Penh',
+                  'addressCountry': 'KH',
+                },
+                'sameAs': [
+                  'https://t.me/raksa_bun',
+                  'https://github.com/raksabun',
+                ],
+                'knowsAbout': [
+                  'React.js',
+                  'Spring Boot',
+                  'Java',
+                  'PostgreSQL',
+                  'Bakong KHQR Payment Integration',
+                  'Tailwind CSS',
+                  'Docker & Cloud Deployment',
+                ],
+              },
+            },
+          ],
+        }}
       />
 
       {/* 1. HERO SECTION */}

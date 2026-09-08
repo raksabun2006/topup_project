@@ -217,6 +217,14 @@ export default function ProductDetail() {
                     "@type": "Organization",
                     "name": "Mart System"
                   },
+                  "hasMerchantReturnPolicy": {
+                    "@type": "MerchantReturnPolicy",
+                    "applicableCountry": "KH",
+                    "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                    "merchantReturnDays": 7,
+                    "returnMethod": "https://schema.org/ReturnInStore",
+                    "returnFees": "https://schema.org/FreeReturn"
+                  },
                   "shippingDetails": {
                     "@type": "OfferShippingDetails",
                     "shippingRate": {
@@ -229,6 +237,13 @@ export default function ProductDetail() {
                       "addressCountry": "KH"
                     }
                   }
+                },
+                "aggregateRating": {
+                  "@type": "AggregateRating",
+                  "ratingValue": pseudoRating,
+                  "reviewCount": pseudoReviews,
+                  "bestRating": "5",
+                  "worstRating": "1"
                 }
               },
               {

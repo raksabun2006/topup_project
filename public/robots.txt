@@ -1,16 +1,35 @@
 # https://www.robotstxt.org/robotstxt.html
+# Mart System — Official Robots & Crawler Policy
+
+User-agent: Googlebot
+User-agent: Googlebot-Image
+User-agent: Bingbot
+User-agent: Applebot
+User-agent: Slurp
+User-agent: DuckDuckBot
+User-agent: Baiduspider
+User-agent: YandexBot
+User-agent: Twitterbot
+User-agent: facebookexternalhit
+User-agent: LinkedInBot
+User-agent: TelegramBot
+User-agent: WhatsApp
 User-agent: *
 Allow: /
 Allow: /shop
 Allow: /categories
 Allow: /products
-Allow: /pos
+Allow: /product/*
+Allow: /about
+Allow: /about-developer
+Allow: /developer
 Allow: /mart.jpg
 Allow: /favicon.svg
 Allow: /og-image.png
+Allow: /developer.jpg
 Allow: /site.webmanifest
 
-# Disallow private dashboards, cart flows and operational endpoints
+# Disallow authenticated, admin, cart and transactional paths
 Disallow: /admin
 Disallow: /admin/
 Disallow: /dashboard
@@ -21,13 +40,21 @@ Disallow: /customers
 Disallow: /customers/
 Disallow: /profile
 Disallow: /profile/
+Disallow: /account
+Disallow: /orders
+Disallow: /my-orders
+Disallow: /customer/dashboard
+Disallow: /staff/dashboard
 Disallow: /login
 Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /unauthorized
 Disallow: /cart
 Disallow: /checkout
 Disallow: /payment
 Disallow: /payment/
 
-# Host and Sitemap
+# Canonical Host & XML Sitemap
 Host: https://martsystemkh.software
 Sitemap: https://martsystemkh.software/sitemap.xml

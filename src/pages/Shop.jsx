@@ -398,6 +398,11 @@ export default function Shop() {
         }
         canonical={dynamicCanonical}
         ogImage="/mart.jpg"
+        breadcrumbs={[
+          { name: 'Home', url: '/' },
+          { name: 'Shop', url: '/shop' },
+          ...(selectedCategory ? [{ name: selectedCategory, url: `/shop?category=${encodeURIComponent(selectedCategory)}` }] : []),
+        ]}
         jsonLd={dynamicJsonLd}
       />
 

@@ -31,7 +31,7 @@
     <image:image>
       <image:loc>https://martsystemkh.software/mart.jpg</image:loc>
       <image:title>Shop All Products | Mart System</image:title>
-      <image:caption>Browse full collection of groceries, drinks, snacks and lifestyle products.</image:caption>
+      <image:caption>Browse full collection of groceries, drinks, snacks and lifestyle products in Phnom Penh.</image:caption>
     </image:image>
   </url>
 
@@ -43,7 +43,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/categories" />
     <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.90</priority>
   </url>
 
   <!-- 4. Products Alias -->
@@ -54,10 +54,10 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products" />
     <lastmod>2026-09-08</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <priority>0.90</priority>
   </url>
 
-  <!-- 5. About / Developer -->
+  <!-- 5. About Developer & System Architecture -->
   <url>
     <loc>https://martsystemkh.software/about</loc>
     <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/about" />
@@ -65,7 +65,12 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/about" />
     <lastmod>2026-09-08</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://martsystemkh.software/developer.jpg</image:loc>
+      <image:title>Bun Raksa — Full-Stack Developer &amp; Creator of Mart System</image:title>
+      <image:caption>Full-Stack Engineer specialized in Spring Boot, React, and Bakong KHQR Payment Systems.</image:caption>
+    </image:image>
   </url>
 
 </urlset>

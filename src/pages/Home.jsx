@@ -167,10 +167,37 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#FDFDFE] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 transition-colors">
       <SEO
-        title={`${env.appName || 'Mart System'} | Official Online Store & Everyday Delivery`}
-        description="Shop fresh everyday groceries, beverages, snacks, and products from top brands with $1.50 express delivery and seamless Bakong KHQR scan."
+        title="Mart System | Official Online Store & Groceries Delivery Cambodia"
+        description="Shop fresh everyday groceries, beverages, snacks, and products from top brands in Cambodia with $1.50 express delivery and seamless Bakong KHQR scan."
+        keywords="Mart System Cambodia, Online Grocery Phnom Penh, Bakong KHQR Shopping, Buy Groceries Cambodia, Drink & Snacks Delivery, Express Delivery Mart"
         canonical="/"
         ogImage="/mart.jpg"
+        breadcrumbs={[{ name: 'Home', url: '/' }]}
+        itemList={productList.slice(0, 8).map((p) => ({
+          name: p.name,
+          url: `/product/${p.id}`,
+          image: p.imageUrl || '/mart.jpg',
+          price: p.price,
+          currency: 'USD',
+        }))}
+        faq={[
+          {
+            q: 'How do I pay using Bakong KHQR on Mart System?',
+            a: 'At checkout, select Bakong KHQR payment. A dynamic KHQR code will be generated instantly for your order. Open any Cambodian banking app (Bakong, ABA, ACLEDA, Wing, etc.) and scan the QR code to complete payment in seconds.',
+          },
+          {
+            q: 'What is the delivery fee and speed in Phnom Penh?',
+            a: 'We offer express doorstep delivery for just $1.50 per order within Phnom Penh. Most orders arrive swiftly at your doorstep.',
+          },
+          {
+            q: 'Are the products guaranteed authentic?',
+            a: 'Yes, 100% of the products on Mart System are guaranteed authentic, fresh, and sourced directly from verified suppliers.',
+          },
+          {
+            q: 'How can I contact customer support?',
+            a: 'Our customer support team is available everyday from 06:00 to 23:00 via phone (+855-968782196), Telegram (@raksa_bun), or email (raksabun2006@gmail.com).',
+          },
+        ]}
       />
 
       {/* 1. TOP MINI TRUST BAR */}
