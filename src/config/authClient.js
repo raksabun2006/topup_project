@@ -17,8 +17,7 @@ function decodeJwt(token) {
     const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
     const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
     return JSON.parse(decodeURIComponent(escape(atob(padded))));
-  } catch (e) {
-    console.warn('Could not decode JWT:', e);
+  } catch {
     return null;
   }
 }
@@ -34,13 +33,13 @@ function buildClaimsFromAuth(token, userData = {}) {
     }
     return {
       ...jwtClaims,
-      sub: jwtClaims.sub || userData.id,
-      id: userData.id || jwtClaims.sub,
-      username: jwtClaims.preferred_username || userData.username || jwtClaims.sub,
+      sub: jwtClaims.sub || userData.id || userData.userId,
+      id: userData.id || userData.userId || jwtClaims.sub,
+      username: jwtClaims.preferred_username || userData.username || userData.email || jwtClaims.sub,
       preferred_username: jwtClaims.preferred_username || userData.username,
       email: jwtClaims.email || userData.email,
-      name: userData.displayName || jwtClaims.name || userData.username,
-      displayName: userData.displayName || jwtClaims.name || userData.username,
+      name: userData.displayName || userData.name || jwtClaims.name || userData.username,
+      displayName: userData.displayName || userData.name || jwtClaims.name || userData.username,
       phoneNumber: userData.phoneNumber || jwtClaims.phoneNumber,
       role: userData.role || (roles.includes('ADMIN') ? 'ADMIN' : 'USER'),
       roles,
@@ -50,13 +49,13 @@ function buildClaimsFromAuth(token, userData = {}) {
 
   const role = userData.role || 'USER';
   return {
-    sub: userData.id || 'user',
-    id: userData.id,
-    username: userData.username,
+    sub: userData.id || userData.userId || 'user',
+    id: userData.id || userData.userId,
+    username: userData.username || userData.email,
     preferred_username: userData.username,
     email: userData.email,
-    displayName: userData.displayName || userData.username,
-    name: userData.displayName || userData.username,
+    displayName: userData.displayName || userData.name || userData.username,
+    name: userData.displayName || userData.name || userData.username,
     phoneNumber: userData.phoneNumber,
     role,
     roles: [role],
@@ -82,9 +81,6 @@ function clearSession() {
   localStorage.removeItem('token');
   localStorage.removeItem(STORAGE_USER_KEY);
   localStorage.removeItem('pos_refresh_token');
-  localStorage.removeItem('pos_cart');
-  localStorage.removeItem('cart');
-  localStorage.removeItem('mart_customer_orders');
 }
 
 export const authClient = {
@@ -97,8 +93,15 @@ export const authClient = {
     onSessionExpired?.();
   },
 
-  async login(username, password) {
-    // Determine login endpoint URL
+  setSession(token, userData = {}) {
+    setSession(token, userData);
+  },
+
+  clearSession() {
+    clearSession();
+  },
+
+  async login(usernameOrEmail, password) {
     const baseUrl = env.apiBaseUrl.replace(/\/+$/, '');
     const url = baseUrl.endsWith('/api/v1') ? `${baseUrl}/auth/login` : `${baseUrl}/api/v1/auth/login`;
 
@@ -107,11 +110,15 @@ export const authClient = {
       res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username: usernameOrEmail,
+          email: usernameOrEmail,
+          password,
+        }),
       });
     } catch (networkErr) {
       const err = new Error(
-        `Network error: មិនអាចភ្ជាប់ទៅកាន់ Server បានទេ។ សូមពិនិត្យ Internet របស់អ្នក។ (${networkErr.message || 'Connection failed'})`
+        `Network error: Unable to connect to server. Please check your internet connection.`
       );
       err.code = 'NETWORK_ERROR';
       throw err;
@@ -122,25 +129,15 @@ export const authClient = {
       let msg = data.message || data.error_description || data.error;
       if (!msg) {
         if (res.status === 401) {
-          msg = '401 Unauthorized: ឈ្មោះអ្នកប្រើ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ (Invalid username or password)';
+          msg = 'Invalid email or password.';
         } else if (res.status === 403) {
-          msg = '403 Forbidden: អ្នកមិនមានសិទ្ធិចូលប្រើប្រាស់ទេ (Permission denied)';
+          msg = "You don't have permission to perform this action.";
         } else if (res.status === 404) {
-          msg = '404 Not Found: រកមិនឃើញសេវាកម្ម Login (Endpoint not found)';
+          msg = 'The requested resource was not found.';
         } else if (res.status >= 500) {
-          msg = '500 Server Error: Server កំពុងមានបញ្ហា (Internal Server Error)';
+          msg = 'Something went wrong. Please try again.';
         } else {
-          msg = 'ចូលគណនីមិនបានទេ។ សូមព្យាយាមម្តងទៀត។';
-        }
-      } else {
-        if (res.status === 401 && !msg.includes('401')) {
-          msg = `401 Unauthorized: ${msg}`;
-        } else if (res.status === 403 && !msg.includes('403')) {
-          msg = `403 Forbidden: ${msg}`;
-        } else if (res.status === 404 && !msg.includes('404')) {
-          msg = `404 Not Found: ${msg}`;
-        } else if (res.status >= 500 && !msg.includes('500')) {
-          msg = `500 Server Error: ${msg}`;
+          msg = 'Unable to sign in. Please try again.';
         }
       }
       const err = new Error(msg);
@@ -151,11 +148,68 @@ export const authClient = {
     }
 
     const json = await res.json();
-    const authData = json.data || json; // AuthResponse: { token, accessToken, tokenType, username, role, id, user }
-    const token = authData.token || authData.accessToken || authData.access_token;
+    const authData = json.data || json;
+    const token = authData.token || authData.accessToken || authData.access_token || authData.jwt;
 
     if (!token) {
-      throw new Error('មិនបានទទួល token ពី server ទេ។ (No token returned from server)');
+      throw new Error('No authentication token returned by the server.');
+    }
+
+    const userData = { ...authData, ...(authData.user || {}) };
+    setSession(token, userData);
+    return tokenParsed;
+  },
+
+  async loginWithGoogle(credential) {
+    const baseUrl = env.apiBaseUrl.replace(/\/+$/, '');
+    const url = baseUrl.endsWith('/api/v1') ? `${baseUrl}/auth/google` : `${baseUrl}/api/v1/auth/google`;
+
+    let res;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: credential,
+          idToken: credential,
+          credential: credential,
+        }),
+      });
+    } catch (networkErr) {
+      const err = new Error(
+        `Network error: Unable to connect to server. Please check your internet connection.`
+      );
+      err.code = 'NETWORK_ERROR';
+      throw err;
+    }
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      let msg = data.message || data.error_description || data.error;
+      if (!msg) {
+        if (res.status === 401) {
+          msg = 'Invalid Google credentials.';
+        } else if (res.status === 403) {
+          msg = "You don't have permission to perform this action.";
+        } else if (res.status >= 500) {
+          msg = 'Something went wrong. Please try again.';
+        } else {
+          msg = 'Unable to sign in with Google. Please try again.';
+        }
+      }
+      const err = new Error(msg);
+      err.code = data.code || 'GOOGLE_AUTH_ERROR';
+      err.status = res.status;
+      err.response = { status: res.status, data };
+      throw err;
+    }
+
+    const json = await res.json();
+    const authData = json.data || json;
+    const token = authData.token || authData.accessToken || authData.access_token || authData.jwt;
+
+    if (!token) {
+      throw new Error('No authentication token returned by the server.');
     }
 
     const userData = { ...authData, ...(authData.user || {}) };

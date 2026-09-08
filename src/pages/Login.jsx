@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Loader2, AlertCircle, Eye, EyeOff, Lock, User,
-  CheckCircle2, ShoppingBag, Store, ArrowLeft
+  CheckCircle2, ShoppingBag, ArrowLeft
 } from 'lucide-react';
 import { useAuth, getRoleDashboardPath } from '../context/AuthContext';
 import { getErrorMessage } from '../api/client';
 import { env } from '../config/env';
 import SEO from '../components/SEO';
 import ThemeToggle from '../components/ui/ThemeToggle';
+import GoogleLoginButton from '../components/auth/GoogleLoginButton';
 
 function StorefrontIllustration() {
   return (
@@ -98,7 +99,7 @@ function StorefrontIllustration() {
 }
 
 export default function Login() {
-  const { login, isAuthenticated, user, loading } = useAuth();
+  const { login, loginWithGoogle, isAuthenticated, user, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -114,7 +115,11 @@ export default function Login() {
   // Auto-redirect if user is already authenticated
   useEffect(() => {
     if (!loading && isAuthenticated && user) {
-      const destination = from ? `${from.pathname}${from.search ?? ''}` : getRoleDashboardPath(user.role);
+      const destination = from
+        ? typeof from === 'string'
+          ? from
+          : `${from.pathname || '/customer/dashboard'}${from.search ?? ''}`
+        : getRoleDashboardPath(user.role);
       navigate(destination, { replace: true });
     }
   }, [loading, isAuthenticated, user, from, navigate]);
@@ -123,8 +128,9 @@ export default function Login() {
     e.preventDefault();
     if (submitting) return;
 
-    if (!username.trim() || !password) {
-      setError('Please enter your username and password.');
+    const trimmedUsername = username.trim();
+    if (!trimmedUsername || !password) {
+      setError('Please enter your email/username and password.');
       return;
     }
 
@@ -132,79 +138,101 @@ export default function Login() {
     setError('');
 
     try {
-      const loggedUser = await login(username.trim(), password);
-      const destination = from ? `${from.pathname}${from.search ?? ''}` : getRoleDashboardPath(loggedUser?.role);
+      const loggedUser = await login(trimmedUsername, password);
+      const destination = from
+        ? typeof from === 'string'
+          ? from
+          : `${from.pathname || '/customer/dashboard'}${from.search ?? ''}`
+        : getRoleDashboardPath(loggedUser?.role);
       navigate(destination, { replace: true });
     } catch (err) {
-      const status = err.status || err.response?.status;
-      if (status === 401 || err.code === 'invalid_grant') {
-        setError('Username or password is incorrect. Please try again.');
-      } else if (status === 500) {
-        setError('Something went wrong on the server. Please try again later.');
-      } else {
-        setError(getErrorMessage(err) || 'Failed to sign in. Please try again.');
-      }
+      setError(getErrorMessage(err) || 'Invalid email or password.');
     } finally {
       setSubmitting(false);
     }
   };
 
+  const handleGoogleSuccess = async (credential) => {
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const loggedUser = await loginWithGoogle(credential);
+      const destination = from
+        ? typeof from === 'string'
+          ? from
+          : `${from.pathname || '/customer/dashboard'}${from.search ?? ''}`
+        : getRoleDashboardPath(loggedUser?.role);
+      navigate(destination, { replace: true });
+    } catch (err) {
+      setError(getErrorMessage(err) || 'Unable to sign in with Google.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleGoogleError = (err) => {
+    if (typeof err === 'string') {
+      setError(err);
+    } else {
+      setError(getErrorMessage(err) || 'Google sign-in was cancelled or failed.');
+    }
+  };
+
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-[#EDF2F7] dark:bg-slate-950 p-3 sm:p-6 lg:p-8 font-sans">
+    <div className="relative min-h-screen w-full bg-white dark:bg-slate-950 font-sans flex flex-col justify-between overflow-x-hidden">
       <SEO title="Login to Mart System | Official Portal" canonical="/login" robots="noindex, nofollow" />
 
-      <div className="absolute top-3 right-3 sm:top-6 sm:right-6 z-20">
-        <ThemeToggle variant="navbar" />
-      </div>
-
-      {/* Main Split Card Container */}
-      <div className="w-full max-w-md lg:max-w-5xl bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl lg:rounded-[1.75rem] border border-slate-200/90 dark:border-slate-800 shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[auto] lg:min-h-[600px] animate-scale-in">
+      {/* Main Split Grid Container */}
+      <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-12">
         
-        {/* Left Side: Brand Showcase & Value Props (Desktop Only for optimal mobile UX) */}
-        <div className="hidden lg:flex lg:col-span-5 bg-[#F8FAFC] dark:bg-slate-900/60 p-8 lg:p-10 flex-col justify-between border-r border-slate-200/70 dark:border-slate-800">
+        {/* Left Side: Brand Showcase & Value Props */}
+        <div className="hidden lg:flex lg:col-span-5 xl:col-span-5 bg-[#F8FAFC] dark:bg-slate-900/60 p-8 lg:p-12 xl:p-16 flex-col justify-between border-r border-slate-200/80 dark:border-slate-800 relative">
           <div>
             {/* Brand Logo */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-6">
               <Link to="/" className="flex items-center gap-2.5 group">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-rose-500 text-white shadow-xs group-hover:scale-105 transition-transform">
-                  <ShoppingBag size={18} />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-rose-500 text-white shadow-xs group-hover:scale-105 transition-transform">
+                  <ShoppingBag size={20} />
                 </div>
-                <span className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                   {env.appName || 'Mart System'}
                 </span>
               </Link>
             </div>
 
             {/* Illustration */}
-            <StorefrontIllustration />
+            <div className="my-6">
+              <StorefrontIllustration />
+            </div>
 
             {/* Value Proposition List */}
-            <div className="mt-4 space-y-3">
-              <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
+            <div className="mt-6 space-y-4">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
                 Why {env.appName || 'Mart System'}
               </h3>
-              <ul className="space-y-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                <li className="flex items-center gap-2.5">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 shrink-0">
-                    <CheckCircle2 size={13} />
+              <ul className="space-y-3 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400">
+                <li className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 shrink-0">
+                    <CheckCircle2 size={15} />
                   </div>
-                  <span>Fast $1.50 Express Delivery in Phnom Penh</span>
+                  <span>Fast Express Delivery in Phnom Penh</span>
                 </li>
-                <li className="flex items-center gap-2.5">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 shrink-0">
-                    <CheckCircle2 size={13} />
+                <li className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 shrink-0">
+                    <CheckCircle2 size={15} />
                   </div>
                   <span>Seamless Bakong KHQR Instant Payment</span>
                 </li>
-                <li className="flex items-center gap-2.5">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 shrink-0">
-                    <CheckCircle2 size={13} />
+                <li className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 shrink-0">
+                    <CheckCircle2 size={15} />
                   </div>
                   <span>20+ Fresh Grocery &amp; Tech Categories</span>
                 </li>
-                <li className="flex items-center gap-2.5">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 shrink-0">
-                    <CheckCircle2 size={13} />
+                <li className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 shrink-0">
+                    <CheckCircle2 size={15} />
                   </div>
                   <span>100% Authentic Quality Guaranteed Products</span>
                 </li>
@@ -212,17 +240,15 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Copyright note */}
-          <div className="pt-6 mt-6 border-t border-slate-200/70 dark:border-slate-800 text-[11px] font-medium text-slate-400">
+          <div className="pt-6 mt-8 border-t border-slate-200/70 dark:border-slate-800 text-xs font-medium text-slate-400">
             © {new Date().getFullYear()} {env.appName || 'Mart System'}. All rights reserved.
           </div>
         </div>
 
         {/* Right Side: Login Form */}
-        <div className="col-span-1 lg:col-span-7 p-5 sm:p-8 lg:p-12 flex flex-col justify-between bg-white dark:bg-slate-900">
+        <div className="col-span-1 lg:col-span-7 xl:col-span-7 p-6 sm:p-10 lg:p-14 xl:p-20 flex flex-col justify-between bg-white dark:bg-slate-900 min-h-screen overflow-y-auto">
           {/* Top Bar on Mobile/Desktop */}
-          <div className="flex items-center justify-between lg:justify-end gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 mb-4 sm:mb-0">
-            {/* Mobile Brand Logo */}
+          <div className="flex items-center justify-between gap-3 text-xs font-medium text-slate-500 dark:text-slate-400 mb-6">
             <div className="flex lg:hidden items-center">
               <Link to="/" className="flex items-center gap-2">
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-amber-500 to-rose-500 text-white shadow-xs">
@@ -234,54 +260,55 @@ export default function Login() {
               </Link>
             </div>
 
-            {/* Switch to Register Button */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5 ml-auto">
               <span className="hidden sm:inline">Don't have an account?</span>
               <Link
                 to="/register"
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-2xs hover:scale-105"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-2xs hover:scale-105"
               >
                 <User size={13} />
-                <span>Sign up</span>
+                <span>Create account</span>
               </Link>
+              <ThemeToggle variant="navbar" />
             </div>
           </div>
 
           {/* Center Form Container */}
           <div className="my-auto py-4 sm:py-6 max-w-md w-full mx-auto">
-            {/* User Icon Circle */}
             <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 mx-auto mb-3 border border-sky-100 dark:border-sky-900/40 shadow-xs">
               <User size={20} />
             </div>
 
             <div className="text-center space-y-1 mb-5 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl lg:text-[26px] font-black text-slate-900 dark:text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl lg:text-[26px] font-black text-slate-900 dark:text-white tracking-tight">
                 Login to your account
-              </h2>
+              </h1>
               <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 font-medium">
-                Welcome back, you've been missed!
+                Welcome back, please enter your details.
               </p>
             </div>
 
             {error && (
-              <div className="mb-4 sm:mb-5 flex items-start gap-2.5 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/30 p-3 sm:p-3.5 text-xs font-semibold text-rose-700 dark:text-rose-400 shadow-2xs animate-fade-in">
+              <div className="mb-4 sm:mb-5 flex items-start gap-2.5 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/30 p-3 sm:p-3.5 text-xs font-semibold text-rose-700 dark:text-rose-400 shadow-2xs animate-fade-in" role="alert">
                 <AlertCircle size={16} className="mt-0.5 shrink-0" />
                 <div className="flex-1 leading-relaxed">{error}</div>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
-              {/* Username Input */}
+            <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4" noValidate>
+              {/* Email / Username Input */}
               <div className="relative">
                 <User size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
+                  id="login-username"
                   required
                   autoFocus
                   disabled={submitting}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Email Id or Mobile number"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2.5 sm:py-3 pl-10 pr-4 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
+                  placeholder="Email or Username"
+                  aria-label="Email or Username"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2.5 sm:py-3 pl-10 pr-4 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs disabled:opacity-60"
                 />
               </div>
 
@@ -289,13 +316,15 @@ export default function Login() {
               <div className="relative">
                 <Lock size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
+                  id="login-password"
                   required
                   type={showPassword ? 'text' : 'password'}
                   disabled={submitting}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter Password"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2.5 sm:py-3 pl-10 pr-10 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs"
+                  placeholder="Password"
+                  aria-label="Password"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-2.5 sm:py-3 pl-10 pr-10 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs disabled:opacity-60"
                 />
                 <button
                   type="button"
@@ -308,7 +337,7 @@ export default function Login() {
                 </button>
               </div>
 
-              {/* Remember Me & Forgot Password */}
+              {/* Remember Me & Forgot Password Link */}
               <div className="flex items-center justify-between text-xs pt-0.5 sm:pt-1">
                 <label className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-semibold cursor-pointer select-none">
                   <input
@@ -321,33 +350,50 @@ export default function Login() {
                 </label>
 
                 <Link
-                  to="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    alert('Please contact your store administrator (Phone: 0968782196) to reset your credentials.');
-                  }}
+                  to="/forgot-password"
                   className="font-bold text-[#1D4ED8] dark:text-blue-400 hover:underline"
                 >
-                  Forgot Password ?
+                  Forgot password?
                 </Link>
               </div>
 
               {/* Submit Button */}
               <button
+                id="login-submit-button"
                 type="submit"
                 disabled={submitting}
-                className="w-full rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white py-3 sm:py-3.5 text-xs sm:text-sm font-bold shadow-md transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2 mt-2 sm:mt-3"
+                className="w-full rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white py-3 sm:py-3.5 text-xs sm:text-sm font-bold shadow-md transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2 mt-2"
               >
                 {submitting ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    <span>Signing In...</span>
+                    <span>Signing in...</span>
                   </>
                 ) : (
-                  <span>Log In</span>
+                  <span>Login</span>
                 )}
               </button>
             </form>
+
+            {/* Divider OR */}
+            <div className="relative my-4 sm:my-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+              </div>
+              <div className="relative flex justify-center text-[11px] uppercase">
+                <span className="bg-white dark:bg-slate-900 px-3 font-bold text-slate-400 dark:text-slate-500">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            {/* Google Login Button */}
+            <GoogleLoginButton
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              disabled={submitting}
+              text="Continue with Google"
+            />
           </div>
 
           {/* Bottom Link Back to Store */}

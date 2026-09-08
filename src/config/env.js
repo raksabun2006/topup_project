@@ -1,12 +1,13 @@
 /**
- * ចំណុចតែមួយគត់ដែលអាន import.meta.env។
- * គាំទ្រទាំង VITE_API_BASE_URL និង VITE_API_URL
+ * Centralized Environment Configuration
+ * Reads Vite environment variables safely.
+ * Prioritizes VITE_API_URL and supports VITE_API_BASE_URL.
  */
 
 const rawApiUrl = (
-  import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_URL ||
-  'https://gametopup-backend-production-3423.up.railway.app'
+  import.meta.env.VITE_API_BASE_URL ||
+  'http://localhost:8080'
 ).replace(/\/+$/, '');
 
 export const env = {
@@ -16,13 +17,17 @@ export const env = {
   // Base URL without /api/v1 prefix
   backendUrl: rawApiUrl.replace(/\/api\/v1$/, ''),
 
+  // Application Display Name
   appName: import.meta.env.VITE_APP_NAME ?? 'Mart System',
 
   // Official production URL for SEO & Canonical links
   siteUrl: (import.meta.env.VITE_SITE_URL || 'https://martsystemkh.software').replace(/\/+$/, ''),
 
-  // Bakong QR polling ក្នុង POS checkout: 10–15s មួយដង (លំនាំដើម 12 វិនាទី)
+  // Bakong QR polling in POS checkout: 3000ms default
   paymentPollIntervalMs: Number(
-    import.meta.env.VITE_PAYMENT_POLL_INTERVAL_MS ?? 12000
+    import.meta.env.VITE_PAYMENT_POLL_INTERVAL_MS ?? 3000
   ),
+
+  // Google OAuth 2.0 Client ID for customer sign-in (Public)
+  googleClientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
 };

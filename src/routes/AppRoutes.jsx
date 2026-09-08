@@ -5,6 +5,8 @@ import MainLayout from '../components/layout/MainLayout';
 import AdminLayout from '../components/layout/AdminLayout';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
+import ForgotPassword from '../pages/ForgotPassword';
+import ResetPassword from '../pages/ResetPassword';
 import Home from '../pages/Home';
 import Shop from '../pages/Shop';
 import Categories from '../pages/Categories';
@@ -44,6 +46,8 @@ export default function AppRoutes() {
       {/* ---------- ១. AUTH ROUTES ---------- */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
       {/* ---------- ២. MAIN STOREFRONT & CUSTOMER E-COMMERCE ---------- */}

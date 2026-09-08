@@ -22,7 +22,7 @@ apiClient.interceptors.request.use(async (config) => {
       }
     }
 
-    // Guest checkout: Do NOT attach Authorization header
+    // Guest checkout / public auth requests: Do NOT attach Authorization header
     if (config.isGuest || config.headers?.isGuest || config.skipAuth) {
       if (config.headers) {
         delete config.headers.Authorization;
@@ -46,7 +46,7 @@ apiClient.interceptors.request.use(async (config) => {
       delete config.headers.authorization;
     }
   } catch (err) {
-    console.warn('Token check notice:', err);
+    // Silent catch to prevent request abortion
   }
   return config;
 });
@@ -63,112 +63,112 @@ apiClient.interceptors.response.use(
   }
 );
 
-function looksLikeRawException(message) {
+function isSensitiveOrTechnical(message) {
   if (typeof message !== 'string') return false;
-  return /(^|[.\s])[a-z]+(\.[a-z]+)+\.[A-Z]\w*Exception\b/.test(message);
+  const sensitivePatterns = [
+    /(^|[.\s])[a-z0-9_]+(\.[a-z0-9_]+)+\.[A-Z]\w*Exception\b/i,
+    /org\.springframework/i,
+    /java\.(lang|util|sql|io)/i,
+    /at\s+[a-z0-9_$.]+\([a-z0-9_]+\.java:\d+\)/i,
+    /nested exception is/i,
+    /hibernate/i,
+    /jdbc/i,
+    /sql\s*(syntax|state|error)/i,
+    /NullPointerException/i,
+    /Cannot deserialize/i,
+    /org\.apache/i,
+    /com\.zaxxer/i,
+    /password/i,
+    /secret/i,
+    /credential/i,
+    /connection refused/i,
+    /d:\\/i,
+    /\/var\/log/i,
+  ];
+  return sensitivePatterns.some((pattern) => pattern.test(message));
 }
 
 export function getErrorMessage(error) {
-  if (!error) return 'មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។ (An unexpected error occurred)';
-  if (typeof error === 'string') return error;
+  if (!error) return 'Something went wrong. Please try again.';
+  if (typeof error === 'string') {
+    return isSensitiveOrTechnical(error) ? 'Something went wrong. Please try again.' : error;
+  }
 
-  console.error(error);
   const status = error?.response?.status;
   const data = error?.response?.data;
 
-  // Extract clean backend message if present
+  // Extract backend message if present
   let backendMsg = null;
   if (data) {
-    if (typeof data === 'string') {
+    if (typeof data === 'string' && !isSensitiveOrTechnical(data)) {
       backendMsg = data;
     } else if (typeof data === 'object') {
-      if (data.message && !looksLikeRawException(data.message)) {
+      if (data.message && typeof data.message === 'string' && !isSensitiveOrTechnical(data.message)) {
         backendMsg = data.message;
-      } else if (data.error && typeof data.error === 'string') {
+      } else if (data.error && typeof data.error === 'string' && !isSensitiveOrTechnical(data.error)) {
         backendMsg = data.error;
-      } else if (data.error_description && typeof data.error_description === 'string') {
+      } else if (data.error_description && typeof data.error_description === 'string' && !isSensitiveOrTechnical(data.error_description)) {
         backendMsg = data.error_description;
       }
     }
   }
 
-  // Custom domain errors from backend body if provided
-  if (data?.code === 'INSUFFICIENT_STOCK') {
-    return data.details?.available != null
-      ? `ស្តុកមិនគ្រប់គ្រាន់ - នៅសល់ត្រឹម ${data.details.available}`
-      : (backendMsg || 'ស្តុកមិនគ្រប់គ្រាន់');
-  }
-
+  // Custom domain field validation errors if provided
   if (data?.code === 'VALIDATION_FAILED' && data?.details && typeof data.details === 'object') {
-    return Object.entries(data.details)
-      .map(([field, msg]) => `${field}: ${msg}`)
-      .join(' · ');
+    const fields = Object.entries(data.details)
+      .filter(([_, msg]) => typeof msg === 'string' && !isSensitiveOrTechnical(msg))
+      .map(([field, msg]) => `${field}: ${msg}`);
+    if (fields.length > 0) return fields.join(' · ');
   }
 
   if (Array.isArray(data?.errors) && data.errors.length > 0) {
-    return data.errors
-      .map((e) => (e.field ? `${e.field}: ${e.message}` : e.message))
-      .join(' · ');
+    const cleanErrors = data.errors
+      .filter((e) => e && (e.message || typeof e === 'string'))
+      .map((e) => {
+        const msg = typeof e === 'string' ? e : e.message;
+        if (isSensitiveOrTechnical(msg)) return null;
+        return e.field ? `${e.field}: ${msg}` : msg;
+      })
+      .filter(Boolean);
+    if (cleanErrors.length > 0) return cleanErrors.join(' · ');
   }
 
   // Network error (no response received from server)
   if (!error?.response) {
     if (error?.code === 'ECONNABORTED' || error?.message?.includes('timeout')) {
-      return 'Network error: សំណើលើសពេលកំណត់។ សូមព្យាយាមម្តងទៀត។ (Request timed out)';
+      return 'Request timed out. Please try again.';
     }
-    const netDetails = error?.message ? ` (${error.message})` : '';
-    return `Network error: មិនអាចភ្ជាប់ទៅកាន់ Server បានទេ។ សូមពិនិត្យ Internet របស់អ្នក។${netDetails}`;
+    return 'Unable to connect to the server. Please check your internet connection.';
   }
 
-  // 401 Unauthorized
-  if (status === 401) {
-    if (backendMsg && !backendMsg.includes('Full authentication is required') && !backendMsg.includes('Unauthorized')) {
-      return backendMsg;
-    }
-    return 'សូមចូលគណនីរបស់អ្នកដើម្បីបន្ត (Please sign in to continue)';
+  // Standard HTTP status code mappings
+  switch (status) {
+    case 400:
+      return backendMsg || 'Please check your information.';
+    case 401:
+      if (backendMsg && !backendMsg.includes('Full authentication') && !backendMsg.includes('Unauthorized')) {
+        return backendMsg;
+      }
+      return 'Invalid email or password.';
+    case 403:
+      return backendMsg || "You don't have permission to perform this action.";
+    case 404:
+      return backendMsg || 'The requested resource was not found.';
+    case 409:
+      return backendMsg || 'This email is already registered.';
+    case 422:
+      return backendMsg || 'The submitted data was invalid.';
+    case 429:
+      return 'Too many requests. Please try again later.';
+    case 500:
+      return 'Something went wrong. Please try again.';
+    case 502:
+    case 503:
+    case 504:
+      return 'Service temporarily unavailable. Please try again later.';
+    default:
+      if (backendMsg) return backendMsg;
+      if (status >= 500) return 'Something went wrong. Please try again.';
+      return 'Something went wrong. Please try again.';
   }
-
-  // 403 Forbidden
-  if (status === 403) {
-    const detail = backendMsg ? `: ${backendMsg}` : '';
-    return `403 Forbidden: អ្នកមិនមានសិទ្ធិប្រើប្រាស់មុខងារនេះទេ (Permission denied${detail})`;
-  }
-
-  // 404 Not Found
-  if (status === 404) {
-    const detail = backendMsg ? `: ${backendMsg}` : '';
-    return `404 Not Found: រកមិនឃើញទិន្នន័យ (Resource not found${detail})`;
-  }
-
-  // 409 Conflict
-  if (status === 409) {
-    return backendMsg || '409 Conflict: ទិន្នន័យជាន់គ្នា ឬការទូទាត់ត្រូវបានដំណើរការរួចហើយ (Conflict / Already processed)';
-  }
-
-  // 422 Unprocessable Entity
-  if (status === 422) {
-    return backendMsg || '422 Unprocessable Entity: ទិន្នន័យមិនត្រឹមត្រូវទេ';
-  }
-
-  // 429 Too Many Requests
-  if (status === 429) {
-    return '429 Too Many Requests: សំណើច្រើនពេកក្នុងពេលតែមួយ។ សូមរង់ចាំបន្តិច។';
-  }
-
-  // 500, 502, 503, 504: Server Error
-  if (status >= 500) {
-    const detail = backendMsg ? `: ${backendMsg}` : '';
-    return `500 Server Error: Server កំពុងមានបញ្ហា (Internal Server Error${detail})`;
-  }
-
-  // If backend provided a specific message, display it
-  if (backendMsg) {
-    return backendMsg;
-  }
-
-  if (error?.message) {
-    return error.message;
-  }
-
-  return 'មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។ (An unexpected error occurred)';
 }
