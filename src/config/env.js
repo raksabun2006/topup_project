@@ -19,7 +19,7 @@ export const env = {
   appName: import.meta.env.VITE_APP_NAME ?? 'Mart System',
 
   // Official production URL for SEO & Canonical links
-  siteUrl: (import.meta.env.VITE_SITE_URL || 'https://www.martsystemkh.software').replace(/\/+$/, ''),
+  siteUrl: (import.meta.env.VITE_SITE_URL || 'https://martsystemkh.software').replace(/\/+$/, ''),
 
   // Bakong QR polling ក្នុង POS checkout: 10–15s មួយដង (លំនាំដើម 12 វិនាទី)
   paymentPollIntervalMs: Number(

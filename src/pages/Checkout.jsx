@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   User, Phone, MapPin, Truck, QrCode, ArrowRight,
   AlertCircle, Loader2, ShoppingBag, Printer, FileText,
-  Store
+  Store, ShieldCheck, CheckCircle2, Lock, X
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -15,20 +15,54 @@ import { saveCustomerOrder } from '../components/pos/CustomerOrdersModal';
 import Receipt from '../components/pos/Receipt';
 import SEO from '../components/SEO';
 
+const CHECKOUT_DRAFT_KEY = 'mart_checkout_draft';
+
+function loadDraft() {
+  try {
+    const raw = sessionStorage.getItem(CHECKOUT_DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Checkout() {
   const { items, subtotal, clear, itemCount } = useCart();
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
-  const [deliveryMethod, setDeliveryMethod] = useState('DELIVERY'); // 'DELIVERY' ($1.50) or 'PICKUP' ($0.00)
-  const [customerName, setCustomerName] = useState(user?.displayName || user?.name || '');
-  const [customerPhone, setCustomerPhone] = useState(user?.phoneNumber || '');
-  const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [note, setNote] = useState('');
+  const savedDraft = loadDraft();
+
+  const [deliveryMethod, setDeliveryMethod] = useState(savedDraft?.deliveryMethod || 'DELIVERY'); // 'DELIVERY' ($1.50) or 'PICKUP' ($0.00)
+  const [customerName, setCustomerName] = useState(user?.displayName || user?.name || savedDraft?.customerName || '');
+  const [customerPhone, setCustomerPhone] = useState(user?.phoneNumber || savedDraft?.customerPhone || '');
+  const [deliveryAddress, setDeliveryAddress] = useState(savedDraft?.deliveryAddress || '');
+  const [note, setNote] = useState(savedDraft?.note || '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingSale, setPendingSale] = useState(null);
   const [completedOrder, setCompletedOrder] = useState(null);
+
+  // Sync draft state to sessionStorage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        CHECKOUT_DRAFT_KEY,
+        JSON.stringify({ customerName, customerPhone, deliveryAddress, note, deliveryMethod })
+      );
+    } catch {
+      // ignore
+    }
+  }, [customerName, customerPhone, deliveryAddress, note, deliveryMethod]);
+
+  // Update user name and phone if authentication state changes
+  useEffect(() => {
+    if (user) {
+      if (!customerName) setCustomerName(user.displayName || user.name || '');
+      if (!customerPhone && user.phoneNumber) setCustomerPhone(user.phoneNumber);
+    }
+  }, [user]);
 
   // Authoritative estimated display pricing (final amount is returned by backend on checkout)
   const deliveryFee = deliveryMethod === 'DELIVERY' ? 1.50 : 0.00;
@@ -51,18 +85,22 @@ export default function Checkout() {
       return;
     }
 
+    // If user is not authenticated, prompt sign-in/register modal gracefully
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+
     setSubmitting(true);
     setError('');
 
     try {
-      const isGuest = !isAuthenticated;
-
       // 1. Synchronize frontend cart items with backend customer cart
       await orderApi.syncCart(items);
 
       // 2. Optionally create delivery address record if logged in and delivery is selected
       let deliveryAddressId = null;
-      if (isAuthenticated && deliveryMethod === 'DELIVERY' && deliveryAddress.trim()) {
+      if (deliveryMethod === 'DELIVERY' && deliveryAddress.trim()) {
         try {
           const addr = await orderApi.createAddress({
             receiverName: customerName.trim(),
@@ -120,9 +158,14 @@ export default function Checkout() {
       };
 
       saveCustomerOrder(orderData);
-      setPendingSale({ ...orderData, isGuest });
+      setPendingSale(orderData);
     } catch (err) {
-      setError(getErrorMessage(err));
+      const status = err.status || err.response?.status;
+      if (status === 401) {
+        setShowAuthModal(true);
+      } else {
+        setError(getErrorMessage(err));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -159,57 +202,60 @@ export default function Checkout() {
 
     const enrichedSale = {
       ...completedOrder,
-      items: formattedItems.length > 0 ? formattedItems : completedOrder.items,
-      customerName: customerName.trim() || completedOrder.customerName,
-      customerPhone: customerPhone.trim() || completedOrder.customerPhone,
+      items: formattedItems,
+      total: completedOrder.total || estimatedTotal,
+      subtotal: completedOrder.subtotal || subtotal,
+      deliveryFee: completedOrder.deliveryFee ?? (deliveryMethod === 'DELIVERY' ? 1.50 : 0.00),
+      paymentMethod: 'KHQR',
+      customerName: completedOrder.customerName || customerName.trim(),
+      customerPhone: completedOrder.customerPhone || customerPhone.trim(),
       deliveryAddress: completedOrder.deliveryAddress,
-      deliveryMethod: completedOrder.deliveryMethod || deliveryMethod,
-      deliveryFee: completedOrder.deliveryFee ?? deliveryFee,
-      total: completedOrder.finalTotal ?? completedOrder.total ?? completedOrder.amount ?? estimatedTotal,
-      subtotal: completedOrder.subtotal ?? subtotal,
-      paymentMethod: completedOrder.paymentMethod || 'KHQR',
-      paymentStatus: completedOrder.paymentStatus || 'PAID',
-      status: completedOrder.status || 'PAID',
     };
 
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:py-14 animate-fade-in">
+      <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 py-8 px-4 sm:px-6 font-sans">
         <SEO title="Order Confirmed | Mart System" canonical="/checkout" />
-        
-        <div className="max-w-2xl mx-auto space-y-6">
-          {/* Top Receipt Container */}
-          <Receipt
-            sale={enrichedSale}
-            showTaxDiscount={true}
-            mode="ecommerce"
-            showSuccessBadge={true}
-          />
+        <div className="max-w-2xl mx-auto space-y-6 animate-scale-in">
+          {/* Success Banner */}
+          <div className="rounded-3xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900/50 p-6 sm:p-8 text-center space-y-4 shadow-xl">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shadow-xs">
+              <CheckCircle2 size={36} />
+            </div>
+            
+            <div className="space-y-1">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                Order Placed Successfully!
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                Thank you, <strong className="text-slate-800 dark:text-slate-200">{completedOrder.customerName}</strong>. Your payment was verified via Bakong KHQR.
+              </p>
+            </div>
 
-          {/* Action Buttons Below Receipt */}
-          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 print:hidden">
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="flex flex-1 sm:flex-initial items-center justify-center gap-1.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-5 py-3 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-            >
-              <Printer size={16} />
-              <span>បោះពុម្ព (Print Receipt)</span>
-            </button>
+            <div className="inline-flex items-center gap-2 rounded-xl bg-slate-100 dark:bg-slate-800 px-3.5 py-1.5 text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+              <span>Order ID:</span>
+              <span className="text-emerald-600 dark:text-emerald-400">{completedOrder.orderNumber || completedOrder.id || 'ORD-COMPLETED'}</span>
+            </div>
 
-            <div className="flex flex-1 items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+            {/* Receipt Component Display */}
+            <div className="pt-2 text-left">
+              <Receipt sale={enrichedSale} onPrint={() => window.print()} />
+            </div>
+
+            {/* Quick Action Navigation Buttons */}
+            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 to="/orders"
                 className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition text-center"
               >
                 <FileText size={16} />
-                <span>ការបញ្ជាទិញ (My Orders)</span>
+                <span>My Orders</span>
               </Link>
               <Link
                 to="/shop"
                 className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 px-5 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/25 transition active:scale-[0.98] text-center"
               >
                 <ShoppingBag size={16} />
-                <span>ទិញបន្ត (Shop Again)</span>
+                <span>Shop More</span>
               </Link>
             </div>
           </div>
@@ -242,7 +288,7 @@ export default function Checkout() {
     <div className="min-h-screen bg-white dark:bg-slate-950 pb-20">
       <SEO title="Checkout | Mart System" canonical="/checkout" />
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-10 space-y-8">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-10 space-y-6">
         <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
             Checkout
@@ -252,10 +298,55 @@ export default function Checkout() {
           </p>
         </div>
 
+        {/* Guest Customer Benefits Banner */}
+        {!isAuthenticated && (
+          <div className="rounded-3xl border border-emerald-500/20 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-blue-500/10 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-xs">
+                <ShieldCheck size={22} />
+              </div>
+              <div>
+                <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <span>Customer Account for Instant Bakong KHQR</span>
+                  <span className="rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5">Recommended</span>
+                </h4>
+                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                  Sign in or register in 10s to generate your instant QR scan and track order status. Your items are safely saved.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+              <Link
+                to="/login"
+                state={{ from: { pathname: '/checkout' } }}
+                className="flex-1 sm:flex-none text-center px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-black text-slate-800 dark:text-slate-200 hover:bg-slate-50 transition shadow-2xs"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/register"
+                state={{ from: { pathname: '/checkout' } }}
+                className="flex-1 sm:flex-none text-center px-4 py-2.5 rounded-xl bg-emerald-600 text-xs font-black text-white hover:bg-emerald-500 transition shadow-xs"
+              >
+                Create Account
+              </Link>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="flex items-start gap-2.5 rounded-2xl border border-rose-200 bg-rose-50 dark:bg-rose-950/30 p-4 text-xs font-bold text-rose-700 dark:text-rose-400">
             <AlertCircle size={18} className="mt-0.5 shrink-0" />
-            <span>{error}</span>
+            <div className="flex-1">
+              <span>{error}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setError('')}
+              className="text-rose-400 hover:text-rose-600"
+            >
+              <X size={14} />
+            </button>
           </div>
         )}
 
@@ -513,6 +604,66 @@ export default function Checkout() {
           </div>
         </form>
       </div>
+
+      {/* Account Required for Checkout Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
+          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-2xl space-y-5 animate-scale-in text-center">
+            <button
+              type="button"
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-4 right-4 h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shadow-xs">
+              <Lock size={28} />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                Sign In to Complete Order
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                An account is required to generate your instant Bakong KHQR code and dispatch your order of <strong className="text-slate-900 dark:text-white">{formatCurrency(estimatedTotal)}</strong>.
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 p-3 text-xs flex items-center justify-between font-bold">
+              <span className="text-slate-500">Cart Total ({itemCount} {itemCount === 1 ? 'item' : 'items'}):</span>
+              <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{formatCurrency(estimatedTotal)}</span>
+            </div>
+
+            <div className="space-y-2.5 pt-1">
+              <Link
+                to="/login"
+                state={{ from: { pathname: '/checkout' } }}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#18181B] hover:bg-black py-3 text-xs sm:text-sm font-bold text-white shadow-md transition active:scale-95"
+              >
+                <span>Sign In with Existing Account</span>
+                <ArrowRight size={14} />
+              </Link>
+
+              <Link
+                to="/register"
+                state={{ from: { pathname: '/checkout' } }}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/20 transition active:scale-95"
+              >
+                <span>Create Free Customer Account (10s)</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(false)}
+                className="w-full text-center text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 py-1 transition"
+              >
+                Continue Browsing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bakong KHQR Payment Modal */}
       {pendingSale && (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Loader2, AlertCircle, CheckCircle, Eye, EyeOff, Lock,
   User, Mail, Phone, ShoppingBag, CheckCircle2, ArrowLeft,
@@ -121,7 +121,7 @@ function validate(form) {
 }
 
 export default function Register() {
-  const { isAuthenticated, user, loading } = useAuth();
+  const { login, isAuthenticated, user, loading } = useAuth();
   const [form, setForm] = useState(EMPTY_FORM);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -129,13 +129,21 @@ export default function Register() {
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from;
 
   // Auto-redirect if user is already authenticated
   useEffect(() => {
     if (!loading && isAuthenticated && user) {
-      navigate(getRoleDashboardPath(user.role), { replace: true });
+      const destination = from
+        ? typeof from === 'string'
+          ? from
+          : `${from.pathname || '/checkout'}${from.search ?? ''}`
+        : getRoleDashboardPath(user.role);
+      navigate(destination, { replace: true });
     }
-  }, [loading, isAuthenticated, user, navigate]);
+  }, [loading, isAuthenticated, user, from, navigate]);
 
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
@@ -162,7 +170,20 @@ export default function Register() {
       };
 
       await authApi.register(payload);
-      setDone(true);
+
+      // Smooth e-commerce UX: Auto-login immediately and redirect
+      try {
+        const loggedUser = await login(payload.username, payload.password);
+        const destination = from
+          ? typeof from === 'string'
+            ? from
+            : `${from.pathname || '/checkout'}${from.search ?? ''}`
+          : getRoleDashboardPath(loggedUser?.role);
+        navigate(destination, { replace: true });
+        return;
+      } catch {
+        setDone(true);
+      }
     } catch (err) {
       const status = err.status || err.response?.status;
       if (status === 409) {

@@ -11,6 +11,7 @@ import { useCategories } from '../hooks/useCategories';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
 import SEO from '../components/SEO';
+import { env } from '../config/env';
 import { getCategoryIcon, AllCategoriesIcon, getCategoryTheme } from '../utils/categoryIcons';
 import { useActiveDiscounts } from '../hooks/useDiscounts';
 export default function Shop() {
@@ -328,15 +329,55 @@ export default function Shop() {
   };
 
   const isFiltered = Boolean(search || selectedCategory || inStockOnly || filterType !== 'ALL' || sortBy !== 'DEFAULT');
+  const baseSiteUrl = (env.siteUrl || 'https://martsystemkh.software').replace(/\/+$/, '');
+  const dynamicTitle = selectedCategory
+    ? `${selectedCategory} - Buy Online | Mart System Cambodia`
+    : search
+      ? `Search results for "${search}" | Mart System`
+      : 'Shop All Groceries & Products | Mart System Online Store';
+
+  const dynamicDescription = selectedCategory
+    ? `Explore our wide selection of ${selectedCategory} products at Mart System with $1.50 express delivery in Phnom Penh and seamless Bakong KHQR checkout.`
+    : search
+      ? `Found ${filteredProducts.length} results for "${search}". Buy online at Mart System with instant KHQR payment.`
+      : 'Browse all grocery essentials, beverages, snacks, fresh food and home items in Mart System. Filter by category, enjoy $1.50 express delivery, and pay with Bakong KHQR.';
+
+  const dynamicCanonical = selectedCategory
+    ? `/shop?category=${encodeURIComponent(selectedCategory)}`
+    : '/shop';
+
+  const dynamicJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": dynamicTitle,
+    "description": dynamicDescription,
+    "url": `${baseSiteUrl}${dynamicCanonical}`,
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": filteredProducts.length,
+      "itemListElement": filteredProducts.slice(0, 12).map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "url": `${baseSiteUrl}/product/${item.id}`,
+        "name": item.name,
+        "image": item.imageUrl || `${baseSiteUrl}/mart.jpg`
+      }))
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 pb-12">
       <SEO
-        title="Shop All Groceries &amp; Products | Mart System Online Store"
-        description="Browse all grocery essentials, beverages, snacks, fresh food and home items in Mart System. Filter by category, enjoy $1.50 express delivery, and pay with Bakong KHQR."
-        keywords="Shop Groceries, Buy Drinks Online, Mart System Shop, Cambodia E-Commerce, Bakong KHQR Online Mart, Fast Delivery Groceries Phnom Penh"
-        canonical="/shop"
+        title={dynamicTitle}
+        description={dynamicDescription}
+        keywords={
+          selectedCategory
+            ? `${selectedCategory}, Buy ${selectedCategory} Online, Mart System, Cambodia Grocery, Bakong KHQR`
+            : "Shop Groceries, Buy Drinks Online, Mart System Shop, Cambodia E-Commerce, Bakong KHQR Online Mart, Fast Delivery Groceries Phnom Penh"
+        }
+        canonical={dynamicCanonical}
         ogImage="/mart.jpg"
+        jsonLd={dynamicJsonLd}
       />
 
       <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 space-y-6">

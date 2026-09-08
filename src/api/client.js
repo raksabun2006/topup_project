@@ -122,8 +122,10 @@ export function getErrorMessage(error) {
 
   // 401 Unauthorized
   if (status === 401) {
-    const detail = backendMsg ? `: ${backendMsg}` : '';
-    return `401 Unauthorized: សូមចូលគណនីឡើងវិញ (Authentication required${detail})`;
+    if (backendMsg && !backendMsg.includes('Full authentication is required') && !backendMsg.includes('Unauthorized')) {
+      return backendMsg;
+    }
+    return 'សូមចូលគណនីរបស់អ្នកដើម្បីបន្ត (Please sign in to continue)';
   }
 
   // 403 Forbidden

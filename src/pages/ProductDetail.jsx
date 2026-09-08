@@ -11,6 +11,7 @@ import { useCart } from '../context/CartContext';
 import { formatCurrency } from '../utils/format';
 import ProductCard from '../components/ProductCard';
 import SEO from '../components/SEO';
+import { env } from '../config/env';
 
 const WISHLIST_STORAGE_KEY = 'mart_customer_wishlist';
 
@@ -158,35 +159,111 @@ export default function ProductDetail() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 pb-20">
-      <SEO
-        title={`${product.name} - Buy Online | Mart System`}
-        description={product.description || `Buy ${product.name} with $1.50 express delivery and Bakong KHQR payment in Phnom Penh.`}
-        keywords={`${product.name}, ${product.category || 'Grocery'}, Buy ${product.name} Online, Mart System, Cambodia`}
-        canonical={`/product/${product.id}`}
-        ogImage={product.imageUrl || '/mart.jpg'}
-        ogType="product"
-        jsonLd={{
-          "@context": "https://schema.org",
-          "@type": "Product",
-          "name": product.name,
-          "image": product.imageUrl || "https://www.martsystemkh.software/mart.jpg",
-          "description": product.description || `Authentic ${product.name} available at Mart System with Bakong KHQR checkout.`,
-          "sku": product.sku || String(product.id),
-          "offers": {
-            "@type": "Offer",
-            "price": String(product.price || 0),
-            "priceCurrency": "USD",
-            "availability": (product.stockQuantity ?? 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-            "url": `https://www.martsystemkh.software/product/${product.id}`,
-            "seller": {
-              "@type": "Organization",
-              "name": "Mart System"
-            }
+    const baseSiteUrl = (env.siteUrl || 'https://martsystemkh.software').replace(/\/+$/, '');
+    const inStock = (product.stockQuantity ?? 1) > 0;
+    const formattedPrice = product.price != null ? Number(product.price).toFixed(2) : '0.00';
+    const productImageUrl = product.imageUrl && product.imageUrl.startsWith('http')
+      ? product.imageUrl
+      : product.imageUrl
+        ? `${baseSiteUrl}${product.imageUrl.startsWith('/') ? '' : '/'}${product.imageUrl}`
+        : `${baseSiteUrl}/mart.jpg`;
+
+    return (
+      <div className="min-h-screen bg-white dark:bg-slate-950 pb-20">
+        <SEO
+          title={`${product.name} - $${formattedPrice} | Mart System Cambodia`}
+          description={
+            product.description
+              ? `${product.description} — Buy ${product.name} online for $${formattedPrice} with $1.50 express delivery in Phnom Penh & Bakong KHQR scan.`
+              : `Buy ${product.name} ($${formattedPrice}) online at Mart System. Enjoy $1.50 express delivery in Phnom Penh and instant Bakong KHQR checkout.`
           }
-        }}
-      />
+          keywords={`${product.name}, ${product.category || 'Grocery'}, Buy ${product.name} Cambodia, Mart System, Groceries Phnom Penh`}
+          canonical={`/product/${product.id}`}
+          ogImage={productImageUrl}
+          ogType="product"
+          productData={{
+            price: product.price || 0,
+            currency: 'USD',
+            availability: inStock ? 'in stock' : 'out of stock',
+            sku: product.sku || String(product.id),
+            category: product.category || 'Grocery',
+            brand: 'Mart System',
+          }}
+          jsonLd={{
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Product",
+                "@id": `${baseSiteUrl}/product/${product.id}#product`,
+                "name": product.name,
+                "image": [productImageUrl],
+                "description": product.description || `Authentic ${product.name} available at Mart System with $1.50 express delivery and Bakong KHQR checkout.`,
+                "sku": product.sku || String(product.id),
+                "mpn": String(product.id),
+                "brand": {
+                  "@type": "Brand",
+                  "name": "Mart System"
+                },
+                "category": product.category || "Grocery",
+                "offers": {
+                  "@type": "Offer",
+                  "price": formattedPrice,
+                  "priceCurrency": "USD",
+                  "priceValidUntil": "2027-12-31",
+                  "itemCondition": "https://schema.org/NewCondition",
+                  "availability": inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                  "url": `${baseSiteUrl}/product/${product.id}`,
+                  "seller": {
+                    "@type": "Organization",
+                    "name": "Mart System"
+                  },
+                  "shippingDetails": {
+                    "@type": "OfferShippingDetails",
+                    "shippingRate": {
+                      "@type": "MonetaryAmount",
+                      "value": "1.50",
+                      "currency": "USD"
+                    },
+                    "shippingDestination": {
+                      "@type": "DefinedRegion",
+                      "addressCountry": "KH"
+                    }
+                  }
+                }
+              },
+              {
+                "@type": "BreadcrumbList",
+                "@id": `${baseSiteUrl}/product/${product.id}#breadcrumb`,
+                "itemListElement": [
+                  {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": `${baseSiteUrl}/`
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Shop",
+                    "item": `${baseSiteUrl}/shop`
+                  },
+                  ...(product.category ? [{
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": product.category,
+                    "item": `${baseSiteUrl}/shop?category=${encodeURIComponent(product.category)}`
+                  }] : []),
+                  {
+                    "@type": "ListItem",
+                    "position": product.category ? 4 : 3,
+                    "name": product.name,
+                    "item": `${baseSiteUrl}/product/${product.id}`
+                  }
+                ]
+              }
+            ]
+          }}
+        />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-10 space-y-12">
         {/* Breadcrumb Navigation */}

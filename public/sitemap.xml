@@ -5,15 +5,15 @@
   
   <!-- 1. Homepage / Official Storefront -->
   <url>
-    <loc>https://www.martsystemkh.software/</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://www.martsystemkh.software/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.martsystemkh.software/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.martsystemkh.software/" />
-    <lastmod>2026-09-06</lastmod>
+    <loc>https://martsystemkh.software/</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/" />
+    <lastmod>2026-09-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://www.martsystemkh.software/mart.jpg</image:loc>
+      <image:loc>https://martsystemkh.software/mart.jpg</image:loc>
       <image:title>Mart System — Online Store &amp; E-Commerce</image:title>
       <image:caption>Shop everyday fresh groceries, drinks, and snacks with $1.50 express delivery and Bakong KHQR checkout.</image:caption>
     </image:image>
@@ -21,15 +21,15 @@
 
   <!-- 2. Shop Catalog -->
   <url>
-    <loc>https://www.martsystemkh.software/shop</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://www.martsystemkh.software/shop" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.martsystemkh.software/shop" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.martsystemkh.software/shop" />
-    <lastmod>2026-09-06</lastmod>
+    <loc>https://martsystemkh.software/shop</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/shop" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/shop" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/shop" />
+    <lastmod>2026-09-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
     <image:image>
-      <image:loc>https://www.martsystemkh.software/mart.jpg</image:loc>
+      <image:loc>https://martsystemkh.software/mart.jpg</image:loc>
       <image:title>Shop All Products | Mart System</image:title>
       <image:caption>Browse full collection of groceries, drinks, snacks and lifestyle products.</image:caption>
     </image:image>
@@ -37,24 +37,35 @@
 
   <!-- 3. All Categories -->
   <url>
-    <loc>https://www.martsystemkh.software/categories</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://www.martsystemkh.software/categories" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.martsystemkh.software/categories" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.martsystemkh.software/categories" />
-    <lastmod>2026-09-06</lastmod>
+    <loc>https://martsystemkh.software/categories</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/categories" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/categories" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/categories" />
+    <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- 4. Products Alias -->
   <url>
-    <loc>https://www.martsystemkh.software/products</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://www.martsystemkh.software/products" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.martsystemkh.software/products" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.martsystemkh.software/products" />
-    <lastmod>2026-09-06</lastmod>
+    <loc>https://martsystemkh.software/products</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products" />
+    <lastmod>2026-09-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+  </url>
+
+  <!-- 5. About / Developer -->
+  <url>
+    <loc>https://martsystemkh.software/about</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/about" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/about" />
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 
 </urlset>

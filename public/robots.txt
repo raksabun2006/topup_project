@@ -29,5 +29,5 @@ Disallow: /payment
 Disallow: /payment/
 
 # Host and Sitemap
-Host: https://www.martsystemkh.software
-Sitemap: https://www.martsystemkh.software/sitemap.xml
+Host: https://martsystemkh.software
+Sitemap: https://martsystemkh.software/sitemap.xml
