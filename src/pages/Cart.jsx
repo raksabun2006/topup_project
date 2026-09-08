@@ -137,14 +137,18 @@ export default function Cart() {
                         </span>
                       )}
 
-                      <div className="mt-1 font-black text-sm text-slate-900 dark:text-white">
-                        {formatCurrency(unitPrice)}
+                      <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        {quantity > 1 ? (
+                          <span>{formatCurrency(unitPrice)} <span className="text-[10px] text-slate-400">/ មួយ</span></span>
+                        ) : (
+                          <span>{formatCurrency(unitPrice)}</span>
+                        )}
                       </div>
                     </div>
                   </div>
 
                   {/* Quantity Stepper & Line Total */}
-                  <div className="flex items-center justify-between sm:justify-end gap-6 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
                     <div className="flex h-9 items-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-1 shadow-2xs">
                       <button
                         type="button"
@@ -173,7 +177,7 @@ export default function Cart() {
                       </button>
                     </div>
 
-                    <div className="text-right min-w-[85px]">
+                    <div className="text-right min-w-[70px] sm:min-w-[85px]">
                       <span className="text-base font-black text-slate-900 dark:text-white">
                         {formatCurrency(lineTotal)}
                       </span>
@@ -214,10 +218,11 @@ export default function Cart() {
               </div>
             </div>
 
+            {/* Desktop Checkout CTA (Hidden on mobile to avoid duplicate with sticky bar) */}
             <button
               type="button"
               onClick={() => navigate('/checkout')}
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#18181B] dark:bg-white text-white dark:text-slate-900 text-xs sm:text-sm font-black hover:opacity-90 transition active:scale-95 shadow-md cursor-pointer"
+              className="hidden lg:flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#18181B] dark:bg-white text-white dark:text-slate-900 text-xs sm:text-sm font-black hover:opacity-90 transition active:scale-95 shadow-md cursor-pointer"
             >
               <span>ទៅ Checkout</span>
               <span className="text-xs opacity-80 hidden xs:inline">• Proceed</span>

@@ -30,8 +30,8 @@ export default function Account() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const isDashboardRoute = pathname.startsWith('/dashboard');
-
-  const [activeTab, setActiveTab] = useState('tools'); // 'tools' | 'orders' | 'profile'
+  const isProfileRoute = pathname.includes('/profile');
+  const [activeTab, setActiveTab] = useState(isProfileRoute ? 'profile' : (isManagerOrAdmin || isStaff) ? 'tools' : 'orders');
   const [profileForm, setProfileForm] = useState({
     displayName: user?.displayName || user?.name || '',
     email: user?.email || '',
@@ -527,38 +527,38 @@ export default function Account() {
               }}
               className="rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 sm:p-7 space-y-6 shadow-2xs"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
                 <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white">Profile Photo & Account Details</h3>
-                  <p className="text-xs text-slate-400">Update your avatar image link, name, and contact details</p>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">ព័ត៌មានផ្ទាល់ខ្លួន (Profile & Account Details)</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">គ្រប់គ្រងរូបភាព ព័ត៌មានទំនាក់ទំនង និងសុវត្ថិភាពគណនី</p>
                 </div>
 
                 <button
                   type="submit"
                   disabled={savingProfile}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white px-5 py-2 text-xs font-bold transition shadow-xs disabled:opacity-50 cursor-pointer self-start sm:self-auto"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#18181B] dark:bg-white text-white dark:text-slate-900 px-5 py-2 text-xs font-black shadow-md hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer self-start sm:self-auto"
                 >
-                  {savingProfile ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                  <span>{savingProfile ? 'Saving...' : 'Save Profile'}</span>
+                  {savingProfile ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                  <span>{savingProfile ? 'កំពុងរក្សាទុក...' : 'Save Profile'}</span>
                 </button>
               </div>
 
               {profileSuccess && (
-                <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 p-3 text-xs font-bold text-emerald-700 dark:text-emerald-400 animate-fade-in">
+                <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 p-3.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 animate-fade-in">
                   <CheckCircle2 size={16} className="shrink-0" />
                   <span>{profileSuccess}</span>
                 </div>
               )}
 
               {profileError && (
-                <div className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-50 dark:bg-rose-950/40 p-3 text-xs font-bold text-rose-700 dark:text-rose-400 animate-fade-in">
+                <div className="flex items-center gap-2 rounded-2xl border border-rose-500/30 bg-rose-50 dark:bg-rose-950/40 p-3.5 text-xs font-bold text-rose-700 dark:text-rose-400 animate-fade-in">
                   <AlertCircle size={16} className="shrink-0" />
                   <span>{profileError}</span>
                 </div>
               )}
 
               {/* 1. Avatar Image URL & Live Preview */}
-              <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 bg-slate-50/50 dark:bg-slate-800/30 space-y-4">
+              <div className="rounded-2xl border border-slate-200/70 dark:border-slate-800 p-4 sm:p-5 bg-slate-50/60 dark:bg-slate-850/50 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   {/* Live Avatar Preview */}
                   <div className="relative shrink-0 flex items-center justify-center">
@@ -571,8 +571,8 @@ export default function Account() {
                   {/* URL Input Box */}
                   <div className="flex-1 space-y-1.5">
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                      <Link2 size={13} className="text-[#164E87] dark:text-blue-400" />
-                      <span>Profile Image URL (Link)</span>
+                      <Link2 size={13} className="text-indigo-600 dark:text-indigo-400" />
+                      <span>តំណភ្ជាប់រូបភាព (Profile Image URL)</span>
                     </label>
 
                     <div className="relative flex items-center">
@@ -584,7 +584,7 @@ export default function Account() {
                           setAvatarPreviewBroken(false);
                         }}
                         placeholder="https://example.com/my-photo.jpg (or select a preset below)"
-                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#164E87] focus:ring-1 focus:ring-[#164E87] focus:outline-none transition pr-8"
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none transition pr-8 shadow-2xs"
                       />
                       {profileForm.avatarUrl && (
                         <button
@@ -599,15 +599,15 @@ export default function Account() {
                     </div>
 
                     <p className="text-[11px] text-slate-400">
-                      Paste any direct image link from Imgur, Discord, Unsplash, Google Drive, or your website.
+                      បញ្ចូលតំណភ្ជាប់រូបភាពពី Unsplash, Imgur, ឬវេបសាយផ្ទាល់ខ្លួន
                     </p>
                   </div>
                 </div>
 
                 {/* Preset Avatars */}
                 <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2">
-                    Quick Preset Avatars
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                    ជ្រើសរើសរូបតំណាងគំរូ (Quick Presets)
                   </span>
                   <div className="flex flex-wrap items-center gap-2.5">
                     {AVATAR_PRESETS.map((preset, idx) => (
@@ -631,7 +631,7 @@ export default function Account() {
                         onClick={() => setProfileForm((prev) => ({ ...prev, avatarUrl: '' }))}
                         className="px-2.5 py-1 text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition"
                       >
-                        Reset to Initial
+                        Reset
                       </button>
                     )}
                   </div>
@@ -641,40 +641,40 @@ export default function Account() {
               {/* 2. Text Fields (Display Name, Email, Phone, Username) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Display Name</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">ឈ្មោះបង្ហាញ (Display Name)</label>
                   <input
                     type="text"
                     value={profileForm.displayName}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, displayName: e.target.value }))}
-                    placeholder="Your full name"
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#164E87] focus:ring-1 focus:ring-[#164E87] focus:outline-none transition"
+                    placeholder="Bun Raksa"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Email Address</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">អ៊ីមែល (Email Address)</label>
                   <input
                     type="email"
                     value={profileForm.email}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, email: e.target.value }))}
                     placeholder="name@example.com"
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#164E87] focus:ring-1 focus:ring-[#164E87] focus:outline-none transition"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Phone Number</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">លេខទូរស័ព្ទ (Phone Number)</label>
                   <input
                     type="tel"
                     value={profileForm.phoneNumber}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, phoneNumber: e.target.value }))}
-                    placeholder="012 345 678"
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#164E87] focus:ring-1 focus:ring-[#164E87] focus:outline-none transition"
+                    placeholder="096 XXX XXXX"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-400">Username (Account ID)</label>
+                  <label className="text-xs font-bold text-slate-400">ឈ្មោះគណនី (Username ID)</label>
                   <input
                     type="text"
                     disabled
@@ -687,16 +687,16 @@ export default function Account() {
               {/* Form Bottom Save Actions */}
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <span className="text-xs text-slate-400">
-                  Role: <span className="font-bold text-slate-700 dark:text-slate-200">{displayRole}</span>
+                  Account Role: <span className="font-bold text-emerald-600 dark:text-emerald-400 uppercase">{displayRole}</span>
                 </span>
 
                 <button
                   type="submit"
                   disabled={savingProfile}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white px-6 py-2.5 text-xs font-bold transition shadow-md hover:shadow-lg active:scale-98 disabled:opacity-50 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#18181B] dark:bg-white hover:opacity-90 text-white dark:text-slate-900 px-6 py-2.5 text-xs font-black transition shadow-md active:scale-98 disabled:opacity-50 cursor-pointer"
                 >
                   {savingProfile ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                  <span>{savingProfile ? 'Saving Changes...' : 'Save Profile Changes'}</span>
+                  <span>{savingProfile ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកព័ត៌មាន (Save Changes)'}</span>
                 </button>
               </div>
             </form>
