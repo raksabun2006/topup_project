@@ -28,6 +28,7 @@ import {
   Award
 } from 'lucide-react';
 import SEO from '../components/SEO';
+import { useLanguage } from '../context/LanguageContext';
 
 function GithubIcon({ size = 16, className = '' }) {
   return (
@@ -205,13 +206,16 @@ function TechLogo({ name, className = 'h-3.5 w-3.5 shrink-0' }) {
 }
 
 export default function AboutDeveloper() {
+  const { isKhmer } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   const developerInfo = {
     name: 'Bun Raksa',
     khmerName: 'ប៊ុន រក្សា',
-    title: 'Backend / Full-Stack Developer',
-    location: 'Phnom Penh, Cambodia',
+    titleEn: 'Backend / Full-Stack Developer',
+    titleKm: 'អ្នកអភិវឌ្ឍន៍ Backend / Full-Stack Developer',
+    locationEn: 'Phnom Penh, Cambodia',
+    locationKm: 'រាជធានីភ្នំពេញ ប្រទេសកម្ពុជា',
     email: 'raksabun2006@gmail.com',
     phone: '096 878 2196',
     phoneRaw: '+855968782196',
@@ -225,35 +229,130 @@ export default function AboutDeveloper() {
     setTimeout(() => setCopied(false), 2500);
   };
 
+  const content = {
+    seoTitle: isKhmer
+      ? 'អំពីអ្នកអភិវឌ្ឍន៍ | Mart System'
+      : 'About the Developer | Mart System',
+    seoDesc: isKhmer
+      ? 'ស្វែងយល់អំពីអ្នកអភិវឌ្ឍន៍ប្រព័ន្ធ Mart System បច្ចេកវិទ្យាដែលបានប្រើប្រាស់ និងចក្ខុវិស័យនៃប្រព័ន្ធនេះ។'
+      : 'Learn about the developer behind Mart System, the technologies used, and the vision behind the platform.',
+    badgeMeet: 'MEET THE DEVELOPER',
+    greeting: "Hello, I'm",
+    nameDisplay: developerInfo.name,
+    titleDisplay: developerInfo.titleEn,
+    locationDisplay: isKhmer ? developerInfo.locationKm : developerInfo.locationEn,
+    countryTag: 'Cambodia',
+    heroBio: 'Building modern software solutions with passion, clean architecture, and practical engineering. I design end-to-end applications that bridge reliable backend services with seamless digital user experiences.',
+    btnContact: 'Contact Me',
+    btnBehind: 'Behind Mart System',
+    btnGithub: 'GitHub',
+
+    // Education
+    eduTitle: isKhmer ? 'ការអប់រំ' : 'Education',
+    eduSub: isKhmer ? 'ប្រវត្តិការសិក្សា' : 'Academic Background',
+    eduBadge: isKhmer ? 'ដំណើរការសិក្សា' : 'Academic Path',
+    eduStatus: isKhmer ? 'កំពុងបន្តការសិក្សា' : 'Active Studies',
+    edu1School: isKhmer ? 'វិទ្យាល័យសំរោងពន្លៃ' : 'SAMRONG PONLEY HIGH SCHOOL',
+    edu1Degree: isKhmer ? 'សញ្ញាបត្រមធ្យមសិក្សាទុតិយភូមិ (បាក់ឌុប)' : 'Diploma',
+    edu1Time: isKhmer ? '2018 – 2024' : '2018 – 2024',
+    edu2School: isKhmer ? 'សាកលវិទ្យាល័យភូមិន្ទភ្នំពេញ' : 'ROYAL UNIVERSITY OF PHNOM PENH',
+    edu2Degree: isKhmer ? 'បរិញ្ញាបត្រវិទ្យាសាស្ត្រកុំព្យូទ័រ' : 'Bachelor of Computer Science',
+    edu2Time: isKhmer ? '2025 – បច្ចុប្បន្ន' : '2025 – Present',
+    edu3School: isKhmer ? 'វិទ្យាស្ថានបច្ចេកវិទ្យា ISTAD' : 'ISTAD',
+    edu3Degree: isKhmer ? 'ជំនាញឯកទេស IT (IT Expert)' : 'IT Expert',
+    edu3Time: isKhmer ? 'មីនា 2026 – បច្ចុប្បន្ន' : 'March 2026 – Present',
+
+    // About Me Narrative (Kept in English)
+    aboutBadge: 'About Me',
+    aboutHeading: 'Passionate about building practical software for real-world needs.',
+    aboutP1: 'I enjoy developing practical software that solves real-world challenges for businesses and end customers. My engineering approach focuses on creating reliable backend systems, clean RESTful APIs, robust authentication, and intuitive user experiences.',
+    aboutP2: 'With Mart System, my goal was to engineer a unified platform combining physical store sales and online e-commerce shopping into one seamless ecosystem — backed by automated payments, Telegram alerts, and clear financial records.',
+    aboutP3: 'I continuously seek to refine my engineering skills, explore modern architectural patterns, and write clean, maintainable code that stands the test of time.',
+    aboutFooterNote: 'Focusing on high performance, scalability & developer velocity',
+
+    // Tech Stack
+    techBadge: isKhmer ? 'បច្ចេកវិទ្យាប្រើប្រាស់' : 'Tech Stack',
+    techHeading: isKhmer ? 'បច្ចេកវិទ្យាដែលខ្ញុំប្រើប្រាស់' : 'Technologies I Work With',
+    techSubtitle: isKhmer
+      ? 'បច្ចេកវិទ្យាស្នូល និងឧបករណ៍ដែលកំពុងដំណើរការកម្មវិធីនេះ'
+      : 'Core technologies and tools actively powering this application',
+    techLabelCount: isKhmer ? 'បច្ចេកវិទ្យា' : 'techs',
+
+    // Mindset
+    mindsetBadge: isKhmer ? 'ផ្នត់គំនិតវិស្វកម្ម' : 'Engineering Mindset',
+    mindsetHeading: isKhmer ? 'របៀបដែលខ្ញុំបង្កើតកម្មវិធី' : 'How I Build Software',
+    mindsetSub: isKhmer
+      ? 'គោលការណ៍ស្ថាបត្យកម្មណែនាំសម្រាប់ការបង្កើតកម្មវិធីដែលរឹងមាំ និងត្រៀមរួចរាល់សម្រាប់ផលិតកម្ម'
+      : 'Guiding architectural principles for building reliable, production-ready applications',
+
+    // Behind Project
+    behindBadge: isKhmer ? 'ស្ថាបត្យកម្មគម្រោង' : 'Project Architecture',
+    behindHeading: isKhmer ? 'ដំណើរការពីក្រោយ Mart System' : 'Behind Mart System',
+    behindSub: isKhmer
+      ? 'Mart System ត្រូវបានបង្កើតឡើងដើម្បីតភ្ជាប់ការទិញទំនិញប្រចាំថ្ងៃនៅហាង ជាមួយប្រព័ន្ធបញ្ជាទិញ និងគ្រប់គ្រងតាមអនឡាញដ៏ទំនើប។'
+      : 'Mart System was engineered to bridge everyday retail shopping with a modern online ordering and management system.',
+    milestonesHeading: isKhmer ? 'ដំណាក់កាលអភិវឌ្ឍន៍ និងការវិវត្តន៍' : 'Development Milestones & Evolution',
+
+    // Values & Capabilities
+    valuesBadge: isKhmer ? 'គោលការណ៍សំខាន់ៗ' : 'Core Principles',
+    valuesHeading: isKhmer ? 'អ្វីដែលខ្ញុំយកចិត្តទុកដាក់បំផុត' : 'What Matters to Me',
+    capHeading: isKhmer ? 'មុខងារ និងសមត្ថភាពដែលបានអនុវត្តក្នុងគម្រោង' : 'Implemented Project Capabilities',
+
+    // Contact
+    contactBadge: isKhmer ? 'ទំនាក់ទំនង' : "LET'S CONNECT",
+    contactHeading: isKhmer
+      ? 'មានគំនិតគម្រោង ឬចង់ពិភាក្សាអំពីវិស្វកម្មកម្មវិធី?'
+      : 'Have a project idea or want to discuss software engineering?',
+    contactSub: isKhmer
+      ? 'សូមទាក់ទងមកខ្ញុំដោយផ្ទាល់តាមរយៈអ៊ីមែល ទូរស័ព្ទ ឬមើលកូដលើ GitHub repository របស់ខ្ញុំ។'
+      : 'Feel free to reach out directly via email, phone, or explore my GitHub repository.',
+    emailTitle: isKhmer ? 'អ៊ីមែល' : 'Email',
+    sendEmailBtn: isKhmer ? 'ផ្ញើអ៊ីមែល' : 'Send Email',
+    copiedTooltip: isKhmer ? 'បានចម្លង!' : 'Copied!',
+    phoneTitle: isKhmer ? 'ទូរស័ព្ទ / តេឡេក្រាម' : 'Phone / Telegram',
+    callBtn: isKhmer ? 'ទូរស័ព្ទផ្ទាល់' : 'Call Directly',
+    repoTitle: isKhmer ? 'កូដប្រភពគម្រោង' : 'Source Repository',
+    openGithubBtn: isKhmer ? 'ចូលមើល GitHub' : 'Open GitHub',
+    returnToStore: isKhmer ? 'ត្រឡប់ទៅកាន់ហាងទំនិញ' : 'Return to Storefront Catalog',
+  };
+
   const techStack = [
     {
-      category: 'Backend Architecture',
-      tag: 'Core Engine',
-      description: 'Robust server-side framework handling transactional business logic and secure authentication.',
+      category: isKhmer ? 'រចនាសម្ព័ន្ធ Backend' : 'Backend Architecture',
+      tag: isKhmer ? 'ម៉ាស៊ីនស្នូល' : 'Core Engine',
+      description: isKhmer
+        ? 'ក្របខ័ណ្ឌ Server-side ដ៏រឹងមាំសម្រាប់គ្រប់គ្រងដំណើរការអាជីវកម្ម និងសុវត្ថិភាពខ្ពស់។'
+        : 'Robust server-side framework handling transactional business logic and secure authentication.',
       icon: Server,
       color: 'from-amber-500/15 to-orange-500/15 text-amber-600 dark:text-amber-400 border-amber-200/80 dark:border-amber-900/50',
       items: ['Spring Boot', 'JWT Authentication'],
     },
     {
-      category: 'Database & Persistence',
-      tag: 'Data Layer',
-      description: 'Relational data modeling, schema migrations, and ACID transaction integrity with PostgreSQL & JPA.',
+      category: isKhmer ? 'មូលដ្ឋានទិន្នន័យ & ការផ្ទុកទិន្នន័យ' : 'Database & Persistence',
+      tag: isKhmer ? 'ស្រទាប់ទិន្នន័យ' : 'Data Layer',
+      description: isKhmer
+        ? 'ការរៀបចំទិន្នន័យ Relational, Schema Migrations និងសុក្រឹតភាពនៃប្រតិបត្តិការទិន្នន័យជាមួយ PostgreSQL & JPA។'
+        : 'Relational data modeling, schema migrations, and ACID transaction integrity with PostgreSQL & JPA.',
       icon: Database,
       color: 'from-blue-500/15 to-cyan-500/15 text-blue-600 dark:text-blue-400 border-blue-200/80 dark:border-blue-900/50',
       items: ['PostgreSQL', 'JPA / Hibernate'],
     },
     {
-      category: 'Frontend Engineering',
-      tag: 'Client UI',
-      description: 'Modern component-driven architecture delivering fast reactivity, responsive design, and intuitive UX.',
+      category: isKhmer ? 'វិស្វកម្ម Frontend' : 'Frontend Engineering',
+      tag: isKhmer ? 'ផ្ទៃមុខអ្នកប្រើប្រាស់' : 'Client UI',
+      description: isKhmer
+        ? 'រចនាសម្ព័ន្ធសមាសភាគទំនើប ផ្ដល់នូវភាពរហ័ស រចនាសម្ព័ន្ធបត់បែន និង UX ងាយស្រួលប្រើ។'
+        : 'Modern component-driven architecture delivering fast reactivity, responsive design, and intuitive UX.',
       icon: Laptop,
       color: 'from-emerald-500/15 to-teal-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-200/80 dark:border-emerald-900/50',
       items: ['React', 'JavaScript (ES6+)', 'Tailwind CSS', 'Vite'],
     },
     {
-      category: 'Fintech, Cloud & DevOps',
-      tag: 'Integrations & Deploy',
-      description: 'Bakong KHQR payment processing, automated Telegram alerts, and containerized deployment.',
+      category: isKhmer ? 'Fintech, Cloud & DevOps' : 'Fintech, Cloud & DevOps',
+      tag: isKhmer ? 'ការតភ្ជាប់ & ដាក់ដំណើរការ' : 'Integrations & Deploy',
+      description: isKhmer
+        ? 'ដំណើរការទូទាត់ Bakong KHQR, ការជូនដំណឹង Telegram ស្វ័យប្រវត្តិ និងការដាក់ដំណើរការលើ Cloud។'
+        : 'Bakong KHQR payment processing, automated Telegram alerts, and containerized deployment.',
       icon: Terminal,
       color: 'from-violet-500/15 to-pink-500/15 text-violet-600 dark:text-violet-400 border-violet-200/80 dark:border-violet-900/50',
       items: ['Bakong KHQR Payments', 'Telegram Bot API', 'Docker', 'Railway Cloud', 'Git / GitHub Workflow'],
@@ -263,90 +362,136 @@ export default function AboutDeveloper() {
   const buildPrinciples = [
     {
       icon: Layers,
-      title: 'Clean Architecture',
-      description: 'Designing modular, scalable, and decoupled layers that remain maintainable as business requirements evolve.',
+      title: isKhmer ? 'រចនាសម្ព័ន្ធស្អាត (Clean Architecture)' : 'Clean Architecture',
+      description: isKhmer
+        ? 'ការរចនាស្រទាប់កូដដាច់ដោយឡែក ងាយស្រួលពង្រីក និងងាយស្រួលថែទាំនៅពេលអាជីវកម្មរីកចម្រើន។'
+        : 'Designing modular, scalable, and decoupled layers that remain maintainable as business requirements evolve.',
     },
     {
       icon: Lock,
-      title: 'Security First',
-      description: 'Implementing robust role-based access control, cryptographic verification, and token authentication for safe transactions.',
+      title: isKhmer ? 'សុវត្ថិភាពជាចម្បង (Security First)' : 'Security First',
+      description: isKhmer
+        ? 'ការកំណត់សិទ្ធិប្រើប្រាស់ ការផ្ទៀងផ្ទាត់កូដសម្ងាត់ និងការផ្ទៀងផ្ទាត់ Token សម្រាប់ប្រតិបត្តិការប្រកបដោយសុវត្ថិភាព។'
+        : 'Implementing robust role-based access control, cryptographic verification, and token authentication for safe transactions.',
     },
     {
       icon: Workflow,
-      title: 'Real-World Solutions',
-      description: 'Solving concrete problems with streamlined workflows — bridging customer purchasing, inventory, and instant payments.',
+      title: isKhmer ? 'ដំណោះស្រាយជាក់ស្ដែង (Real-World Solutions)' : 'Real-World Solutions',
+      description: isKhmer
+        ? 'ដោះស្រាយបញ្ហាជាក់ស្ដែងជាមួយលំហូរការងាររលូន — តភ្ជាប់ការទិញទំនិញ ស្តុក និងការទូទាត់ភ្លាមៗ។'
+        : 'Solving concrete problems with streamlined workflows — bridging customer purchasing, inventory, and instant payments.',
     },
     {
       icon: Lightbulb,
-      title: 'Continuous Learning',
-      description: 'Constantly benchmarking, refining code structure, and adopting modern software practices to build resilient systems.',
+      title: isKhmer ? 'ការរៀនសូត្រឥតឈប់ឈរ (Continuous Learning)' : 'Continuous Learning',
+      description: isKhmer
+        ? 'តែងតែវាស់ស្ទង់សមត្ថភាព កែលម្អរចនាសម្ព័ន្ធកូដ និងទទួលយកវិធីសាស្ត្រទំនើបៗដើម្បីកសាងប្រព័ន្ធដ៏រឹងមាំ។'
+        : 'Constantly benchmarking, refining code structure, and adopting modern software practices to build resilient systems.',
     },
   ];
 
   const projectShowcase = [
     {
-      title: 'Modern E-Commerce Engine',
-      description: 'End-to-end shopping experience with product catalog, cart persistence, discount calculations, and delivery management.',
+      title: isKhmer ? 'ប្រព័ន្ធ E-Commerce ទំនើប' : 'Modern E-Commerce Engine',
+      description: isKhmer
+        ? 'បទពិសោធន៍ទិញទំនិញពេញលេញជាមួយកាតាឡុកទំនិញ ការរក្សាទុកកន្ត្រក ការគណនាការបញ្ចុះតម្លៃ និងការគ្រប់គ្រងការដឹកជញ្ជូន។'
+        : 'End-to-end shopping experience with product catalog, cart persistence, discount calculations, and delivery management.',
       icon: ShoppingBag,
-      tag: 'Storefront',
+      tag: isKhmer ? 'ហាងអនឡាញ' : 'Storefront',
     },
     {
-      title: 'Bakong KHQR Payment Flow',
-      description: 'Seamless QR generation and automated payment polling with real-time verification and digital receipts.',
+      title: isKhmer ? 'ប្រព័ន្ធទូទាត់ Bakong KHQR' : 'Bakong KHQR Payment Flow',
+      description: isKhmer
+        ? 'ការបង្កើត QR កូដទូទាត់ និងការផ្ទៀងផ្ទាត់ការទូទាត់ស្វ័យប្រវត្តិតាមពេលវេលាជាក់ស្ដែង រួមជាមួយវិក្កយបត្រឌីជីថល។'
+        : 'Seamless QR generation and automated payment polling with real-time verification and digital receipts.',
       icon: CreditCard,
-      tag: 'Fintech',
+      tag: isKhmer ? 'Fintech' : 'Fintech',
     },
     {
-      title: 'Real-Time Telegram Alerts',
-      description: 'Automated Telegram Bot integration that sends instant order notifications, payment updates, and customer receipts to store staff.',
+      title: isKhmer ? 'ការជូនដំណឹង Telegram ភ្លាមៗ' : 'Real-Time Telegram Alerts',
+      description: isKhmer
+        ? 'ការរួមបញ្ចូល Telegram Bot ស្វ័យប្រវត្តិដើម្បីផ្ញើដំណឹងការបញ្ជាទិញ ការទូទាត់ និងវិក្កយបត្រទៅកាន់បុគ្គលិកហាងភ្លាមៗ។'
+        : 'Automated Telegram Bot integration that sends instant order notifications, payment updates, and customer receipts to store staff.',
       icon: Bell,
-      tag: 'Automation',
+      tag: isKhmer ? 'ស្វ័យប្រវត្តិកម្ម' : 'Automation',
     },
     {
-      title: 'Inventory & POS Terminal',
-      description: 'Fast barcode-ready point-of-sale interface with stock tracking, invoice generation, and revenue analytics.',
+      title: isKhmer ? 'ផ្ទាំងលក់ POS & ការគ្រប់គ្រងស្តុក' : 'Inventory & POS Terminal',
+      description: isKhmer
+        ? 'ផ្ទាំងលក់ POS គាំទ្រការស្កេនបាកូដរហ័ស ជាមួយការតាមដានស្តុក ការចេញវិក្កយបត្រ និងការវិភាគចំណូល។'
+        : 'Fast barcode-ready point-of-sale interface with stock tracking, invoice generation, and revenue analytics.',
       icon: Box,
-      tag: 'Management',
+      tag: isKhmer ? 'ការគ្រប់គ្រង' : 'Management',
     },
+  ];
+
+  const milestones = [
+    { step: '01', title: isKhmer ? 'ការរចនាប្រព័ន្ធ' : 'System Design', desc: isKhmer ? 'រចនាសម្ព័ន្ធទិន្នន័យ & Model' : 'Domain modeling & schema' },
+    { step: '02', title: isKhmer ? 'Backend APIs' : 'Backend APIs', desc: isKhmer ? 'សេវាកម្ម Spring Boot REST' : 'Spring Boot REST services' },
+    { step: '03', title: isKhmer ? 'ប្រព័ន្ធ POS' : 'POS Engine', desc: isKhmer ? 'ស្កេនបាកូដ & លក់រហ័ស' : 'Barcode & quick cashier sales' },
+    { step: '04', title: isKhmer ? 'E-Commerce' : 'E-Commerce', desc: isKhmer ? 'ហាងអនឡាញ & កន្ត្រកទំនិញ' : 'Customer storefront & cart' },
+    { step: '05', title: isKhmer ? 'Fintech KHQR' : 'Fintech KHQR', desc: isKhmer ? 'ភ្ជាប់ប្រព័ន្ធទូទាត់បាគង' : 'Bakong payment integration' },
+    { step: '06', title: isKhmer ? 'Telegram Bot' : 'Telegram Bot', desc: isKhmer ? 'ផ្ញើដំណឹងការបញ្ជាទិញភ្លាមៗ' : 'Real-time order dispatch' },
   ];
 
   const coreValues = [
     {
-      title: 'System Reliability',
-      text: 'Building dependable services with predictable state management and solid error handling.',
+      title: isKhmer ? 'ភាពអាចទុកចិត្តបាននៃប្រព័ន្ធ' : 'System Reliability',
+      text: isKhmer
+        ? 'ការកសាងសេវាកម្មដែលអាចទុកចិត្តបាន ជាមួយការគ្រប់គ្រង State និងដោះស្រាយបញ្ហាបានត្រឹមត្រូវ។'
+        : 'Building dependable services with predictable state management and solid error handling.',
     },
     {
-      title: 'Simplicity & Precision',
-      text: 'Keeping complex domain logic clean, readable, and structured for long-term maintainability.',
+      title: isKhmer ? 'ភាពសាមញ្ញ & ភាពច្បាស់លាស់' : 'Simplicity & Precision',
+      text: isKhmer
+        ? 'រក្សាកូដដែលមានភាពស្មុគស្មាញឱ្យមានរបៀប ងាយស្រួលអាន និងមានរចនាសម្ព័ន្ធច្បាស់លាស់។'
+        : 'Keeping complex domain logic clean, readable, and structured for long-term maintainability.',
     },
     {
-      title: 'User Experience',
-      text: 'Creating fast, responsive, and intuitive interfaces for both customers and store administrators.',
+      title: isKhmer ? 'បទពិសោធន៍អ្នកប្រើប្រាស់' : 'User Experience',
+      text: isKhmer
+        ? 'បង្កើតផ្ទៃមុខកម្មវិធីដែលរហ័ស ឆ្លើយតបរលូន និងងាយស្រួលប្រើសម្រាប់ទាំងអតិថិជន និងអ្នកគ្រប់គ្រង។'
+        : 'Creating fast, responsive, and intuitive interfaces for both customers and store administrators.',
     },
     {
-      title: 'Data Integrity',
-      text: 'Ensuring transaction consistency, safe payment status transitions, and reliable database schemas.',
+      title: isKhmer ? 'សុក្រឹតភាពនៃទិន្នន័យ' : 'Data Integrity',
+      text: isKhmer
+        ? 'ធានានូវភាពត្រឹមត្រូវនៃប្រតិបត្តិការ ការផ្លាស់ប្ដូរស្ថានភាពទូទាត់សុវត្ថិភាព និងទិន្នន័យច្បាស់លាស់។'
+        : 'Ensuring transaction consistency, safe payment status transitions, and reliable database schemas.',
     },
   ];
 
-  const projectCapabilities = [
-    'Online E-Commerce Storefront',
-    'Customer Accounts & JWT Security',
-    'Product Catalog & Category Filtering',
-    'Persistent Shopping Cart & Checkout',
-    'Express Delivery & Store Pickup',
-    'Bakong KHQR Payment Integration',
-    'PostgreSQL Relational Database',
-    'Telegram Bot Order Dispatching',
-    'POS Terminal with Receipt Engine',
-    'Dark Mode & Mobile-First Responsive UI',
-  ];
+  const projectCapabilities = isKhmer
+    ? [
+        'ហាងទំនិញអនឡាញ (E-Commerce Storefront)',
+        'គណនីអតិថិជន & ប្រព័ន្ធសុវត្ថិភាព JWT',
+        'កាតាឡុកទំនិញ & ការចម្រាញ់តាមប្រភេទ',
+        'កន្ត្រកទំនិញរក្សាទុក & ការទូទាត់ប្រាក់',
+        'ការដឹកជញ្ជូនរហ័ស & មកយកផ្ទាល់នៅហាង',
+        'ការតភ្ជាប់ប្រព័ន្ធទូទាត់ Bakong KHQR',
+        'មូលដ្ឋានទិន្នន័យ Relational PostgreSQL',
+        'ការផ្ញើដំណឹងការបញ្ជាទិញតាម Telegram Bot',
+        'ផ្ទាំងលក់ POS & ប្រព័ន្ធចេញវិក្កយបត្រ',
+        'Dark Mode & ផ្ទៃមុខបត់បែនតាមទូរស័ព្ទ',
+      ]
+    : [
+        'Online E-Commerce Storefront',
+        'Customer Accounts & JWT Security',
+        'Product Catalog & Category Filtering',
+        'Persistent Shopping Cart & Checkout',
+        'Express Delivery & Store Pickup',
+        'Bakong KHQR Payment Integration',
+        'PostgreSQL Relational Database',
+        'Telegram Bot Order Dispatching',
+        'POS Terminal with Receipt Engine',
+        'Dark Mode & Mobile-First Responsive UI',
+      ];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 transition-colors">
       <SEO
-        title="About the Developer | Mart System"
-        description="Learn about the developer behind Mart System, the technologies used, and the vision behind the platform."
+        title={content.seoTitle}
+        description={content.seoDesc}
         canonical="/about"
       />
 
@@ -376,7 +521,7 @@ export default function AboutDeveloper() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
                   
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs font-semibold px-2 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10">
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10">
                     <span className="flex items-center gap-1.5">
                       <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                       <span>{developerInfo.name}</span>
@@ -391,23 +536,23 @@ export default function AboutDeveloper() {
             <div className="md:col-span-7 space-y-5 text-center md:text-left">
               <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/50 px-3.5 py-1 text-xs font-bold text-[#164E87] dark:text-blue-300">
                 <Sparkles size={13} />
-                <span>MEET THE DEVELOPER</span>
+                <span>{content.badgeMeet}</span>
               </div>
 
               <div>
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-                  Hello, I'm <br className="hidden sm:inline" />
+                  {content.greeting} <br className="hidden sm:inline" />
                   <span className="bg-gradient-to-r from-[#164E87] via-teal-600 to-emerald-600 bg-clip-text text-transparent">
-                    {developerInfo.name}
+                    {content.nameDisplay}
                   </span>
                 </h1>
                 <p className="text-base sm:text-lg font-bold text-slate-700 dark:text-slate-300 mt-2">
-                  {developerInfo.title}
+                  {content.titleDisplay}
                 </p>
               </div>
 
               <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl mx-auto md:mx-0">
-                Building modern software solutions with passion, clean architecture, and practical engineering. I design end-to-end applications that bridge reliable backend services with seamless digital user experiences.
+                {content.heroBio}
               </p>
 
               {/* Action Buttons */}
@@ -417,7 +562,7 @@ export default function AboutDeveloper() {
                   className="inline-flex items-center gap-2 rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white px-5 py-3 text-xs sm:text-sm font-bold shadow-md shadow-[#164E87]/20 transition active:scale-95 cursor-pointer"
                 >
                   <Mail size={15} />
-                  <span>Contact Me</span>
+                  <span>{content.btnContact}</span>
                 </a>
 
                 <a
@@ -425,7 +570,7 @@ export default function AboutDeveloper() {
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 px-5 py-3 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95 cursor-pointer"
                 >
                   <Layers size={15} />
-                  <span>Behind Mart System</span>
+                  <span>{content.btnBehind}</span>
                 </a>
 
                 <a
@@ -436,7 +581,7 @@ export default function AboutDeveloper() {
                   title="GitHub Profile"
                 >
                   <GithubIcon size={15} />
-                  <span>GitHub</span>
+                  <span>{content.btnGithub}</span>
                   <ExternalLink size={12} className="text-slate-400" />
                 </a>
               </div>
@@ -446,7 +591,7 @@ export default function AboutDeveloper() {
         </div>
       </section>
 
-      {/* 2. ABOUT ME SECTION */}
+      {/* 2. ABOUT ME & EDUCATION SECTION */}
       <section className="py-14 sm:py-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
@@ -462,13 +607,13 @@ export default function AboutDeveloper() {
                     </div>
                     <div>
                       <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-wide uppercase">
-                        Education
+                        {content.eduTitle}
                       </h3>
-                      <p className="text-[11px] text-slate-400 font-medium">Academic Background</p>
+                      <p className="text-[11px] text-slate-400 font-medium">{content.eduSub}</p>
                     </div>
                   </div>
                   <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900 text-[10px] font-bold text-[#164E87] dark:text-blue-300 uppercase tracking-wider">
-                    Academic Path
+                    {content.eduBadge}
                   </span>
                 </div>
 
@@ -479,15 +624,15 @@ export default function AboutDeveloper() {
                     <div className="flex items-center gap-1.5">
                       <Calendar size={12} className="text-[#164E87] dark:text-blue-400" />
                       <span className="text-xs font-bold text-[#164E87] dark:text-blue-400">
-                        2018 – 2024
+                        {content.edu1Time}
                       </span>
                     </div>
                     <h4 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wide uppercase">
-                      SAMRONG PONLEY HIGH SCHOOL
+                      {content.edu1School}
                     </h4>
                     <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 pl-0.5">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#164E87] dark:bg-blue-400"></span>
-                      <span className="font-semibold">Diploma</span>
+                      <span className="font-semibold">{content.edu1Degree}</span>
                     </div>
                   </div>
 
@@ -496,15 +641,15 @@ export default function AboutDeveloper() {
                     <div className="flex items-center gap-1.5">
                       <Calendar size={12} className="text-[#164E87] dark:text-blue-400" />
                       <span className="text-xs font-bold text-[#164E87] dark:text-blue-400">
-                        2025 – Present
+                        {content.edu2Time}
                       </span>
                     </div>
                     <h4 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wide uppercase">
-                      ROYAL UNIVERSITY OF PHNOM PENH
+                      {content.edu2School}
                     </h4>
                     <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 pl-0.5">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#164E87] dark:bg-blue-400"></span>
-                      <span className="font-semibold">Bachelor of Computer Science</span>
+                      <span className="font-semibold">{content.edu2Degree}</span>
                     </div>
                   </div>
 
@@ -513,15 +658,15 @@ export default function AboutDeveloper() {
                     <div className="flex items-center gap-1.5">
                       <Calendar size={12} className="text-[#164E87] dark:text-blue-400" />
                       <span className="text-xs font-bold text-[#164E87] dark:text-blue-400">
-                        March 2026 – Present
+                        {content.edu3Time}
                       </span>
                     </div>
                     <h4 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wide uppercase">
-                      ISTAD
+                      {content.edu3School}
                     </h4>
                     <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 pl-0.5">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#164E87] dark:bg-blue-400"></span>
-                      <span className="font-semibold">IT Expert</span>
+                      <span className="font-semibold">{content.edu3Degree}</span>
                     </div>
                   </div>
                 </div>
@@ -530,11 +675,11 @@ export default function AboutDeveloper() {
                 <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-medium">
                   <div className="flex items-center gap-1.5">
                     <MapPin size={13} className="text-rose-500 shrink-0" />
-                    <span>{developerInfo.location}</span>
+                    <span>{content.locationDisplay}</span>
                   </div>
                   <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
                     <Award size={13} className="text-emerald-500" />
-                    <span>Active Studies</span>
+                    <span>{content.eduStatus}</span>
                   </div>
                 </div>
               </div>
@@ -546,29 +691,23 @@ export default function AboutDeveloper() {
                 <div>
                   <div className="inline-flex items-center gap-1.5 mb-2">
                     <span className="text-xs font-bold text-[#164E87] dark:text-blue-400 uppercase tracking-widest">
-                      About Me
+                      {content.aboutBadge}
                     </span>
                   </div>
                   <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-snug">
-                    Passionate about building practical software for real-world needs.
+                    {content.aboutHeading}
                   </h2>
                 </div>
                 
                 <div className="space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  <p>
-                    I enjoy developing practical software that solves real-world challenges for businesses and end customers. My engineering approach focuses on creating reliable backend systems, clean RESTful APIs, robust authentication, and intuitive user experiences.
-                  </p>
-                  <p>
-                    With Mart System, my goal was to engineer a unified platform combining physical store sales and online e-commerce shopping into one seamless ecosystem — backed by automated payments, Telegram alerts, and clear financial records.
-                  </p>
-                  <p>
-                    I continuously seek to refine my engineering skills, explore modern architectural patterns, and write clean, maintainable code that stands the test of time.
-                  </p>
+                  <p>{content.aboutP1}</p>
+                  <p>{content.aboutP2}</p>
+                  <p>{content.aboutP3}</p>
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                  <Sparkles size={14} className="text-amber-500" />
-                  <span className="font-medium">Focusing on high performance, scalability & developer velocity</span>
+                  <Sparkles size={14} className="text-amber-500 shrink-0" />
+                  <span className="font-medium">{content.aboutFooterNote}</span>
                 </div>
               </div>
             </div>
@@ -582,13 +721,13 @@ export default function AboutDeveloper() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto space-y-2 mb-10 sm:mb-12">
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
-              Tech Stack
+              {content.techBadge}
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-              Technologies I Work With
+              {content.techHeading}
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-              Core technologies and tools actively powering this application
+              {content.techSubtitle}
             </p>
           </div>
 
@@ -616,7 +755,7 @@ export default function AboutDeveloper() {
                         </div>
                       </div>
                       <span className="text-xs font-mono font-bold text-slate-400 dark:text-slate-500 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-750">
-                        {tech.items.length} techs
+                        {tech.items.length} {content.techLabelCount}
                       </span>
                     </div>
 
@@ -648,13 +787,13 @@ export default function AboutDeveloper() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto space-y-2 mb-10 sm:mb-12">
             <span className="text-xs font-bold text-[#164E87] dark:text-blue-400 uppercase tracking-widest">
-              Engineering Mindset
+              {content.mindsetBadge}
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-              How I Build Software
+              {content.mindsetHeading}
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-              Guiding architectural principles for building reliable, production-ready applications
+              {content.mindsetSub}
             </p>
           </div>
 
@@ -688,13 +827,13 @@ export default function AboutDeveloper() {
           
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
-              Project Architecture
+              {content.behindBadge}
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-              Behind Mart System
+              {content.behindHeading}
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-              Mart System was engineered to bridge everyday retail shopping with a modern online ordering and management system.
+              {content.behindSub}
             </p>
           </div>
 
@@ -729,17 +868,10 @@ export default function AboutDeveloper() {
           {/* Conceptual Architecture Journey */}
           <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-gradient-to-r from-blue-50/50 via-slate-50/50 to-emerald-50/50 dark:from-slate-800/40 dark:via-slate-800/30 dark:to-slate-800/40 p-6 sm:p-8">
             <h3 className="text-sm font-extrabold text-slate-900 dark:text-white mb-4 text-center sm:text-left">
-              Development Milestones &amp; Evolution
+              {content.milestonesHeading}
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-center">
-              {[
-                { step: '01', title: 'System Design', desc: 'Domain modeling & schema' },
-                { step: '02', title: 'Backend APIs', desc: 'Spring Boot REST services' },
-                { step: '03', title: 'POS Engine', desc: 'Barcode & quick cashier sales' },
-                { step: '04', title: 'E-Commerce', desc: 'Customer storefront & cart' },
-                { step: '05', title: 'Fintech KHQR', desc: 'Bakong payment integration' },
-                { step: '06', title: 'Telegram Bot', desc: 'Real-time order dispatch' },
-              ].map((m, i) => (
+              {milestones.map((m, i) => (
                 <div key={i} className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 shadow-2xs space-y-1">
                   <span className="font-mono text-[10px] font-black text-emerald-600 dark:text-emerald-400">{m.step}</span>
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white">{m.title}</h4>
@@ -760,10 +892,10 @@ export default function AboutDeveloper() {
           <div>
             <div className="text-center max-w-xl mx-auto space-y-1.5 mb-8">
               <span className="text-xs font-bold text-[#164E87] dark:text-blue-400 uppercase tracking-widest">
-                Core Principles
+                {content.valuesBadge}
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                What Matters to Me
+                {content.valuesHeading}
               </h2>
             </div>
 
@@ -787,7 +919,7 @@ export default function AboutDeveloper() {
           {/* Capabilities Checklist */}
           <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
             <h3 className="text-base font-black text-slate-900 dark:text-white mb-4">
-              Implemented Project Capabilities
+              {content.capHeading}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {projectCapabilities.map((cap, idx) => (
@@ -814,13 +946,13 @@ export default function AboutDeveloper() {
             <div className="relative space-y-3 text-center sm:text-left max-w-xl">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-emerald-300 backdrop-blur-sm">
                 <Send size={12} />
-                <span>LET'S CONNECT</span>
+                <span>{content.contactBadge}</span>
               </span>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight">
-                Have a project idea or want to discuss software engineering?
+                {content.contactHeading}
               </h2>
               <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                Feel free to reach out directly via email, phone, or explore my GitHub repository.
+                {content.contactSub}
               </p>
             </div>
 
@@ -829,21 +961,21 @@ export default function AboutDeveloper() {
               {/* Email */}
               <div className="rounded-2xl bg-white/10 backdrop-blur-md p-4 border border-white/15 flex flex-col justify-between space-y-2">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">Email</span>
+                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">{content.emailTitle}</span>
                   <p className="text-xs font-mono font-bold truncate mt-0.5">{developerInfo.email}</p>
                 </div>
                 <div className="flex items-center gap-2 pt-1">
                   <a
                     href={`mailto:${developerInfo.email}`}
-                    className="flex-1 text-center py-1.5 rounded-lg bg-white text-[#164E87] text-xs font-bold hover:bg-slate-100 transition"
+                    className="flex-1 text-center py-1.5 rounded-lg bg-white text-[#164E87] text-xs font-bold hover:bg-slate-100 transition cursor-pointer"
                   >
-                    Send Email
+                    {content.sendEmailBtn}
                   </a>
                   <button
                     type="button"
                     onClick={handleCopyEmail}
                     className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition cursor-pointer"
-                    title="Copy Email"
+                    title={copied ? content.copiedTooltip : 'Copy Email'}
                   >
                     {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
                   </button>
@@ -853,30 +985,30 @@ export default function AboutDeveloper() {
               {/* Phone */}
               <div className="rounded-2xl bg-white/10 backdrop-blur-md p-4 border border-white/15 flex flex-col justify-between space-y-2">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">Phone / Telegram</span>
+                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">{content.phoneTitle}</span>
                   <p className="text-xs font-mono font-bold mt-0.5">{developerInfo.phone}</p>
                 </div>
                 <a
                   href={`tel:${developerInfo.phoneRaw}`}
-                  className="text-center py-1.5 rounded-lg bg-white text-[#164E87] text-xs font-bold hover:bg-slate-100 transition"
+                  className="text-center py-1.5 rounded-lg bg-white text-[#164E87] text-xs font-bold hover:bg-slate-100 transition cursor-pointer"
                 >
-                  Call Directly
+                  {content.callBtn}
                 </a>
               </div>
 
               {/* GitHub */}
               <div className="rounded-2xl bg-white/10 backdrop-blur-md p-4 border border-white/15 flex flex-col justify-between space-y-2">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">Source Repository</span>
+                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">{content.repoTitle}</span>
                   <p className="text-xs font-mono font-bold truncate mt-0.5">github.com/raksabun2006</p>
                 </div>
                 <a
                   href={developerInfo.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold shadow-xs transition"
+                  className="inline-flex items-center justify-center gap-1 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold shadow-xs transition cursor-pointer"
                 >
-                  <span>Open GitHub</span>
+                  <span>{content.openGithubBtn}</span>
                   <ExternalLink size={12} />
                 </a>
               </div>
@@ -889,7 +1021,7 @@ export default function AboutDeveloper() {
                 className="inline-flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white transition group"
               >
                 <ShoppingBag size={14} />
-                <span>Return to Storefront Catalog</span>
+                <span>{content.returnToStore}</span>
                 <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
