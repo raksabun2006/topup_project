@@ -240,7 +240,7 @@ export default function AdminLayout() {
       {/* ------- Main Content Area ------- */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Mobile Header Top Bar (on mobile only) */}
-        <div className="lg:hidden flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 py-3 shrink-0">
+        <div className="lg:hidden flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 shrink-0 relative z-30">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setMobileNavOpen(true)}
