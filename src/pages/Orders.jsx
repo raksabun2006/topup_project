@@ -176,16 +176,18 @@ export default function Orders() {
         {filtered.length === 0 && !loading ? (
           <div className="flex flex-col items-center justify-center rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center space-y-3">
             <Receipt size={40} className="text-slate-300" />
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">No Orders Found</h3>
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+              មិនមានការបញ្ជាទិញនៅឡើយទេ (No Orders Found)
+            </h3>
             <p className="text-xs text-slate-400 max-w-xs">
-              You do not have any orders matching your selection.
+              អ្នកមិនទាន់មានប្រវត្តិបញ្ជាទិញនៅឡើយទេ។ សូមចាប់ផ្តើមទិញទំនិញឥឡូវនេះ។
             </p>
             <Link
               to="/shop"
-              className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#18181B] text-white px-5 py-2 text-xs font-bold hover:bg-black"
+              className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#18181B] dark:bg-white text-white dark:text-slate-900 px-6 py-2.5 text-xs font-black hover:opacity-90 shadow-md transition active:scale-95 cursor-pointer"
             >
-              <span>Explore Products</span>
-              <ArrowRight size={13} />
+              <span>ចាប់ផ្តើមទិញទំនិញ</span>
+              <ArrowRight size={14} />
             </Link>
           </div>
         ) : (
@@ -217,7 +219,7 @@ export default function Orders() {
                           : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                       }`}>
                         {deliveryMethod === 'DELIVERY' ? <Truck size={10} /> : <Store size={10} />}
-                        <span>{deliveryMethod}</span>
+                        <span>{deliveryMethod === 'DELIVERY' ? 'DELIVERY $1.50' : 'PICKUP FREE'}</span>
                       </span>
 
                       {/* Payment Status Badge */}
@@ -229,7 +231,7 @@ export default function Orders() {
                         }`}
                       >
                         {isPaid ? <CheckCircle2 size={11} /> : <Clock size={11} />}
-                        <span>{isPaid ? 'Paid' : 'Pending'}</span>
+                        <span>{isPaid ? 'PAID (បានបង់ប្រាក់)' : 'PENDING (រង់ចាំទូទាត់)'}</span>
                       </span>
                     </div>
 
@@ -287,10 +289,10 @@ export default function Orders() {
                     <button
                       type="button"
                       onClick={() => setSelectedReceipt(order)}
-                      className="flex items-center justify-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 transition cursor-pointer shadow-2xs shrink-0"
+                      className="flex items-center justify-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-black text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer shadow-2xs shrink-0"
                     >
                       <Eye size={13} />
-                      <span>View Receipt</span>
+                      <span>មើលលម្អិត (View Receipt)</span>
                     </button>
                   </div>
                 </div>

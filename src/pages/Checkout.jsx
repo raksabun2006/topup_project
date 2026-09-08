@@ -73,15 +73,15 @@ export default function Checkout() {
     if (items.length === 0 || submitting) return;
 
     if (!customerName.trim()) {
-      setError('Please enter your full name.');
+      setError('សូមបញ្ចូលឈ្មោះរបស់អ្នក (Please enter your full name)');
       return;
     }
     if (!customerPhone.trim()) {
-      setError('Please enter your phone number.');
+      setError('សូមបញ្ចូលលេខទូរស័ព្ទ (Please enter your phone number)');
       return;
     }
     if (deliveryMethod === 'DELIVERY' && !deliveryAddress.trim()) {
-      setError('Please enter your delivery address.');
+      setError('សូមបញ្ចូលអាសយដ្ឋានដឹកជញ្ជូន (Please enter your delivery address)');
       return;
     }
 
@@ -245,17 +245,19 @@ export default function Checkout() {
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 to="/orders"
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition text-center"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-xs sm:text-sm font-black text-slate-800 dark:text-slate-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition text-center cursor-pointer"
               >
                 <FileText size={16} />
-                <span>My Orders</span>
+                <span>មើលការបញ្ជាទិញ</span>
+                <span className="text-xs text-slate-400 font-semibold hidden xs:inline">• View Orders</span>
               </Link>
               <Link
                 to="/shop"
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 px-5 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/25 transition active:scale-[0.98] text-center"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 px-5 py-3 text-xs sm:text-sm font-black text-white shadow-md shadow-emerald-600/25 transition active:scale-[0.98] text-center cursor-pointer"
               >
                 <ShoppingBag size={16} />
-                <span>Shop More</span>
+                <span>បន្តទិញទំនិញ</span>
+                <span className="text-xs opacity-90 font-semibold hidden xs:inline">• Shop More</span>
               </Link>
             </div>
           </div>
@@ -327,52 +329,46 @@ export default function Checkout() {
           </p>
         </div>
 
-        {/* Guest Customer Benefits Banner */}
+        {/* Clean Slim Guest Notice */}
         {!isAuthenticated && (
-          <div className="rounded-3xl border border-emerald-500/20 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-blue-500/10 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-xs">
-                <ShieldCheck size={22} />
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 p-3 sm:p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 shrink-0">
+                <ShieldCheck size={16} />
               </div>
-              <div>
-                <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <span>Customer Account for Instant Bakong KHQR</span>
-                  <span className="rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5">Recommended</span>
-                </h4>
-                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                  Sign in or register in 10s to generate your instant QR scan and track order status. Your items are safely saved.
-                </p>
-              </div>
+              <p className="text-slate-600 dark:text-slate-300 font-medium">
+                Have an account? <span className="font-bold text-slate-900 dark:text-white">Sign in</span> for 1-tap Bakong KHQR checkout and order tracking.
+              </p>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
               <Link
                 to="/login"
                 state={{ from: { pathname: '/checkout' } }}
-                className="flex-1 sm:flex-none text-center px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-black text-slate-800 dark:text-slate-200 hover:bg-slate-50 transition shadow-2xs"
+                className="px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 transition shadow-2xs text-xs"
               >
                 Sign In
               </Link>
               <Link
                 to="/register"
                 state={{ from: { pathname: '/checkout' } }}
-                className="flex-1 sm:flex-none text-center px-4 py-2.5 rounded-xl bg-emerald-600 text-xs font-black text-white hover:bg-emerald-500 transition shadow-xs"
+                className="px-3.5 py-1.5 rounded-xl bg-emerald-600 font-bold text-white hover:bg-emerald-500 transition shadow-2xs text-xs"
               >
-                Create Account
+                Register
               </Link>
             </div>
           </div>
         )}
 
         {error && (
-          <div className="flex items-start gap-2.5 rounded-2xl border border-rose-200 bg-rose-50 dark:bg-rose-950/30 p-4 text-xs font-bold text-rose-700 dark:text-rose-400">
-            <AlertCircle size={18} className="mt-0.5 shrink-0" />
+          <div className="flex items-start gap-2.5 rounded-2xl border border-rose-200 bg-rose-50 dark:bg-rose-950/30 p-3.5 text-xs font-bold text-rose-700 dark:text-rose-400 animate-fade-in">
+            <AlertCircle size={16} className="mt-0.5 shrink-0" />
             <div className="flex-1">
               <span>{error}</span>
             </div>
             <button
               type="button"
               onClick={() => setError('')}
-              className="text-rose-400 hover:text-rose-600"
+              className="text-rose-400 hover:text-rose-600 cursor-pointer"
             >
               <X size={14} />
             </button>
@@ -380,15 +376,15 @@ export default function Checkout() {
         )}
 
         {/* 2-Column Checkout Layout */}
-        <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left: Delivery & Payment Details */}
-          <div className="lg:col-span-7 space-y-6">
+        <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+          {/* Left Column: Delivery, Recipient, Payment */}
+          <div className="lg:col-span-7 space-y-5">
             
-            {/* 1. Delivery Method Selection */}
-            <div className="rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-6 space-y-4">
-              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
+            {/* 1. Delivery Method Card */}
+            <div className="rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-5 sm:p-6 space-y-3.5">
+              <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
                 <Truck size={16} className="text-emerald-600" />
-                <span>1. Delivery Method</span>
+                <span>1. វិធីទទួលទំនិញ (Delivery Method)</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -396,69 +392,63 @@ export default function Checkout() {
                 <button
                   type="button"
                   onClick={() => setDeliveryMethod('DELIVERY')}
-                  className={`flex flex-col p-4 rounded-2xl border text-left transition cursor-pointer relative ${
+                  className={`flex flex-col justify-between p-4 rounded-2xl border text-left transition-all cursor-pointer relative ${
                     deliveryMethod === 'DELIVERY'
-                      ? 'border-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/30 ring-1 ring-emerald-600'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 hover:border-slate-300'
+                      ? 'border-emerald-600 bg-white dark:bg-slate-850 ring-2 ring-emerald-600 shadow-xs'
+                      : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-800/50 hover:border-slate-300'
                   }`}
                 >
-                  <div className="flex items-center justify-between w-full mb-1">
+                  <div className="flex items-center justify-between w-full mb-1.5">
                     <div className="flex items-center gap-2">
-                      <Truck size={18} className={deliveryMethod === 'DELIVERY' ? 'text-emerald-600' : 'text-slate-400'} />
-                      <span className="font-extrabold text-sm text-slate-900 dark:text-white">Delivery</span>
+                      <Truck size={17} className={deliveryMethod === 'DELIVERY' ? 'text-emerald-600' : 'text-slate-400'} />
+                      <span className="font-extrabold text-sm text-slate-900 dark:text-white">សេវាដឹកជញ្ជូន (Delivery)</span>
                     </div>
-                    <span className="font-mono font-black text-xs px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">
+                    <span className="font-mono font-black text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
                       $1.50 USD
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    Express doorstep delivery in Phnom Penh
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    ដឹកជញ្ជូនដល់ផ្ទះ (Express Doorstep Delivery)
                   </p>
-                  {deliveryMethod === 'DELIVERY' && (
-                    <div className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-emerald-600" />
-                  )}
                 </button>
 
                 {/* Option 2: Pickup ($0.00 / Free) */}
                 <button
                   type="button"
                   onClick={() => setDeliveryMethod('PICKUP')}
-                  className={`flex flex-col p-4 rounded-2xl border text-left transition cursor-pointer relative ${
+                  className={`flex flex-col justify-between p-4 rounded-2xl border text-left transition-all cursor-pointer relative ${
                     deliveryMethod === 'PICKUP'
-                      ? 'border-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/30 ring-1 ring-emerald-600'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 hover:border-slate-300'
+                      ? 'border-emerald-600 bg-white dark:bg-slate-850 ring-2 ring-emerald-600 shadow-xs'
+                      : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-800/50 hover:border-slate-300'
                   }`}
                 >
-                  <div className="flex items-center justify-between w-full mb-1">
+                  <div className="flex items-center justify-between w-full mb-1.5">
                     <div className="flex items-center gap-2">
-                      <Store size={18} className={deliveryMethod === 'PICKUP' ? 'text-emerald-600' : 'text-slate-400'} />
-                      <span className="font-extrabold text-sm text-slate-900 dark:text-white">Pickup</span>
+                      <Store size={17} className={deliveryMethod === 'PICKUP' ? 'text-emerald-600' : 'text-slate-400'} />
+                      <span className="font-extrabold text-sm text-slate-900 dark:text-white">មកយកផ្ទាល់ (Pickup)</span>
                     </div>
-                    <span className="font-mono font-black text-xs px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+                    <span className="font-mono font-black text-[11px] px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
                       Free ($0.00)
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    Store pickup at Mart System (Phnom Penh)
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    មកយកនៅហាង (Store Pickup at Mart)
                   </p>
-                  {deliveryMethod === 'PICKUP' && (
-                    <div className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-emerald-600" />
-                  )}
                 </button>
               </div>
             </div>
 
             {/* 2. Customer & Address Information Card */}
-            <div className="rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-6 space-y-4">
-              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
+            <div className="rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-5 sm:p-6 space-y-4">
+              <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
                 <User size={16} className="text-emerald-600" />
-                <span>2. {deliveryMethod === 'DELIVERY' ? 'Recipient & Delivery Address' : 'Customer Contact Details'}</span>
+                <span>2. {deliveryMethod === 'DELIVERY' ? 'ព័ត៌មានអតិថិជន និងអាសយដ្ឋានដឹកជញ្ជូន' : 'ព័ត៌មានទំនាក់ទំនងអតិថិជន'}</span>
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="mb-1 block text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Full Name *
+                  <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    ឈ្មោះអ្នកទទួល (Full Name) *
                   </label>
                   <div className="relative">
                     <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -468,24 +458,24 @@ export default function Checkout() {
                       placeholder="e.g. Bun Raksa"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-base sm:text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
+                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-sm font-semibold text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Phone Number *
+                  <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    លេខទូរស័ព្ទ (Phone Number) *
                   </label>
                   <div className="relative">
                     <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       required
                       type="tel"
-                      placeholder="012 345 678"
+                      placeholder="096 XXX XXXX"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-base sm:text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
+                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-sm font-semibold text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs"
                     />
                   </div>
                 </div>
@@ -493,52 +483,52 @@ export default function Checkout() {
 
               {deliveryMethod === 'DELIVERY' ? (
                 <div>
-                  <label className="mb-1 block text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Delivery Address *
+                  <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    អាសយដ្ឋានដឹកជញ្ជូន (Delivery Address) *
                   </label>
                   <div className="relative">
                     <MapPin size={15} className="absolute left-3.5 top-3 text-slate-400" />
                     <textarea
                       required
                       rows={2}
-                      placeholder="House/Street, Sangkat, Khan, Phnom Penh..."
+                      placeholder="ផ្ទះលេខ/ផ្លូវ, សង្កាត់, ខណ្ឌ, រាជធានីភ្នំពេញ..."
                       value={deliveryAddress}
                       onChange={(e) => setDeliveryAddress(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-base sm:text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
+                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-sm font-semibold text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs resize-none"
                     />
                   </div>
                 </div>
               ) : (
                 <div className="rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 p-3.5 border border-emerald-200/60 dark:border-emerald-900/40 text-xs text-emerald-800 dark:text-emerald-300">
-                  <span className="font-bold block mb-0.5">Store Pickup Location:</span>
-                  <p>Mart System Official Store — Phnom Penh, Cambodia (Opening hours: 7:00 AM - 10:00 PM)</p>
+                  <span className="font-bold block mb-0.5">ទីតាំងទទួលទំនិញ (Pickup Location):</span>
+                  <p>Mart System Store — Phnom Penh, Cambodia (ម៉ោងបើក៖ 7:00 AM - 10:00 PM)</p>
                 </div>
               )}
 
               <div>
-                <label className="mb-1 block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Note / Instructions (Optional)
+                <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  ចំណាំបន្ថែម (Optional Note)
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Leave at door, call before arrival, or pickup time"
+                  placeholder="ឧ. ដាក់នៅមុខផ្ទះ ឬទូរស័ព្ទមុនមកដល់..."
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 px-3.5 text-base sm:text-xs font-semibold text-slate-900 dark:text-white focus:border-black focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 px-3.5 text-sm font-semibold text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs"
                 />
               </div>
             </div>
 
             {/* 3. Payment Method Card */}
-            <div className="rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-6 space-y-4">
-              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
+            <div className="rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-5 sm:p-6 space-y-3.5">
+              <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
                 <QrCode size={16} className="text-emerald-600" />
-                <span>3. Payment Method</span>
+                <span>3. វិធីទូទាត់ប្រាក់ (Payment Method)</span>
               </h3>
 
-              <div className="flex items-center gap-4 rounded-2xl border border-emerald-500/40 bg-white dark:bg-slate-800 p-4 shadow-xs">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 shadow-xs">
-                  <QrCode size={26} />
+              <div className="flex items-center gap-3.5 rounded-2xl border border-emerald-500/40 bg-white dark:bg-slate-800 p-4 shadow-2xs">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 shadow-2xs">
+                  <QrCode size={24} />
                 </div>
                 <div className="min-w-0 flex-1 text-left">
                   <div className="flex items-center gap-2">
@@ -548,25 +538,25 @@ export default function Checkout() {
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Pay securely with ABA, ACLEDA, Canadia, Wing, or any Bakong-enabled banking app.
+                    ស្កេនទូទាត់ដោយសុវត្ថិភាពជាមួយ ABA, ACLEDA, Canadia, Wing ឬធនាគារក្នុងប្រព័ន្ធបាគង។
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right: Sticky Order Summary */}
-          <div className="lg:col-span-5 rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-6 space-y-5 sticky top-20">
-            <h3 className="text-base font-extrabold text-slate-900 dark:text-white border-b border-slate-200/60 dark:border-slate-800 pb-3">
-              Order Summary ({itemCount} {itemCount === 1 ? 'item' : 'items'})
+          {/* Right Column: Sticky Order Summary */}
+          <div className="lg:col-span-5 rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-5 sm:p-6 space-y-4 sticky top-20 shadow-xs">
+            <h3 className="text-base font-black text-slate-900 dark:text-white border-b border-slate-200/60 dark:border-slate-800 pb-3">
+              សង្ខេបការបញ្ជាទិញ (Order Summary)
             </h3>
 
-            {/* Items preview */}
+            {/* Items Preview */}
             <div className="max-h-56 overflow-y-auto space-y-3 divide-y divide-slate-200/60 dark:divide-slate-800 pr-1">
               {items.map((item) => (
                 <div key={item.product.id} className="pt-3 first:pt-0 flex items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="h-10 w-10 shrink-0 rounded-xl bg-white dark:bg-slate-800 p-1 flex items-center justify-center overflow-hidden border border-slate-200/60">
+                    <div className="h-10 w-10 shrink-0 rounded-xl bg-white dark:bg-slate-800 p-1 flex items-center justify-center overflow-hidden border border-slate-200/60 shadow-2xs">
                       {item.product.imageUrl ? (
                         <img src={item.product.imageUrl} alt={item.product.name} className="h-full w-full object-contain" />
                       ) : (
@@ -582,7 +572,7 @@ export default function Checkout() {
                       </p>
                     </div>
                   </div>
-                  <span className="font-bold text-slate-900 dark:text-white shrink-0">
+                  <span className="font-black text-slate-900 dark:text-white shrink-0">
                     {formatCurrency((item.product.price || 0) * item.quantity)}
                   </span>
                 </div>
@@ -591,21 +581,21 @@ export default function Checkout() {
 
             {/* Breakdown */}
             <div className="border-t border-slate-200/60 dark:border-slate-800 pt-3 space-y-2 text-xs">
-              <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                <span>Subtotal</span>
+              <div className="flex justify-between text-slate-600 dark:text-slate-400 font-medium">
+                <span>សរុបទំនិញ (Subtotal)</span>
                 <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(subtotal)}</span>
               </div>
-              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+              <div className="flex justify-between text-slate-600 dark:text-slate-400 font-medium">
                 <span className="flex items-center gap-1">
                   <Truck size={13} className="text-emerald-600" />
-                  <span>Delivery ({deliveryMethod})</span>
+                  <span>ថ្លៃដឹកជញ្ជូន (Delivery)</span>
                 </span>
                 <span className="font-bold text-slate-900 dark:text-white">
                   {deliveryFee > 0 ? formatCurrency(deliveryFee) : 'Free ($0.00)'}
                 </span>
               </div>
               <div className="flex items-baseline justify-between border-t border-slate-200/60 dark:border-slate-800 pt-3 text-sm font-bold text-slate-900 dark:text-white">
-                <span>Total Amount</span>
+                <span>ចំនួនត្រូវបង់ (Total)</span>
                 <span className="text-2xl font-black text-slate-900 dark:text-white">
                   {formatCurrency(estimatedTotal)}
                 </span>
@@ -616,16 +606,16 @@ export default function Checkout() {
             <button
               type="submit"
               disabled={submitting || items.length === 0}
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#18181B] font-bold text-xs sm:text-sm text-white hover:bg-black transition-all active:scale-98 disabled:opacity-50 cursor-pointer shadow-md"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#18181B] dark:bg-white font-black text-xs sm:text-sm text-white dark:text-slate-900 hover:opacity-90 transition-all active:scale-98 disabled:opacity-50 cursor-pointer shadow-md"
             >
               {submitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  <span>Creating Order...</span>
+                  <span>កំពុងបង្កើតការបញ្ជាទិញ...</span>
                 </>
               ) : (
                 <>
-                  <span>Place Order &amp; Pay KHQR ({formatCurrency(estimatedTotal)})</span>
+                  <span>បញ្ជាទិញ និងបង់ប្រាក់ ({formatCurrency(estimatedTotal)})</span>
                   <ArrowRight size={15} />
                 </>
               )}

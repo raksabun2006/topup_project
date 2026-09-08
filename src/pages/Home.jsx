@@ -246,15 +246,17 @@ export default function Home() {
                   to="/shop"
                   className="rounded-full bg-[#635BFF] hover:bg-[#5249EC] text-white px-5 sm:px-7 py-2.5 sm:py-3 text-xs sm:text-sm font-black shadow-md shadow-indigo-500/25 transition active:scale-95 flex items-center gap-1.5 sm:gap-2 cursor-pointer"
                 >
-                  <span>SHOP NOW</span>
+                  <span>ចាប់ផ្តើមទិញ</span>
+                  <span className="text-[11px] opacity-80 font-semibold hidden xs:inline">• Shop Now</span>
                   <ArrowRight size={14} />
                 </Link>
 
                 <Link
                   to="/shop"
-                  className="rounded-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 px-4 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95 cursor-pointer"
+                  className="rounded-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 px-4 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95 cursor-pointer flex items-center gap-1.5"
                 >
-                  EXPLORE CATALOG
+                  <span>មើលទំនិញ</span>
+                  <span className="text-[11px] text-slate-400 font-semibold hidden xs:inline">• Explore</span>
                 </Link>
               </div>
 
