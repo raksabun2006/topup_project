@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth, normalizeRole } from '../context/AuthContext';
-
+import { Loader2 } from 'lucide-react';
 
 export function ProtectedRoute({
   children,
@@ -15,23 +15,11 @@ export function ProtectedRoute({
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-slate-950 font-sans">
-        <div className="flex flex-col items-center gap-3.5 p-6 rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-lg shadow-emerald-500/5 text-center">
-          <div className="relative flex items-center justify-center w-12 h-12">
-            <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 dark:bg-emerald-500/30 animate-ping opacity-60" />
-            <img
-              src="/mart.jpg"
-              alt="Mart System"
-              className="relative w-10 h-10 rounded-xl object-cover shadow-sm border border-slate-200/60 dark:border-slate-700/60"
-            />
-          </div>
-          <div className="space-y-0.5">
-            <span className="block text-xs font-bold text-slate-800 dark:text-slate-100 tracking-tight">
-              MART SYSTEM
-            </span>
-            <span className="block text-[11px] font-medium text-slate-400 dark:text-slate-500">
-              Verifying permissions...
-            </span>
-          </div>
+        <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          <Loader2 className="h-7 w-7 animate-spin text-[#164E87] dark:text-blue-400" />
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            Verifying permissions...
+          </span>
         </div>
       </div>
     );
