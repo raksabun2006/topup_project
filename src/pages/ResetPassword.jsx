@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Loader2, AlertCircle, CheckCircle, CheckCircle2, Eye, EyeOff, Lock,
-  ShoppingBag, ArrowLeft, KeyRound, AlertTriangle, Check, X
+  ShoppingBag, ArrowLeft, KeyRound, AlertTriangle, Check, X, Send, Mail
 } from 'lucide-react';
 import { authApi } from '../api/authApi';
 import { getErrorMessage } from '../api/client';
@@ -63,7 +63,7 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   // Read raw token securely from URL query param
-  const rawToken = useMemo(() => {
+  const urlToken = useMemo(() => {
     return (
       searchParams.get('token') ||
       searchParams.get('resetToken') ||
@@ -75,6 +75,7 @@ export default function ResetPassword() {
     );
   }, [searchParams]);
 
+  const [manualToken, setManualToken] = useState(urlToken);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -82,7 +83,9 @@ export default function ResetPassword() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [tokenInvalid, setTokenInvalid] = useState(!rawToken);
+  const [tokenInvalid, setTokenInvalid] = useState(false);
+
+  const activeToken = (manualToken || urlToken || '').trim();
 
   const strength = useMemo(() => calculatePasswordStrength(password), [password]);
   const hasMinLength = password.length >= 6;
@@ -92,9 +95,8 @@ export default function ResetPassword() {
     e?.preventDefault();
     if (submitting || success) return;
 
-    if (!rawToken) {
-      setTokenInvalid(true);
-      setError('Password reset link is invalid or has expired. Please request a new password reset link.');
+    if (!activeToken) {
+      setError('Please enter your password reset token or verification code.');
       return;
     }
 
@@ -123,7 +125,7 @@ export default function ResetPassword() {
 
     try {
       await authApi.resetPassword({
-        token: rawToken,
+        token: activeToken,
         newPassword: password,
       });
 
@@ -143,7 +145,7 @@ export default function ResetPassword() {
         msg.toLowerCase().includes('used')
       ) {
         setTokenInvalid(true);
-        setError('This password reset link is invalid or has expired. Please request a new password reset link.');
+        setError('This password reset link or code is invalid or has expired. Please request a new link or contact support.');
       } else if (status >= 500) {
         setError('Server error occurred. Please try again later.');
       } else {
@@ -267,37 +269,6 @@ export default function ResetPassword() {
                   </button>
                 </div>
               </div>
-            ) : tokenInvalid && !rawToken ? (
-              /* State 2: Missing Token */
-              <div className="text-center space-y-4 py-4 animate-scale-in">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 mx-auto border border-amber-100 dark:border-amber-900/40 shadow-xs">
-                  <AlertTriangle size={32} />
-                </div>
-
-                <div className="space-y-2">
-                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                    Invalid or Expired Link
-                  </h1>
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                    This password reset link is invalid or has expired. Please request a new password reset link.
-                  </p>
-                </div>
-
-                <div className="pt-4 space-y-3">
-                  <Link
-                    to="/forgot-password"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white py-3.5 text-sm font-bold shadow-md transition active:scale-98"
-                  >
-                    Request New Reset Link
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 py-3 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
-                  >
-                    Return to Login
-                  </Link>
-                </div>
-              </div>
             ) : (
               /* State 3: Reset Password Form */
               <div>
@@ -310,7 +281,7 @@ export default function ResetPassword() {
                     Reset Password
                   </h1>
                   <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 font-medium">
-                    Please enter and confirm your new password.
+                    {urlToken ? 'Please enter and confirm your new password.' : 'Enter your reset code or token and choose a new password.'}
                   </p>
                 </div>
 
@@ -322,17 +293,51 @@ export default function ResetPassword() {
                 )}
 
                 {tokenInvalid && (
-                  <div className="mb-5">
-                    <Link
-                      to="/forgot-password"
-                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white py-3 text-xs sm:text-sm font-bold shadow-xs transition"
-                    >
-                      Request New Reset Link
-                    </Link>
+                  <div className="mb-5 p-3.5 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/70 dark:bg-amber-950/20 text-xs space-y-2">
+                    <div className="font-semibold text-amber-900 dark:text-amber-200">
+                      Need direct help from administrator?
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <a
+                        href="https://t.me/raksa_bun?text=Hello%20Admin%2C%20I%20need%20assistance%20with%20my%20password%20reset%20on%20Mart%20System."
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#229ED9] hover:bg-[#1e8cc0] text-white font-bold transition shadow-2xs"
+                      >
+                        <Send size={13} />
+                        <span>Telegram Support</span>
+                      </a>
+                      <Link
+                        to="/forgot-password"
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-2xs"
+                      >
+                        <span>Request New Link</span>
+                      </Link>
+                    </div>
                   </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+                  {/* Reset Token Input (shown if no url token or user wants to edit) */}
+                  {!urlToken && (
+                    <div className="relative">
+                      <KeyRound size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        id="reset-token-input"
+                        required
+                        type="text"
+                        disabled={submitting}
+                        value={manualToken}
+                        onChange={(e) => {
+                          setManualToken(e.target.value);
+                          if (error) setError('');
+                        }}
+                        placeholder="Paste Reset Token / Code"
+                        aria-label="Reset Token or Code"
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-3 sm:py-3.5 pl-11 pr-4 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs disabled:opacity-60"
+                      />
+                    </div>
+                  )}
                   {/* New Password */}
                   <div className="relative">
                     <Lock size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />

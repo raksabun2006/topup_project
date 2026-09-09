@@ -209,22 +209,33 @@ export default function ForgotPassword() {
                     Check your email
                   </h1>
                   <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-                    We've sent a password reset link to:
+                    We've requested a password reset link for:
                   </p>
                   <div className="inline-block px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs sm:text-sm font-bold break-all border border-slate-200/80 dark:border-slate-700 shadow-2xs">
                     {submittedEmail || email}
                   </div>
                   <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium pt-1">
-                    Click the link in the email to reset your password. If you don't see it, be sure to check your <span className="font-semibold text-slate-700 dark:text-slate-300">Spam or Junk</span> folder.
+                    Click the link in your email to set a new password. Check your <span className="font-semibold text-slate-700 dark:text-slate-300">Spam or Junk</span> folder if you don't see it within a few minutes.
                   </p>
                 </div>
 
-                <div className="pt-4 space-y-3">
+                {/* Quick Mail Shortcuts & Support Fallback */}
+                <div className="pt-2 space-y-2.5">
+                  <a
+                    href="https://mail.google.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-3 text-xs sm:text-sm font-bold shadow-sm hover:opacity-90 transition cursor-pointer"
+                  >
+                    <Mail size={15} />
+                    <span>Open Gmail Inbox</span>
+                  </a>
+
                   <button
                     type="button"
                     onClick={handleSubmit}
                     disabled={submitting || cooldown > 0}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition disabled:opacity-50 cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition disabled:opacity-50 cursor-pointer"
                   >
                     {submitting ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -236,6 +247,29 @@ export default function ForgotPassword() {
                     </span>
                   </button>
 
+                  <div className="p-3.5 rounded-xl border border-sky-100 dark:border-sky-900/40 bg-sky-50/60 dark:bg-sky-950/20 text-left space-y-2">
+                    <p className="text-xs font-semibold text-sky-900 dark:text-sky-200">
+                      Didn't receive an email or have a reset code?
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <a
+                        href={`https://t.me/raksa_bun?text=${encodeURIComponent(`Hello Support, I need help resetting my password for my account (${submittedEmail || email}) on Mart System.`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#229ED9] hover:bg-[#1e8cc0] text-white text-xs font-bold transition shadow-2xs"
+                      >
+                        <Send size={13} />
+                        <span>Telegram Support</span>
+                      </a>
+                      <Link
+                        to="/reset-password"
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-2xs"
+                      >
+                        <span>Enter Reset Code</span>
+                      </Link>
+                    </div>
+                  </div>
+
                   <button
                     type="button"
                     onClick={handleEditEmail}
@@ -246,7 +280,7 @@ export default function ForgotPassword() {
 
                   <Link
                     to="/login"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#164E87] hover:bg-[#123E6C] py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-white shadow-md transition active:scale-98 mt-2"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#164E87] hover:bg-[#123E6C] py-3 text-xs sm:text-sm font-bold text-white shadow-md transition active:scale-98 mt-1"
                   >
                     <span>Return to Login</span>
                   </Link>

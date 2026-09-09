@@ -874,15 +874,32 @@ export function exportProductsListToExcel(productsList = [], categoriesMap, cust
   const columns = [
     { key: 'barcode', header: 'បាកូដ (Barcode / SKU)' },
     { key: 'name', header: 'ឈ្មោះផលិតផល (Product Name)' },
-    { key: 'category', header: 'ប្រភេទ (Category)', format: (v, r) => categoriesMap?.get(r.category || r.categoryId) || r.categoryName || v || '—' },
+    { key: 'category', header: 'ប្រភេទ (Category)', format: (v, r) => categoriesMap?.get(r.category || r.categoryId) || r.categoryName || r.category || v || '—' },
     { key: 'costPrice', header: 'ថ្លៃដើម (Cost Price)', isCurrency: true },
     { key: 'price', header: 'តម្លៃលក់ (Selling Price)', isCurrency: true },
-    { key: 'stock', header: 'ស្តុកនៅសល់ (Stock Qty)', align: 'center', format: (v) => Number(v ?? 0) },
+    {
+      key: 'stockQuantity',
+      header: 'ស្តុកនៅសល់ (Stock Qty)',
+      align: 'center',
+      format: (v, r) => Number(r?.stockQuantity ?? r?.stock ?? r?.quantity ?? v ?? 0)
+    },
     { key: 'status', header: 'ស្ថានភាព (Status)', align: 'center', format: (v) => v || 'ACTIVE' },
   ];
 
-  const totalStockQty = productsList.reduce((sum, p) => sum + Number(p.stock || 0), 0);
-  const totalStockValuation = productsList.reduce((sum, p) => sum + (Number(p.costPrice || p.price || 0) * Number(p.stock || 0)), 0);
+  const totalStockQty = productsList.reduce(
+    (sum, p) => sum + Number(p.stockQuantity ?? p.stock ?? p.quantity ?? 0),
+    0
+  );
+  const totalStockValuation = productsList.reduce(
+    (sum, p) => sum + (Number(p.costPrice || p.price || 0) * Number(p.stockQuantity ?? p.stock ?? p.quantity ?? 0)),
+    0
+  );
+
+  // Normalize row objects to ensure stockQuantity is always populated
+  const normalizedRows = productsList.map((p) => ({
+    ...p,
+    stockQuantity: Number(p.stockQuantity ?? p.stock ?? p.quantity ?? 0),
+  }));
 
   exportToXlsXml(
     [
@@ -892,11 +909,11 @@ export function exportProductsListToExcel(productsList = [], categoriesMap, cust
         subtitle: `ចំនួនមុខទំនិញសរុប: ${productsList.length} មុខ | ស្តុកសរុប: ${totalStockQty} units`,
         headerTheme: 'default',
         columns,
-        rows: productsList,
+        rows: normalizedRows,
         totalRow: {
           label: 'សរុបស្តុកទំនិញទាំងអស់ (TOTAL STOCK)',
           labelMerge: 5,
-          stock: totalStockQty,
+          stockQuantity: totalStockQty,
         },
       },
     ],

@@ -51,6 +51,7 @@ export default function Products() {
   const [seedingProducts, setSeedingProducts] = useState(false);
   const [seedSuccess, setSeedSuccess] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [exportingExcel, setExportingExcel] = useState(false);
 
   // Filters & Search
   const [search, setSearch] = useState('');
@@ -213,6 +214,87 @@ export default function Products() {
     setSortBy('DEFAULT');
   };
 
+  const handleExportExcel = async () => {
+    setExportingExcel(true);
+    try {
+      let allProducts = [];
+      try {
+        // Fetch full catalog without pagination constraint (or large size)
+        const res = await adminProductApi.list({ page: 0, size: 5000 });
+        const list = res?.content ?? res?.data?.content ?? (Array.isArray(res) ? res : []);
+        if (Array.isArray(list) && list.length > 0) {
+          allProducts = list;
+        } else {
+          allProducts = rawProducts;
+        }
+      } catch (err) {
+        console.warn('Could not fetch all products from API, falling back to loaded products:', err);
+        allProducts = rawProducts;
+      }
+
+      // Apply current active search and filters to the exported list
+      let result = [...allProducts];
+      const q = search.trim().toLowerCase();
+      if (q) {
+        result = result.filter(
+          (p) =>
+            p.name?.toLowerCase().includes(q) ||
+            p.sku?.toLowerCase().includes(q) ||
+            p.barcode?.toLowerCase().includes(q) ||
+            p.description?.toLowerCase().includes(q) ||
+            p.category?.toLowerCase().includes(q)
+        );
+      }
+
+      if (selectedCategory !== 'ALL') {
+        result = result.filter((p) => p.category === selectedCategory);
+      }
+
+      if (selectedStatus !== 'ALL') {
+        result = result.filter((p) => (p.status || 'ACTIVE') === selectedStatus);
+      }
+
+      if (stockFilter === 'IN_STOCK') {
+        result = result.filter((p) => (p.stockQuantity ?? p.stock ?? p.quantity ?? 0) > 10);
+      } else if (stockFilter === 'LOW_STOCK') {
+        result = result.filter(
+          (p) =>
+            (p.stockQuantity ?? p.stock ?? p.quantity ?? 0) > 0 &&
+            (p.stockQuantity ?? p.stock ?? p.quantity ?? 0) <= 10
+        );
+      } else if (stockFilter === 'OUT_OF_STOCK') {
+        result = result.filter((p) => (p.stockQuantity ?? p.stock ?? p.quantity ?? 0) <= 0);
+      }
+
+      if (sortBy === 'NAME_ASC') {
+        result.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      } else if (sortBy === 'PRICE_ASC') {
+        result.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+      } else if (sortBy === 'PRICE_DESC') {
+        result.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+      } else if (sortBy === 'STOCK_ASC') {
+        result.sort(
+          (a, b) =>
+            (a.stockQuantity ?? a.stock ?? a.quantity ?? 0) -
+            (b.stockQuantity ?? b.stock ?? b.quantity ?? 0)
+        );
+      } else if (sortBy === 'STOCK_DESC') {
+        result.sort(
+          (a, b) =>
+            (b.stockQuantity ?? b.stock ?? b.quantity ?? 0) -
+            (a.stockQuantity ?? a.stock ?? a.quantity ?? 0)
+        );
+      }
+
+      const catMap = new Map(categories.map((c) => [c.id || c.name, c.name]));
+      exportProductsListToExcel(result, catMap, 'Mart_Products_Catalog');
+    } catch (err) {
+      console.error('Failed to export products to Excel:', err);
+    } finally {
+      setExportingExcel(false);
+    }
+  };
+
   const hasActiveFilters = search || selectedCategory !== 'ALL' || selectedStatus !== 'ALL' || stockFilter !== 'ALL' || sortBy !== 'DEFAULT';
 
   return (
@@ -249,16 +331,22 @@ export default function Products() {
         </button>
 
         <button
-          onClick={() => {
-            const catMap = new Map(categories.map((c) => [c.id || c.name, c.name]));
-            exportProductsListToExcel(filteredProducts, catMap, 'Mart_Products_Catalog');
-          }}
-          disabled={filteredProducts.length === 0}
+          onClick={handleExportExcel}
+          disabled={exportingExcel || (totalElements === 0 && filteredProducts.length === 0)}
           className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-2xs transition active:scale-95 disabled:opacity-50 cursor-pointer"
-          title="ទាញយកកាតាឡុកទំនិញជាឯកសារ Excel (.xls)"
+          title="ទាញយកកាតាឡុកទំនិញទាំងអស់ជាឯកសារ Excel (.xls)"
         >
-          <FileSpreadsheet size={16} className="text-emerald-600 dark:text-emerald-400" />
-          <span>Export Excel</span>
+          {exportingExcel ? (
+            <>
+              <Loader2 size={16} className="animate-spin text-emerald-600 dark:text-emerald-400" />
+              <span>កំពុងទាញយក Excel...</span>
+            </>
+          ) : (
+            <>
+              <FileSpreadsheet size={16} className="text-emerald-600 dark:text-emerald-400" />
+              <span>Export Excel</span>
+            </>
+          )}
         </button>
 
         <button
