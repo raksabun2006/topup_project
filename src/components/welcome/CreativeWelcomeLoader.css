@@ -1,0 +1,188 @@
+/* ==========================================================================
+   CreativeWelcomeLoader.css — Silky-Smooth "System Comes Alive" Experience
+   ========================================================================== */
+
+/* 1. Genesis Point & Circle Pulse */
+@keyframes martGenesisDot {
+  0%, 100% {
+    transform: scale(0.8);
+    opacity: 0.7;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+    box-shadow: 0 0 28px rgba(16, 185, 129, 0.9), 0 0 50px rgba(56, 189, 248, 0.5);
+  }
+}
+
+@keyframes martGenesisRing {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.9;
+    border-width: 2.5px;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+/* 2. Logo Emergence */
+@keyframes martLogoPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(12px);
+    filter: blur(8px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.05) translateY(-2px);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+/* 3. Text Fade In */
+@keyframes martTextGlide {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 4. Stream Beam Across Nodes */
+@keyframes martBeamTravel {
+  0% {
+    left: -5%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    left: 105%;
+    opacity: 0;
+  }
+}
+
+/* 5. Seamless Dissolve into Website */
+@keyframes martBackdropMelt {
+  0% {
+    opacity: 1;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  100% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    pointer-events: none;
+    visibility: hidden;
+  }
+}
+
+@keyframes martContentGlideOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.98);
+  }
+}
+
+/* Class Utility Bindings */
+.mart-genesis-dot {
+  animation: martGenesisDot 2s ease-in-out infinite;
+}
+
+.mart-genesis-ring {
+  animation: martGenesisRing 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.mart-logo-enter {
+  animation: martLogoPop 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.mart-text-enter {
+  animation: martTextGlide 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.mart-backdrop-exit {
+  animation: martBackdropMelt 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.mart-content-exit {
+  animation: martContentGlideOut 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.mart-beam-light {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(16, 185, 129, 0.9) 50%,
+    transparent 100%
+  );
+  animation: martBeamTravel 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Glassmorphism Styles */
+.mart-glass-pill {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow:
+    0 16px 36px -10px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset,
+    0 0 30px -8px rgba(16, 185, 129, 0.12);
+}
+
+.dark .mart-glass-pill {
+  background: rgba(13, 21, 38, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(51, 65, 85, 0.65);
+  box-shadow:
+    0 20px 40px -12px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 35px -8px rgba(16, 185, 129, 0.2);
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .mart-genesis-dot,
+  .mart-genesis-ring,
+  .mart-logo-enter,
+  .mart-text-enter,
+  .mart-beam-light {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .mart-backdrop-exit,
+  .mart-content-exit {
+    animation: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+}

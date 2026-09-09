@@ -130,6 +130,14 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  to="/guide"
+                  className="text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
+                >
+                  User Guide (របៀបប្រើប្រាស់)
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/orders"
                   className="text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
                 >

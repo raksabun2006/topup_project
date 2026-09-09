@@ -16,6 +16,7 @@ import Checkout from '../pages/Checkout';
 import Orders from '../pages/Orders';
 import Account from '../pages/Account';
 import AboutDeveloper from '../pages/AboutDeveloper';
+import UserGuide from '../pages/UserGuide';
 import Pos from '../pages/Pos';
 import Sales from '../pages/Sales';
 import SaleDetail from '../pages/SaleDetail';
@@ -66,6 +67,9 @@ export default function AppRoutes() {
         <Route path="/about" element={<AboutDeveloper />} />
         <Route path="/about-developer" element={<AboutDeveloper />} />
         <Route path="/developer" element={<AboutDeveloper />} />
+        <Route path="/guide" element={<UserGuide />} />
+        <Route path="/user-guide" element={<UserGuide />} />
+        <Route path="/how-to-use" element={<Navigate to="/guide" replace />} />
 
         {/* Dedicated Customer Dashboard */}
         <Route

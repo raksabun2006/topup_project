@@ -3,12 +3,11 @@ import { NavLink, Link, useNavigate, useLocation, useSearchParams } from 'react-
 import {
   Home, Menu, X, User, LogOut, Package, ShoppingCart, Search,
   ChevronDown, Layers, ShoppingBag, LogIn, UserPlus, LayoutDashboard, Shield,
-  ArrowRight, Sparkles, Globe
+  ArrowRight, Sparkles, Globe, Compass
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { useCategories } from '../../hooks/useCategories';
 import { productApi } from '../../api/productApi';
 import { DEFAULT_PRODUCTS } from '../../constants/products';
 import { env } from '../../config/env';
@@ -22,14 +21,12 @@ export default function Navbar({ onOpenCart }) {
   const { isAuthenticated, user, logout, isAdmin, isManagerOrAdmin, isStaff, displayRole } = useAuth();
   const { itemCount, subtotal } = useCart();
   const { t, isKhmer, language } = useLanguage();
-  const { categories } = useCategories();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [selectedCat, setSelectedCat] = useState('');
   const [headerSearch, setHeaderSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [allProducts, setAllProducts] = useState(DEFAULT_PRODUCTS);
@@ -37,15 +34,10 @@ export default function Navbar({ onOpenCart }) {
 
   // Sync with current URL query parameters
   const urlSearch = searchParams.get('search') || '';
-  const urlCat = searchParams.get('category') || '';
 
   useEffect(() => {
     setHeaderSearch(urlSearch);
   }, [urlSearch]);
-
-  useEffect(() => {
-    setSelectedCat(urlCat);
-  }, [urlCat]);
 
   // Load fresh catalog for instant search suggestions
   useEffect(() => {
@@ -93,16 +85,15 @@ export default function Navbar({ onOpenCart }) {
     if (!q) return [];
     return allProducts
       .filter((p) => {
-        const matchCat = !selectedCat || p.category?.toLowerCase() === selectedCat.toLowerCase();
-        const matchQuery =
+        return (
           p.name?.toLowerCase().includes(q) ||
           p.sku?.toLowerCase().includes(q) ||
           p.category?.toLowerCase().includes(q) ||
-          p.description?.toLowerCase().includes(q);
-        return matchCat && matchQuery;
+          p.description?.toLowerCase().includes(q)
+        );
       })
       .slice(0, 5);
-  }, [headerSearch, selectedCat, allProducts]);
+  }, [headerSearch, allProducts]);
 
   // Dynamic live search handler (as user types)
   const handleSearchChange = (value) => {
@@ -116,31 +107,7 @@ export default function Navbar({ onOpenCart }) {
       } else {
         next.delete('search');
       }
-      if (selectedCat) {
-        next.set('category', selectedCat);
-      }
       setSearchParams(next, { replace: true });
-    }
-  };
-
-  const handleCategoryChange = (cat) => {
-    setSelectedCat(cat);
-    if (pathname === '/shop') {
-      const next = new URLSearchParams(searchParams);
-      if (cat) {
-        next.set('category', cat);
-      } else {
-        next.delete('category');
-      }
-      if (headerSearch.trim()) {
-        next.set('search', headerSearch.trim());
-      }
-      setSearchParams(next, { replace: true });
-    } else if (headerSearch.trim() || cat) {
-      const query = new URLSearchParams();
-      if (headerSearch.trim()) query.set('search', headerSearch.trim());
-      if (cat) query.set('category', cat);
-      navigate(`/shop?${query.toString()}`);
     }
   };
 
@@ -166,7 +133,6 @@ export default function Navbar({ onOpenCart }) {
     setShowSuggestions(false);
     const query = new URLSearchParams();
     if (headerSearch.trim()) query.set('search', headerSearch.trim());
-    if (selectedCat) query.set('category', selectedCat);
     navigate(`/shop?${query.toString()}`);
   };
 
@@ -202,27 +168,14 @@ export default function Navbar({ onOpenCart }) {
         {/* Center: Dynamic Integrated Search Bar with Live Suggestions (Desktop) */}
         <div ref={searchContainerRef} className="relative hidden md:flex flex-1 max-w-xl mx-4">
           <form onSubmit={handleSearchSubmit} className="w-full">
-            <div className="relative w-full flex items-center rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 p-1 pl-3.5 focus-within:border-slate-400 dark:focus-within:border-slate-500 focus-within:bg-white dark:focus-within:bg-slate-900 shadow-2xs transition-all">
-              {/* Category Filter Inside Search */}
-              <select
-                value={selectedCat}
-                onChange={(e) => handleCategoryChange(e.target.value)}
-                className="bg-transparent text-slate-700 dark:text-slate-300 text-[11px] font-bold pr-2 border-r border-slate-200 dark:border-slate-700 focus:outline-none cursor-pointer max-w-[130px] truncate shrink-0"
-              >
-                <option value="">{t('allCategories')}</option>
-                {categories.map((c) => {
-                  const cName = typeof c === 'string' ? c : c?.name;
-                  return cName ? <option key={cName} value={cName}>{cName}</option> : null;
-                })}
-              </select>
-
+            <div className="relative w-full flex items-center rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 p-1 pl-4 focus-within:border-slate-400 dark:focus-within:border-slate-500 focus-within:bg-white dark:focus-within:bg-slate-900 shadow-2xs transition-all">
               <input
                 type="text"
                 placeholder={t('searchPlaceholder')}
                 value={headerSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 onFocus={() => setShowSuggestions(Boolean(headerSearch.trim()))}
-                className="w-full bg-transparent px-3 text-base md:text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+                className="w-full bg-transparent px-2 text-base md:text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
               />
 
               {headerSearch && (
@@ -340,6 +293,14 @@ export default function Navbar({ onOpenCart }) {
               {t('orders')}
             </NavLink>
             <NavLink
+              to="/guide"
+              className={({ isActive }) =>
+                `hover:text-black dark:hover:text-white transition ${isActive ? 'text-black dark:text-white font-extrabold' : ''}`
+              }
+            >
+              {t('guide')}
+            </NavLink>
+            <NavLink
               to="/about"
               className={({ isActive }) =>
                 `hover:text-black dark:hover:text-white transition ${isActive ? 'text-black dark:text-white font-extrabold' : ''}`
@@ -355,25 +316,27 @@ export default function Navbar({ onOpenCart }) {
           {/* Theme Mode Toggle (Desktop & Tablet top header) */}
           <ThemeToggle className="hidden sm:inline-flex" />
 
-          {/* Cart Pill Button */}
-          <button
-            type="button"
-            onClick={onOpenCart}
-            aria-label={`Shopping cart with ${itemCount} items`}
-            className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 transition cursor-pointer shadow-2xs active:scale-95 shrink-0"
-          >
-            <div className="relative flex items-center justify-center text-slate-900 dark:text-white">
-              <ShoppingCart size={17} />
-              {itemCount > 0 && (
-                <span className="absolute -top-2 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white shadow-xs">
-                  {itemCount}
-                </span>
-              )}
-            </div>
-            <span className="hidden sm:inline font-black">
-              {formatCurrency(subtotal)}
-            </span>
-          </button>
+          {/* Cart Pill Button (Only for users with an account) */}
+          {isAuthenticated && (
+            <button
+              type="button"
+              onClick={onOpenCart}
+              aria-label={`Shopping cart with ${itemCount} items`}
+              className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 transition cursor-pointer shadow-2xs active:scale-95 shrink-0"
+            >
+              <div className="relative flex items-center justify-center text-slate-900 dark:text-white">
+                <ShoppingCart size={17} />
+                {itemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white shadow-xs">
+                    {itemCount}
+                  </span>
+                )}
+              </div>
+              <span className="hidden sm:inline font-black">
+                {formatCurrency(subtotal)}
+              </span>
+            </button>
+          )}
 
           {/* Account / Auth Profile Menu (Desktop & Tablet only ≥ 640px) */}
           {!isAuthenticated ? (
@@ -705,8 +668,9 @@ export default function Navbar({ onOpenCart }) {
               { to: '/', label: t('home'), icon: Home },
               { to: '/shop', label: t('shop'), icon: ShoppingBag },
               { to: '/orders', label: t('myOrders'), icon: Package },
+              { to: '/guide', label: t('guide'), icon: Compass },
               { to: '/about', label: t('about'), icon: Sparkles },
-              { to: '/cart', label: t('myCart'), icon: ShoppingCart },
+              ...(isAuthenticated ? [{ to: '/cart', label: t('myCart'), icon: ShoppingCart }] : []),
             ].map(({ to, label, icon: Icon }) => (
               <Link
                 key={to}
