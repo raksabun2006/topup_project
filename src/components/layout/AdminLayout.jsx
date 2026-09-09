@@ -69,29 +69,6 @@ function BakongIcon({ className = 'h-5 w-5' }) {
   );
 }
 
-function ShopeeIcon({ className = 'h-5 w-5' }) {
-  return (
-    <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="40" height="40" rx="9" fill="#EE4D2D" />
-      <path
-        d="M15.5 16C15.5 13.5 17.5 11.5 20 11.5C22.5 11.5 24.5 13.5 24.5 16"
-        stroke="white"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M11 15.5H29L27.8 29.5C27.6 30.5 26.8 31.5 25.8 31.5H14.2C13.2 31.5 12.4 30.5 12.2 29.5L11 15.5Z"
-        fill="white"
-        fillOpacity="0.2"
-      />
-      <path
-        d="M22.2 20.2C21.8 19.8 21 19.5 20 19.5C18.8 19.5 18 20.1 18 21C18 21.8 18.7 22.3 20.3 22.8C22.2 23.4 23.2 24.3 23.2 25.7C23.2 27.4 21.8 28.5 19.8 28.5C18.2 28.5 17 27.9 16.3 26.9L17.8 25.6C18.3 26.3 19 26.8 19.8 26.8C20.8 26.8 21.4 26.3 21.4 25.6C21.4 24.7 20.6 24.3 19.1 23.7C17.3 23.1 16.2 22.2 16.2 20.8C16.2 19.2 17.6 18 19.8 18C21.2 18 22.2 18.5 23 19.3L22.2 20.2Z"
-        fill="white"
-      />
-    </svg>
-  );
-}
-
 function TiktokIcon({ className = 'h-5 w-5' }) {
   return (
     <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -135,7 +112,6 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
 
   const appIntegrations = [
     { name: 'Bakong KHQR', icon: BakongIcon, badge: 'Live' },
-    { name: 'Shopee', icon: ShopeeIcon, badge: 'Connected' },
     { name: 'Tiktok Shop', icon: TiktokIcon, badge: 'Sync' },
     { name: 'Telegram Bot', icon: TelegramIcon, badge: 'Active' },
   ];

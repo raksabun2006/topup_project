@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Code2,
   Server,
   Database,
   Layers,
   Sparkles,
   Mail,
   Send,
-  CheckCircle2,
   ArrowRight,
   ShoppingBag,
   CreditCard,
@@ -25,11 +23,16 @@ import {
   Lightbulb,
   GraduationCap,
   Calendar,
-  Award
+  Award,
+  PhoneCall,
+  CheckCircle2
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLanguage } from '../context/LanguageContext';
 
+/* -------------------------------------------------------------------------- */
+/*                               GITHUB SVG ICON                              */
+/* -------------------------------------------------------------------------- */
 function GithubIcon({ size = 16, className = '' }) {
   return (
     <svg
@@ -42,6 +45,7 @@ function GithubIcon({ size = 16, className = '' }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
+      aria-hidden="true"
     >
       <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
       <path d="M9 18c-4.51 2-5-2-7-2" />
@@ -49,12 +53,14 @@ function GithubIcon({ size = 16, className = '' }) {
   );
 }
 
-// Official authentic tech logos for visual excellence
-function TechLogo({ name, className = 'h-3.5 w-3.5 shrink-0' }) {
+/* -------------------------------------------------------------------------- */
+/*                            REUSABLE TECH LOGO                              */
+/* -------------------------------------------------------------------------- */
+export function TechLogo({ name, className = 'h-4 w-4 shrink-0' }) {
   switch (name) {
     case 'Java':
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none">
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-label="Java">
           <path d="M7 19.5c3.5 1 7.5 1 10 0M5 22c5 1.5 11 1.5 14 0" stroke="#E76F00" strokeWidth="1.6" strokeLinecap="round" />
           <path d="M12 3c-1.5 2.5 1.5 4 0 7-1.5 3 0 4-1 6" stroke="#5382A1" strokeWidth="1.6" strokeLinecap="round" />
           <path d="M15 4c-1 2 1 3 0 5-1 2 0 3-1 5" stroke="#E76F00" strokeWidth="1.6" strokeLinecap="round" />
@@ -74,7 +80,7 @@ function TechLogo({ name, className = 'h-3.5 w-3.5 shrink-0' }) {
       );
     case 'RESTful APIs':
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none">
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-label="RESTful APIs">
           <rect x="2" y="5" width="20" height="14" rx="3" stroke="#F59E0B" strokeWidth="1.8" />
           <path d="M6 12h4m4 0h4M10 9l3 3-3 3" stroke="#F59E0B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -92,22 +98,22 @@ function TechLogo({ name, className = 'h-3.5 w-3.5 shrink-0' }) {
       );
     case 'JPA / Hibernate':
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none">
-          <ellipse cx="12" cy="6" rx="8" ry="3" fill="#BCAE79" opacity="0.2" stroke="#BCAE79" strokeWidth="1.7" />
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-label="JPA Hibernate">
+          <ellipse cx="12" cy="6" rx="8" ry="3" fill="#BCAE79" opacity="0.25" stroke="#BCAE79" strokeWidth="1.7" />
           <path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6" stroke="#59666C" strokeWidth="1.7" />
           <path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" stroke="#BCAE79" strokeWidth="1.7" />
         </svg>
       );
     case 'MinIO Object Storage':
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none">
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-label="MinIO">
           <path d="M3 17l9-5 9 5-9 5-9-5z" fill="#C72C48" opacity="0.3" stroke="#C72C48" strokeWidth="1.7" />
           <path d="M3 12l9-5 9 5M3 7l9-5 9 5" stroke="#C72C48" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     case 'React':
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none">
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-label="React">
           <circle cx="12" cy="12" r="2.2" fill="#61DAFB" />
           <ellipse cx="12" cy="12" rx="10" ry="4" stroke="#61DAFB" strokeWidth="1.6" />
           <ellipse cx="12" cy="12" rx="10" ry="4" stroke="#61DAFB" strokeWidth="1.6" transform="rotate(60 12 12)" />
@@ -116,7 +122,7 @@ function TechLogo({ name, className = 'h-3.5 w-3.5 shrink-0' }) {
       );
     case 'JavaScript (ES6+)':
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none">
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-label="JavaScript">
           <rect width="24" height="24" rx="4" fill="#F7DF1E" />
           <path d="M7 17.5c0 1.5.8 2 2 2 1.5 0 2-1 2-2.5V11h-1.8" stroke="#000" strokeWidth="1.7" strokeLinecap="round" />
           <path d="M14.5 17c.5 1.5 1.8 2 3.2 2 1.8 0 2.8-1 2.8-2.2 0-1.5-1.2-2-2.5-2.5-1.2-.5-1.8-1-1.8-1.8 0-1 .8-1.5 2-1.5 1.2 0 1.8.5 2.2 1.5" stroke="#000" strokeWidth="1.7" strokeLinecap="round" />
@@ -124,13 +130,13 @@ function TechLogo({ name, className = 'h-3.5 w-3.5 shrink-0' }) {
       );
     case 'Tailwind CSS':
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none">
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-label="Tailwind CSS">
           <path d="M6 12c.5-2 2-3 4-3 2.5 0 3 2 4.5 2 1.5 0 2.5-1 3.5-2.5-1 2-2.5 3-4.5 3-2.5 0-3-2-4.5-2-1.5 0-2.5 1-3 2.5zm-4 5c.5-2 2-3 4-3 2.5 0 3 2 4.5 2 1.5 0 2.5-1 3.5-2.5-1 2-2.5 3-4.5 3-2.5 0-3-2-4.5-2-1.5 0-2.5 1-3 2.5z" fill="#06B6D4" stroke="#06B6D4" strokeWidth="0.5" />
         </svg>
       );
     case 'Vite':
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none">
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-label="Vite">
           <path d="M21.5 4.5L12.5 21 3 4.5h18.5z" fill="#646CFF" opacity="0.2" />
           <path d="M21.5 4.5L12.5 21 3 4.5" stroke="#646CFF" strokeWidth="1.8" strokeLinejoin="round" />
           <path d="M14 3l-5.5 8.5H13L10.5 18 17 9.5h-4.5L14 3z" fill="#FFD62E" stroke="#FFD62E" strokeWidth="0.5" />
@@ -149,7 +155,7 @@ function TechLogo({ name, className = 'h-3.5 w-3.5 shrink-0' }) {
       );
     case 'Telegram Bot API':
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none">
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-label="Telegram">
           <circle cx="12" cy="12" r="10" fill="#24A1DE" />
           <path d="M5.5 12l13-5-3.5 12-4-3.5-2.5 2.5V14.5L15 10l-7.5 4z" fill="#FFF" />
         </svg>
@@ -189,7 +195,7 @@ function TechLogo({ name, className = 'h-3.5 w-3.5 shrink-0' }) {
       );
     case 'Git / GitHub Workflow':
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none">
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-label="Git">
           <circle cx="6" cy="6" r="2.5" stroke="#F05032" strokeWidth="1.8" />
           <circle cx="18" cy="8" r="2.5" stroke="#F05032" strokeWidth="1.8" />
           <circle cx="6" cy="18" r="2.5" stroke="#F05032" strokeWidth="1.8" />
@@ -205,10 +211,14 @@ function TechLogo({ name, className = 'h-3.5 w-3.5 shrink-0' }) {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/*                           MAIN COMPONENT: ABOUT DEVELOPER                  */
+/* -------------------------------------------------------------------------- */
 export default function AboutDeveloper() {
   const { isKhmer } = useLanguage();
   const [copied, setCopied] = useState(false);
 
+  // Core Developer Data
   const developerInfo = {
     name: 'Bun Raksa',
     khmerName: 'ប៊ុន រក្សា',
@@ -220,7 +230,9 @@ export default function AboutDeveloper() {
     phone: '096 878 2196',
     phoneRaw: '+855968782196',
     github: 'https://github.com/raksabun2006',
+    telegram: 'https://t.me/raksa_bun',
     image: '/images/developer.jpg',
+    website: 'https://martsystemkh.software',
   };
 
   const handleCopyEmail = () => {
@@ -229,6 +241,7 @@ export default function AboutDeveloper() {
     setTimeout(() => setCopied(false), 2500);
   };
 
+  // Structured Bilingual Dictionary
   const content = {
     seoTitle: isKhmer
       ? 'អំពីអ្នកអភិវឌ្ឍន៍ | Mart System'
@@ -242,9 +255,11 @@ export default function AboutDeveloper() {
     titleDisplay: developerInfo.titleEn,
     locationDisplay: isKhmer ? developerInfo.locationKm : developerInfo.locationEn,
     countryTag: 'Cambodia',
-    heroBio: 'Building modern software solutions with passion, clean architecture, and practical engineering. I design end-to-end applications that bridge reliable backend services with seamless digital user experiences.',
-    btnContact: 'Contact Me',
-    btnBehind: 'Behind Mart System',
+    heroBio: isKhmer
+      ? 'បង្កើតដំណោះស្រាយកម្មវិធីទំនើបប្រកបដោយចំណង់ចំណូលចិត្ត ស្ថាបត្យកម្មស្អាត និងវិស្វកម្មជាក់ស្ដែង។ ខ្ញុំរចនាប្រព័ន្ធ End-to-End ដែលតភ្ជាប់សេវាកម្ម Backend ដ៏រឹងមាំជាមួយបទពិសោធន៍អ្នកប្រើប្រាស់ឌីជីថលដ៏រលូន។'
+      : 'Building modern software solutions with passion, clean architecture, and practical engineering. I design end-to-end applications that bridge reliable backend services with seamless digital user experiences.',
+    btnContact: isKhmer ? 'ទាក់ទងខ្ញុំ' : 'Contact Me',
+    btnBehind: isKhmer ? 'ពីក្រោយ Mart System' : 'Behind Mart System',
     btnGithub: 'GitHub',
 
     // Education
@@ -254,7 +269,7 @@ export default function AboutDeveloper() {
     eduStatus: isKhmer ? 'កំពុងបន្តការសិក្សា' : 'Active Studies',
     edu1School: isKhmer ? 'វិទ្យាល័យសំរោងពន្លៃ' : 'SAMRONG PONLEY HIGH SCHOOL',
     edu1Degree: isKhmer ? 'សញ្ញាបត្រមធ្យមសិក្សាទុតិយភូមិ (បាក់ឌុប)' : 'Diploma',
-    edu1Time: isKhmer ? '2018 – 2024' : '2018 – 2024',
+    edu1Time: '2018 – 2024',
     edu2School: isKhmer ? 'សាកលវិទ្យាល័យភូមិន្ទភ្នំពេញ' : 'ROYAL UNIVERSITY OF PHNOM PENH',
     edu2Degree: isKhmer ? 'បរិញ្ញាបត្រវិទ្យាសាស្ត្រកុំព្យូទ័រ' : 'Bachelor of Computer Science',
     edu2Time: isKhmer ? '2025 – បច្ចុប្បន្ន' : '2025 – Present',
@@ -262,13 +277,23 @@ export default function AboutDeveloper() {
     edu3Degree: isKhmer ? 'ជំនាញឯកទេស IT (IT Expert)' : 'IT Expert',
     edu3Time: isKhmer ? 'មីនា 2026 – បច្ចុប្បន្ន' : 'March 2026 – Present',
 
-    // About Me Narrative (Kept in English)
-    aboutBadge: 'About Me',
-    aboutHeading: 'Passionate about building practical software for real-world needs.',
-    aboutP1: 'I enjoy developing practical software that solves real-world challenges for businesses and end customers. My engineering approach focuses on creating reliable backend systems, clean RESTful APIs, robust authentication, and intuitive user experiences.',
-    aboutP2: 'With Mart System, my goal was to engineer a unified platform combining physical store sales and online e-commerce shopping into one seamless ecosystem — backed by automated payments, Telegram alerts, and clear financial records.',
-    aboutP3: 'I continuously seek to refine my engineering skills, explore modern architectural patterns, and write clean, maintainable code that stands the test of time.',
-    aboutFooterNote: 'Focusing on high performance, scalability & developer velocity',
+    // About Me Narrative
+    aboutBadge: isKhmer ? 'អំពីខ្ញុំ' : 'About Me',
+    aboutHeading: isKhmer
+      ? 'មានចំណង់ចំណូលចិត្តក្នុងការបង្កើតកម្មវិធីជាក់ស្ដែងសម្រាប់តម្រូវការអាជីវកម្មពិតប្រាកដ។'
+      : 'Passionate about building practical software for real-world needs.',
+    aboutP1: isKhmer
+      ? 'ខ្ញុំរីករាយក្នុងការបង្កើតកម្មវិធីជាក់ស្ដែងដែលដោះស្រាយបញ្ហាប្រឈមក្នុងពិភពពិតសម្រាប់អាជីវកម្ម និងអតិថិជន។ វិធីសាស្ត្រវិស្វកម្មរបស់ខ្ញុំផ្តោតលើការកសាងប្រព័ន្ធ Backend ដែលអាចទុកចិត្តបាន RESTful APIs ស្អាត ប្រព័ន្ធសុវត្ថិភាពរឹងមាំ និងបទពិសោធន៍អ្នកប្រើប្រាស់ដ៏រលូន។'
+      : 'I enjoy developing practical software that solves real-world challenges for businesses and end customers. My engineering approach focuses on creating reliable backend systems, clean RESTful APIs, robust authentication, and intuitive user experiences.',
+    aboutP2: isKhmer
+      ? 'ជាមួយ Mart System គោលដៅរបស់ខ្ញុំគឺរៀបចំប្រព័ន្ធរួមមួយដែលតភ្ជាប់ការលក់នៅហាងផ្ទាល់ និងការទិញទំនិញតាមអនឡាញឱ្យទៅជាប្រព័ន្ធអេកូឡូស៊ីតែមួយ — គាំទ្រដោយការទូទាត់ស្វ័យប្រវត្តិ ការជូនដំណឹង Telegram ភ្លាមៗ និងរបាយការណ៍ហិរញ្ញវត្ថុច្បាស់លាស់។'
+      : 'With Mart System, my goal was to engineer a unified platform combining physical store sales and online e-commerce shopping into one seamless ecosystem — backed by automated payments, Telegram alerts, and clear financial records.',
+    aboutP3: isKhmer
+      ? 'ខ្ញុំតែងតែបន្តពង្រឹងជំនាញវិស្វកម្ម ស្វែងយល់ពីរចនាសម្ព័ន្ធស្ថាបត្យកម្មទំនើបៗ និងសរសេរកូដដែលស្អាត ងាយស្រួលថែទាំ និងមាននិរន្តរភាពយូរអង្វែង។'
+      : 'I continuously seek to refine my engineering skills, explore modern architectural patterns, and write clean, maintainable code that stands the test of time.',
+    aboutFooterNote: isKhmer
+      ? 'ផ្តោតលើប្រសិទ្ធភាពខ្ពស់ លទ្ធភាពពង្រីកប្រព័ន្ធ & ល្បឿននៃការអភិវឌ្ឍ'
+      : 'Focusing on high performance, scalability & developer velocity',
 
     // Tech Stack
     techBadge: isKhmer ? 'បច្ចេកវិទ្យាប្រើប្រាស់' : 'Tech Stack',
@@ -276,7 +301,7 @@ export default function AboutDeveloper() {
     techSubtitle: isKhmer
       ? 'បច្ចេកវិទ្យាស្នូល និងឧបករណ៍ដែលកំពុងដំណើរការកម្មវិធីនេះ'
       : 'Core technologies and tools actively powering this application',
-    techLabelCount: isKhmer ? 'បច្ចេកវិទ្យា' : 'techs',
+    techLabelCount: isKhmer ? 'បច្ចេកវិទ្យា' : 'technologies',
 
     // Mindset
     mindsetBadge: isKhmer ? 'ផ្នត់គំនិតវិស្វកម្ម' : 'Engineering Mindset',
@@ -316,6 +341,7 @@ export default function AboutDeveloper() {
     returnToStore: isKhmer ? 'ត្រឡប់ទៅកាន់ហាងទំនិញ' : 'Return to Storefront Catalog',
   };
 
+  // 1. Tech Stack Cards
   const techStack = [
     {
       category: isKhmer ? 'រចនាសម្ព័ន្ធ Backend' : 'Backend Architecture',
@@ -359,6 +385,7 @@ export default function AboutDeveloper() {
     },
   ];
 
+  // 2. Engineering Mindset Principles
   const buildPrinciples = [
     {
       icon: Layers,
@@ -390,6 +417,7 @@ export default function AboutDeveloper() {
     },
   ];
 
+  // 3. Project Showcase Highlights
   const projectShowcase = [
     {
       title: isKhmer ? 'ប្រព័ន្ធ E-Commerce ទំនើប' : 'Modern E-Commerce Engine',
@@ -425,15 +453,41 @@ export default function AboutDeveloper() {
     },
   ];
 
+  // 4. Milestones
   const milestones = [
-    { step: '01', title: isKhmer ? 'ការរចនាប្រព័ន្ធ' : 'System Design', desc: isKhmer ? 'រចនាសម្ព័ន្ធទិន្នន័យ & Model' : 'Domain modeling & schema' },
-    { step: '02', title: isKhmer ? 'Backend APIs' : 'Backend APIs', desc: isKhmer ? 'សេវាកម្ម Spring Boot REST' : 'Spring Boot REST services' },
-    { step: '03', title: isKhmer ? 'ប្រព័ន្ធ POS' : 'POS Engine', desc: isKhmer ? 'ស្កេនបាកូដ & លក់រហ័ស' : 'Barcode & quick cashier sales' },
-    { step: '04', title: isKhmer ? 'E-Commerce' : 'E-Commerce', desc: isKhmer ? 'ហាងអនឡាញ & កន្ត្រកទំនិញ' : 'Customer storefront & cart' },
-    { step: '05', title: isKhmer ? 'Fintech KHQR' : 'Fintech KHQR', desc: isKhmer ? 'ភ្ជាប់ប្រព័ន្ធទូទាត់បាគង' : 'Bakong payment integration' },
-    { step: '06', title: isKhmer ? 'Telegram Bot' : 'Telegram Bot', desc: isKhmer ? 'ផ្ញើដំណឹងការបញ្ជាទិញភ្លាមៗ' : 'Real-time order dispatch' },
+    {
+      step: '01',
+      title: isKhmer ? 'ការរចនាប្រព័ន្ធ' : 'System Design',
+      desc: isKhmer ? 'រចនាសម្ព័ន្ធទិន្នន័យ & Model' : 'Domain modeling & schema',
+    },
+    {
+      step: '02',
+      title: isKhmer ? 'Backend APIs' : 'Backend APIs',
+      desc: isKhmer ? 'សេវាកម្ម Spring Boot REST' : 'Spring Boot REST services',
+    },
+    {
+      step: '03',
+      title: isKhmer ? 'ប្រព័ន្ធ POS' : 'POS Engine',
+      desc: isKhmer ? 'ស្កេនបាកូដ & លក់រហ័ស' : 'Barcode & quick cashier sales',
+    },
+    {
+      step: '04',
+      title: isKhmer ? 'E-Commerce' : 'E-Commerce',
+      desc: isKhmer ? 'ហាងអនឡាញ & កន្ត្រកទំនិញ' : 'Customer storefront & cart',
+    },
+    {
+      step: '05',
+      title: isKhmer ? 'Fintech KHQR' : 'Fintech KHQR',
+      desc: isKhmer ? 'ភ្ជាប់ប្រព័ន្ធទូទាត់បាគង' : 'Bakong payment integration',
+    },
+    {
+      step: '06',
+      title: isKhmer ? 'Telegram Bot' : 'Telegram Bot',
+      desc: isKhmer ? 'ផ្ញើដំណឹងការបញ្ជាទិញភ្លាមៗ' : 'Real-time order dispatch',
+    },
   ];
 
+  // 5. Core Values
   const coreValues = [
     {
       title: isKhmer ? 'ភាពអាចទុកចិត្តបាននៃប្រព័ន្ធ' : 'System Reliability',
@@ -461,9 +515,10 @@ export default function AboutDeveloper() {
     },
   ];
 
+  // 6. Implemented Project Capabilities
   const projectCapabilities = isKhmer
     ? [
-        'ហាងទំនិញអនឡាញ (E-Commerce Storefront)',
+        'ហាងទំនិញអនឡាញ (Online E-Commerce Storefront)',
         'គណនីអតិថិជន & ប្រព័ន្ធសុវត្ថិភាព JWT',
         'កាតាឡុកទំនិញ & ការចម្រាញ់តាមប្រភេទ',
         'កន្ត្រកទំនិញរក្សាទុក & ការទូទាត់ប្រាក់',
@@ -488,13 +543,13 @@ export default function AboutDeveloper() {
       ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 transition-colors">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 transition-colors selection:bg-[#164E87]/20 selection:text-[#164E87] dark:selection:bg-blue-500/30 dark:selection:text-blue-300">
       <SEO
         title={content.seoTitle}
         description={content.seoDesc}
-        keywords="Bun Raksa, Full Stack Developer Cambodia, Spring Boot React Developer, Mart System Creator, Software Engineer Phnom Penh, Bakong KHQR Integration"
+        keywords="Bun Raksa, Full Stack Developer Cambodia, Spring Boot React Developer, Mart System Creator, Software Engineer Phnom Penh, Bakong KHQR Integration, PostgreSQL, POS System"
         canonical="/about"
-        ogImage="/developer.jpg"
+        ogImage="/images/developer.jpg"
         breadcrumbs={[
           { name: 'Home', url: '/' },
           { name: 'About Developer', url: '/about' },
@@ -505,33 +560,43 @@ export default function AboutDeveloper() {
             {
               '@type': 'ProfilePage',
               '@id': 'https://martsystemkh.software/about#profile',
-              'name': 'About Bun Raksa — Full-Stack Developer & Creator of Mart System',
-              'url': 'https://martsystemkh.software/about',
-              'mainEntity': {
+              name: 'About Bun Raksa — Full-Stack Developer & Creator of Mart System',
+              url: 'https://martsystemkh.software/about',
+              mainEntity: {
                 '@type': 'Person',
                 '@id': 'https://martsystemkh.software/about#person',
-                'name': 'Bun Raksa',
-                'jobTitle': 'Full-Stack Software Engineer & Solutions Architect',
-                'image': 'https://martsystemkh.software/developer.jpg',
-                'email': 'raksabun2006@gmail.com',
-                'telephone': '+855-968782196',
-                'address': {
+                name: 'Bun Raksa',
+                jobTitle: 'Backend / Full-Stack Developer',
+                image: 'https://martsystemkh.software/images/developer.jpg',
+                email: 'raksabun2006@gmail.com',
+                telephone: '+855968782196',
+                address: {
                   '@type': 'PostalAddress',
-                  'addressLocality': 'Phnom Penh',
-                  'addressCountry': 'KH',
+                  addressLocality: 'Phnom Penh',
+                  addressCountry: 'KH',
                 },
-                'sameAs': [
+                sameAs: [
+                  'https://github.com/raksabun2006',
                   'https://t.me/raksa_bun',
-                  'https://github.com/raksabun',
                 ],
-                'knowsAbout': [
-                  'React.js',
-                  'Spring Boot',
+                knowsAbout: [
                   'Java',
+                  'Spring Boot',
+                  'Spring Security',
+                  'RESTful APIs',
                   'PostgreSQL',
-                  'Bakong KHQR Payment Integration',
+                  'JPA / Hibernate',
+                  'MinIO Object Storage',
+                  'React',
+                  'JavaScript (ES6+)',
                   'Tailwind CSS',
-                  'Docker & Cloud Deployment',
+                  'Vite',
+                  'Bakong KHQR Payments',
+                  'Telegram Bot API',
+                  'JWT Authentication',
+                  'Docker',
+                  'Railway Cloud',
+                  'Git / GitHub Workflow',
                 ],
               },
             },
@@ -539,38 +604,44 @@ export default function AboutDeveloper() {
         }}
       />
 
-      {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden border-b border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 pt-10 pb-16 sm:py-20">
-        {/* Ambient Gradient Background Glow */}
-        <div className="absolute top-0 right-1/4 -mt-16 w-96 h-96 rounded-full bg-blue-500/10 dark:bg-blue-500/15 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-80 h-80 rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 blur-3xl pointer-events-none" />
+      {/* -------------------------------------------------------------------- */}
+      {/* 1. HERO SECTION                                                      */}
+      {/* -------------------------------------------------------------------- */}
+      <section className="relative overflow-hidden border-b border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 pt-10 pb-16 sm:py-20 lg:py-24">
+        {/* Ambient Gradient Glow Accents */}
+        <div className="absolute top-0 right-1/4 -mt-20 w-96 h-96 rounded-full bg-[#164E87]/10 dark:bg-blue-500/15 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-10 -mb-20 w-80 h-80 rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 blur-3xl pointer-events-none" />
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-12 items-center">
             
             {/* Developer Portrait Image Column */}
             <div className="md:col-span-5 flex justify-center">
-              <div className="relative group">
+              <div className="relative group w-full max-w-[280px] sm:max-w-[320px]">
                 {/* Decorative Frame Glow */}
                 <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-[#164E87] via-teal-500 to-emerald-500 opacity-30 group-hover:opacity-60 blur-lg transition duration-500" />
-                
-                <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-white dark:border-slate-800 bg-slate-100 dark:bg-slate-800 shadow-xl max-w-[280px] sm:max-w-[320px] aspect-[4/5]">
+
+                <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-white dark:border-slate-800 bg-slate-100 dark:bg-slate-800 shadow-xl aspect-[4/5]">
                   <img
                     src={developerInfo.image}
-                    alt={developerInfo.name}
+                    alt="Bun Raksa"
                     className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-105"
                     onError={(e) => {
                       e.currentTarget.src = '/mart.jpg';
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
-                  
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10">
-                    <span className="flex items-center gap-1.5">
+                  {/* Subtle Gradient Shadow on Photo */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80" />
+
+                  {/* Overlay at Bottom */}
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs font-semibold px-3 py-2 rounded-xl bg-black/50 backdrop-blur-md border border-white/15">
+                    <span className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>{developerInfo.name}</span>
+                      <span className="tracking-wide">{developerInfo.name}</span>
                     </span>
-                    <span className="text-[10px] text-slate-300 font-mono">Cambodia</span>
+                    <span className="text-[11px] text-slate-300 font-medium tracking-wide">
+                      {content.countryTag}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -578,23 +649,26 @@ export default function AboutDeveloper() {
 
             {/* Introduction Text Column */}
             <div className="md:col-span-7 space-y-5 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/50 px-3.5 py-1 text-xs font-bold text-[#164E87] dark:text-blue-300">
-                <Sparkles size={13} />
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/50 px-3.5 py-1 text-xs font-extrabold text-[#164E87] dark:text-blue-300 tracking-wider">
+                <Sparkles size={13} className="text-[#164E87] dark:text-blue-400 shrink-0" />
                 <span>{content.badgeMeet}</span>
               </div>
 
+              {/* Main Heading & Title */}
               <div>
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
                   {content.greeting} <br className="hidden sm:inline" />
-                  <span className="bg-gradient-to-r from-[#164E87] via-teal-600 to-emerald-600 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-[#164E87] via-teal-600 to-emerald-600 dark:from-blue-400 dark:via-teal-400 dark:to-emerald-400 bg-clip-text text-transparent">
                     {content.nameDisplay}
                   </span>
                 </h1>
-                <p className="text-base sm:text-lg font-bold text-slate-700 dark:text-slate-300 mt-2">
+                <p className="text-base sm:text-lg font-bold text-slate-700 dark:text-slate-300 mt-2 tracking-wide">
                   {content.titleDisplay}
                 </p>
               </div>
 
+              {/* Bio Description */}
               <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl mx-auto md:mx-0">
                 {content.heroBio}
               </p>
@@ -603,7 +677,7 @@ export default function AboutDeveloper() {
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
                 <a
                   href="#contact"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white px-5 py-3 text-xs sm:text-sm font-bold shadow-md shadow-[#164E87]/20 transition active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white px-5 py-3 text-xs sm:text-sm font-bold shadow-md shadow-[#164E87]/25 transition active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#164E87] dark:focus-visible:ring-blue-400 outline-hidden"
                 >
                   <Mail size={15} />
                   <span>{content.btnContact}</span>
@@ -611,7 +685,7 @@ export default function AboutDeveloper() {
 
                 <a
                   href="#behind-the-project"
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 px-5 py-3 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 px-5 py-3 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-slate-400 outline-hidden"
                 >
                   <Layers size={15} />
                   <span>{content.btnBehind}</span>
@@ -621,7 +695,7 @@ export default function AboutDeveloper() {
                   href={developerInfo.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 px-4 py-3 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 px-4 py-3 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95 focus-visible:ring-2 focus-visible:ring-slate-400 outline-hidden"
                   title="GitHub Profile"
                 >
                   <GithubIcon size={15} />
@@ -635,14 +709,17 @@ export default function AboutDeveloper() {
         </div>
       </section>
 
-      {/* 2. ABOUT ME & EDUCATION SECTION */}
+      {/* -------------------------------------------------------------------- */}
+      {/* 2. ABOUT ME + EDUCATION SECTION                                      */}
+      {/* -------------------------------------------------------------------- */}
       <section className="py-14 sm:py-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch">
             
-            {/* Education Timeline Left Card */}
-            <div className="md:col-span-5 h-full">
-              <div className="h-full rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs space-y-5 flex flex-col justify-between">
+            {/* Education Timeline Card (Left) */}
+            <div className="md:col-span-5 flex flex-col">
+              <div className="h-full rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-xs flex flex-col justify-between space-y-6">
+                
                 {/* Header */}
                 <div className="pb-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
@@ -650,9 +727,9 @@ export default function AboutDeveloper() {
                       <GraduationCap size={20} />
                     </div>
                     <div>
-                      <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-wide uppercase">
+                      <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-wide uppercase">
                         {content.eduTitle}
-                      </h3>
+                      </h2>
                       <p className="text-[11px] text-slate-400 font-medium">{content.eduSub}</p>
                     </div>
                   </div>
@@ -663,75 +740,76 @@ export default function AboutDeveloper() {
 
                 {/* Timeline Items */}
                 <div className="space-y-4 flex-1">
-                  {/* Item 1: High School */}
+                  {/* Education 1: Samrong Ponley High School */}
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5">
-                      <Calendar size={12} className="text-[#164E87] dark:text-blue-400" />
+                      <Calendar size={12} className="text-[#164E87] dark:text-blue-400 shrink-0" />
                       <span className="text-xs font-bold text-[#164E87] dark:text-blue-400">
                         {content.edu1Time}
                       </span>
                     </div>
-                    <h4 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wide uppercase">
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wide">
                       {content.edu1School}
-                    </h4>
+                    </h3>
                     <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 pl-0.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#164E87] dark:bg-blue-400"></span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#164E87] dark:bg-blue-400 shrink-0" />
                       <span className="font-semibold">{content.edu1Degree}</span>
                     </div>
                   </div>
 
-                  {/* Item 2: University */}
-                  <div className="space-y-1 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                  {/* Education 2: Royal University of Phnom Penh */}
+                  <div className="space-y-1 pt-3.5 border-t border-slate-100 dark:border-slate-800/80">
                     <div className="flex items-center gap-1.5">
-                      <Calendar size={12} className="text-[#164E87] dark:text-blue-400" />
+                      <Calendar size={12} className="text-[#164E87] dark:text-blue-400 shrink-0" />
                       <span className="text-xs font-bold text-[#164E87] dark:text-blue-400">
                         {content.edu2Time}
                       </span>
                     </div>
-                    <h4 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wide uppercase">
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wide">
                       {content.edu2School}
-                    </h4>
+                    </h3>
                     <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 pl-0.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#164E87] dark:bg-blue-400"></span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#164E87] dark:bg-blue-400 shrink-0" />
                       <span className="font-semibold">{content.edu2Degree}</span>
                     </div>
                   </div>
 
-                  {/* Item 3: ISTAD */}
-                  <div className="space-y-1 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                  {/* Education 3: ISTAD */}
+                  <div className="space-y-1 pt-3.5 border-t border-slate-100 dark:border-slate-800/80">
                     <div className="flex items-center gap-1.5">
-                      <Calendar size={12} className="text-[#164E87] dark:text-blue-400" />
+                      <Calendar size={12} className="text-[#164E87] dark:text-blue-400 shrink-0" />
                       <span className="text-xs font-bold text-[#164E87] dark:text-blue-400">
                         {content.edu3Time}
                       </span>
                     </div>
-                    <h4 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wide uppercase">
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wide">
                       {content.edu3School}
-                    </h4>
+                    </h3>
                     <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 pl-0.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#164E87] dark:bg-blue-400"></span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#164E87] dark:bg-blue-400 shrink-0" />
                       <span className="font-semibold">{content.edu3Degree}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Card Footer */}
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-medium">
+                {/* Footer Metadata */}
+                <div className="pt-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-medium">
                   <div className="flex items-center gap-1.5">
                     <MapPin size={13} className="text-rose-500 shrink-0" />
                     <span>{content.locationDisplay}</span>
                   </div>
                   <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                    <Award size={13} className="text-emerald-500" />
+                    <Award size={13} className="text-emerald-500 shrink-0" />
                     <span>{content.eduStatus}</span>
                   </div>
                 </div>
+
               </div>
             </div>
 
-            {/* Narrative Right Card */}
-            <div className="md:col-span-7 h-full">
-              <div className="h-full rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-xs space-y-4 flex flex-col justify-between">
+            {/* Narrative Card (Right) */}
+            <div className="md:col-span-7 flex flex-col">
+              <div className="h-full rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-xs flex flex-col justify-between space-y-5">
                 <div>
                   <div className="inline-flex items-center gap-1.5 mb-2">
                     <span className="text-xs font-bold text-[#164E87] dark:text-blue-400 uppercase tracking-widest">
@@ -743,13 +821,13 @@ export default function AboutDeveloper() {
                   </h2>
                 </div>
                 
-                <div className="space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                <div className="space-y-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                   <p>{content.aboutP1}</p>
                   <p>{content.aboutP2}</p>
                   <p>{content.aboutP3}</p>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <div className="pt-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                   <Sparkles size={14} className="text-amber-500 shrink-0" />
                   <span className="font-medium">{content.aboutFooterNote}</span>
                 </div>
@@ -760,7 +838,9 @@ export default function AboutDeveloper() {
         </div>
       </section>
 
-      {/* 3. TECHNOLOGIES SECTION */}
+      {/* -------------------------------------------------------------------- */}
+      {/* 3. TECHNOLOGY STACK SECTION                                          */}
+      {/* -------------------------------------------------------------------- */}
       <section className="py-14 sm:py-20 bg-white dark:bg-slate-900 border-y border-slate-200/80 dark:border-slate-800">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto space-y-2 mb-10 sm:mb-12">
@@ -781,7 +861,7 @@ export default function AboutDeveloper() {
               return (
                 <div
                   key={idx}
-                  className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 space-y-4 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
+                  className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-[#F8FAFC]/50 dark:bg-slate-950/40 p-6 sm:p-7 space-y-4 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
                 >
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between">
@@ -798,7 +878,7 @@ export default function AboutDeveloper() {
                           </span>
                         </div>
                       </div>
-                      <span className="text-xs font-mono font-bold text-slate-400 dark:text-slate-500 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-750">
+                      <span className="text-xs font-mono font-bold text-slate-400 dark:text-slate-500 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-750">
                         {tech.items.length} {content.techLabelCount}
                       </span>
                     </div>
@@ -808,11 +888,11 @@ export default function AboutDeveloper() {
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                  <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-200/60 dark:border-slate-800">
                     {tech.items.map((it, i) => (
                       <span
                         key={i}
-                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200/90 dark:border-slate-700/90 bg-slate-50/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-slate-600 transition-all active:scale-95"
+                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200/90 dark:border-slate-700/90 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 px-3.5 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-slate-600 transition-all active:scale-95"
                       >
                         <TechLogo name={it} className="h-4 w-4 shrink-0" />
                         <span>{it}</span>
@@ -826,7 +906,9 @@ export default function AboutDeveloper() {
         </div>
       </section>
 
-      {/* 4. HOW I BUILD SOFTWARE */}
+      {/* -------------------------------------------------------------------- */}
+      {/* 4. ENGINEERING MINDSET SECTION                                       */}
+      {/* -------------------------------------------------------------------- */}
       <section className="py-14 sm:py-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto space-y-2 mb-10 sm:mb-12">
@@ -865,7 +947,9 @@ export default function AboutDeveloper() {
         </div>
       </section>
 
-      {/* 5. BEHIND MART SYSTEM */}
+      {/* -------------------------------------------------------------------- */}
+      {/* 5. BEHIND MART SYSTEM                                                */}
+      {/* -------------------------------------------------------------------- */}
       <section id="behind-the-project" className="py-14 sm:py-20 bg-white dark:bg-slate-900 border-y border-slate-200/80 dark:border-slate-800">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 space-y-12">
           
@@ -888,7 +972,7 @@ export default function AboutDeveloper() {
               return (
                 <div
                   key={idx}
-                  className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-5 space-y-3"
+                  className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-[#F8FAFC]/50 dark:bg-slate-950/40 p-5 space-y-3"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
@@ -909,17 +993,19 @@ export default function AboutDeveloper() {
             })}
           </div>
 
-          {/* Conceptual Architecture Journey */}
-          <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-gradient-to-r from-blue-50/50 via-slate-50/50 to-emerald-50/50 dark:from-slate-800/40 dark:via-slate-800/30 dark:to-slate-800/40 p-6 sm:p-8">
+          {/* Visual Milestones Journey */}
+          <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-gradient-to-r from-blue-50/50 via-slate-50/50 to-emerald-50/50 dark:from-slate-950/50 dark:via-slate-900/50 dark:to-slate-950/50 p-6 sm:p-8">
             <h3 className="text-sm font-extrabold text-slate-900 dark:text-white mb-4 text-center sm:text-left">
               {content.milestonesHeading}
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-center">
               {milestones.map((m, i) => (
                 <div key={i} className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 shadow-2xs space-y-1">
-                  <span className="font-mono text-[10px] font-black text-emerald-600 dark:text-emerald-400">{m.step}</span>
+                  <span className="font-mono text-[10px] font-black text-emerald-600 dark:text-emerald-400">
+                    {m.step}
+                  </span>
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white">{m.title}</h4>
-                  <p className="text-[10px] text-slate-400">{m.desc}</p>
+                  <p className="text-[10px] text-slate-400 leading-tight">{m.desc}</p>
                 </div>
               ))}
             </div>
@@ -928,7 +1014,9 @@ export default function AboutDeveloper() {
         </div>
       </section>
 
-      {/* 6. WHAT MATTERS TO ME & CAPABILITIES */}
+      {/* -------------------------------------------------------------------- */}
+      {/* 6. CORE PRINCIPLES & CAPABILITIES                                    */}
+      {/* -------------------------------------------------------------------- */}
       <section className="py-14 sm:py-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 space-y-12">
           
@@ -961,10 +1049,13 @@ export default function AboutDeveloper() {
           </div>
 
           {/* Capabilities Checklist */}
-          <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
-            <h3 className="text-base font-black text-slate-900 dark:text-white mb-4">
-              {content.capHeading}
-            </h3>
+          <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs">
+            <div className="flex items-center gap-2 mb-4">
+              <CheckCircle2 size={18} className="text-emerald-500" />
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
+                {content.capHeading}
+              </h3>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {projectCapabilities.map((cap, idx) => (
                 <div key={idx} className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -980,11 +1071,13 @@ export default function AboutDeveloper() {
         </div>
       </section>
 
-      {/* 7. LET'S CONNECT / CONTACT CTA */}
+      {/* -------------------------------------------------------------------- */}
+      {/* 7. CONTACT DEVELOPER SECTION                                         */}
+      {/* -------------------------------------------------------------------- */}
       <section id="contact" className="py-14 sm:py-20 bg-white dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
           <div className="rounded-3xl bg-gradient-to-br from-[#164E87] via-[#123E6C] to-slate-900 p-8 sm:p-12 text-white shadow-xl space-y-8 relative overflow-hidden">
-            {/* Background pattern */}
+            {/* Background Ambient Glow */}
             <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
 
             <div className="relative space-y-3 text-center sm:text-left max-w-xl">
@@ -1002,71 +1095,82 @@ export default function AboutDeveloper() {
 
             {/* Direct Contact Cards */}
             <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Email */}
+              {/* Email Card */}
               <div className="rounded-2xl bg-white/10 backdrop-blur-md p-4 border border-white/15 flex flex-col justify-between space-y-2">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">{content.emailTitle}</span>
-                  <p className="text-xs font-mono font-bold truncate mt-0.5">{developerInfo.email}</p>
+                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">
+                    {content.emailTitle}
+                  </span>
+                  <p className="text-xs font-mono font-bold truncate mt-0.5" title={developerInfo.email}>
+                    {developerInfo.email}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2 pt-1">
                   <a
                     href={`mailto:${developerInfo.email}`}
-                    className="flex-1 text-center py-1.5 rounded-lg bg-white text-[#164E87] text-xs font-bold hover:bg-slate-100 transition cursor-pointer"
+                    className="flex-1 text-center py-1.5 rounded-lg bg-white text-[#164E87] text-xs font-bold hover:bg-slate-100 transition cursor-pointer focus-visible:ring-2 focus-visible:ring-white outline-hidden"
                   >
                     {content.sendEmailBtn}
                   </a>
                   <button
                     type="button"
                     onClick={handleCopyEmail}
-                    className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition cursor-pointer"
+                    className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition cursor-pointer focus-visible:ring-2 focus-visible:ring-white outline-hidden"
                     title={copied ? content.copiedTooltip : 'Copy Email'}
+                    aria-label="Copy email"
                   >
                     {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
                   </button>
                 </div>
               </div>
 
-              {/* Phone */}
+              {/* Phone / Telegram Card */}
               <div className="rounded-2xl bg-white/10 backdrop-blur-md p-4 border border-white/15 flex flex-col justify-between space-y-2">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">{content.phoneTitle}</span>
+                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">
+                    {content.phoneTitle}
+                  </span>
                   <p className="text-xs font-mono font-bold mt-0.5">{developerInfo.phone}</p>
                 </div>
                 <a
                   href={`tel:${developerInfo.phoneRaw}`}
-                  className="text-center py-1.5 rounded-lg bg-white text-[#164E87] text-xs font-bold hover:bg-slate-100 transition cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 text-center py-1.5 rounded-lg bg-white text-[#164E87] text-xs font-bold hover:bg-slate-100 transition cursor-pointer focus-visible:ring-2 focus-visible:ring-white outline-hidden"
                 >
-                  {content.callBtn}
+                  <PhoneCall size={12} />
+                  <span>{content.callBtn}</span>
                 </a>
               </div>
 
-              {/* GitHub */}
+              {/* Source Repository Card */}
               <div className="rounded-2xl bg-white/10 backdrop-blur-md p-4 border border-white/15 flex flex-col justify-between space-y-2">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">{content.repoTitle}</span>
+                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">
+                    {content.repoTitle}
+                  </span>
                   <p className="text-xs font-mono font-bold truncate mt-0.5">github.com/raksabun2006</p>
                 </div>
                 <a
                   href={developerInfo.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold shadow-xs transition cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold shadow-xs transition cursor-pointer focus-visible:ring-2 focus-visible:ring-white outline-hidden"
                 >
+                  <GithubIcon size={13} />
                   <span>{content.openGithubBtn}</span>
                   <ExternalLink size={12} />
                 </a>
               </div>
             </div>
 
-            {/* Back to store link */}
+            {/* Back to Storefront Link */}
             <div className="pt-2 text-center sm:text-left">
               <Link
                 to="/shop"
-                className="inline-flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white transition group"
+                className="inline-flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white transition group focus-visible:ring-2 focus-visible:ring-white rounded-md px-1"
               >
                 <ShoppingBag size={14} />
                 <span>{content.returnToStore}</span>
-                <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                <ArrowRight size={13} className="group-hover:translate-x-1.5 transition-transform" />
               </Link>
             </div>
           </div>
