@@ -1,14 +1,32 @@
 /**
  * Centralized Environment Configuration
- * Reads Vite environment variables safely.
- * Prioritizes VITE_API_URL and supports VITE_API_BASE_URL.
+ * Reads Vite environment variables safely and enforces HTTPS for production API communication.
  */
 
-const rawApiUrl = (
-  import.meta.env.VITE_API_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:8080'
-).replace(/\/+$/, '');
+function resolveApiUrl() {
+  const envUrl = (
+    import.meta.env.VITE_API_URL ||
+    import.meta.env.VITE_API_BASE_URL ||
+    ''
+  ).trim().replace(/\/+$/, '');
+
+  if (envUrl) {
+    // In production or when hosted over HTTPS, enforce HTTPS protocol to avoid mixed-content blocks
+    if (import.meta.env.PROD && envUrl.startsWith('http://') && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+      return envUrl.replace(/^http:\/\//i, 'https://');
+    }
+    return envUrl;
+  }
+
+  // Production fallback uses secure HTTPS Railway backend
+  if (import.meta.env.PROD) {
+    return 'https://gametopup-backend-production-3423.up.railway.app';
+  }
+
+  return 'http://localhost:8080';
+}
+
+const rawApiUrl = resolveApiUrl();
 
 export const env = {
   // Base URL for API requests (guarantees /api/v1 prefix)

@@ -58,15 +58,12 @@ export async function unlockAudioContext() {
     if (ctx.state === 'running') {
       isAudioUnlocked = true;
     }
-  } catch (err) {
-    console.warn('Web Audio unlock failed:', err);
+  } catch {
+    // Audio unlock catch
   }
 
   const unlocked = ctx.state === 'running';
   isAudioUnlocked = unlocked;
-
-  console.log('[Audio] state:', ctx?.state);
-  console.log('[Audio] unlocked:', isAudioUnlocked);
 
   return unlocked;
 }

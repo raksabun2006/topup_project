@@ -90,7 +90,6 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
 
       // In-flight concurrency lock: Do NOT initiate new request if one is in progress
       if (inFlightRef.current) {
-        console.log(`[useSalePaymentPolling] Request already in-flight for saleId ${currentSaleId}, ignoring trigger.`);
         return;
       }
 
@@ -127,8 +126,6 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
       try {
         const isOrder = Boolean(optionsRef.current?.entityType === 'orders' || optionsRef.current?.isOrder);
         const paymentApi = isOrder ? orderPaymentApi : salePaymentApi;
-        const endpointLabel = isOrder ? `/api/v1/orders/${currentSaleId}/payment/status` : `/api/v1/sales/${currentSaleId}/payment/status`;
-        console.log(`[useSalePaymentPolling] GET ${endpointLabel} (cadence: ${isManual ? 'manual' : 'polling'})`);
         const result = await paymentApi.checkStatus(currentSaleId, {
           ...optionsRef.current,
           signal: controller.signal,
@@ -151,7 +148,6 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
 
           // 1. Handle RATE_LIMITED from backend body (30s backoff)
           if (isRateLimited) {
-            console.warn(`[useSalePaymentPolling] RATE_LIMITED received for saleId ${currentSaleId}. Backing off for 30s.`);
             setPaymentState('RATE_LIMITED');
             setStatusMessage(
               result.message ||
@@ -191,7 +187,6 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
 
           // 2. Stop immediately on terminal success
           if (isPaid) {
-            console.log(`[useSalePaymentPolling] Payment SUCCESS reached (${rawStatus}), stopping polling.`);
             setPaymentState('PAID');
             setStatusMessage('');
             setError('');
@@ -201,7 +196,6 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
 
           // 3. Stop immediately on terminal failure
           if (isFailure) {
-            console.log(`[useSalePaymentPolling] Terminal failure reached (${rawStatus}), stopping polling.`);
             setPaymentState(rawStatus);
             setStatusMessage(result.message || '');
             stop();
@@ -226,8 +220,6 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
           httpStatus === 429 ||
           responseData?.status === 'RATE_LIMITED' ||
           responseData?.code === 'RATE_LIMITED';
-
-        console.warn(`[useSalePaymentPolling] Notice for saleId ${currentSaleId}:`, httpStatus, err?.message);
 
         // Terminal auth errors (401 / 403)
         if (httpStatus === 401 || httpStatus === 403) {
@@ -292,14 +284,12 @@ export function useSalePaymentPolling(saleId, enabled, options = {}) {
     // Handle Page Visibility: pause when hidden, resume & check immediately when visible
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        console.log('[useSalePaymentPolling] Tab hidden: Pausing polling timer.');
         isPausedRef.current = true;
         if (timerRef.current) {
           clearTimeout(timerRef.current);
           timerRef.current = null;
         }
       } else {
-        console.log('[useSalePaymentPolling] Tab visible: Resuming polling, checking once immediately.');
         isPausedRef.current = false;
         // Trigger immediate check when returning to tab, then resume 12s interval
         if (aliveRef.current && !inFlightRef.current) {

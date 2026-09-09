@@ -63,13 +63,10 @@ export function GlobalScannerProvider({ children }) {
   const processBarcode = useCallback(
     (code, localProducts = []) => {
       const trimmed = String(code || '').trim();
-      console.log('[SCANNER 2] processBarcode:', trimmed || code);
 
       if (!trimmed) {
         playInvalidBarcodeSound();
-        const res = { success: false, reason: 'invalid' };
-        console.log('[SCANNER ERROR] invalid empty barcode');
-        return Promise.resolve(res);
+        return Promise.resolve({ success: false, reason: 'invalid' });
       }
 
       // Chain execution sequentially to avoid racing
@@ -87,7 +84,6 @@ export function GlobalScannerProvider({ children }) {
 
             // Stock Check 1: Out of stock (0 units in store)
             if (isStockFinite && stock <= 0) {
-              console.log('[SCANNER ERROR] out of stock (0 units):', product.name);
               playErrorSound();
               showToast(
                 {
@@ -106,7 +102,6 @@ export function GlobalScannerProvider({ children }) {
 
             // Stock Check 2: Cart already has all available stock
             if (isStockFinite && currentQty >= stock) {
-              console.log(`[SCANNER ERROR] max stock reached in cart (${currentQty}/${stock}):`, product.name);
               playErrorSound();
               showToast(
                 {
@@ -123,8 +118,6 @@ export function GlobalScannerProvider({ children }) {
               };
             }
 
-            console.log('[SCANNER 6] adding to cart:', product.name);
-
             // Add to active cart (increments quantity if already in cart)
             addItem(product, 1);
 
@@ -140,10 +133,7 @@ export function GlobalScannerProvider({ children }) {
               cartItemsRef.current = [...currentItems, { product, quantity: 1, discount: 0 }];
             }
 
-            console.log('[SCANNER 7] cart quantity:', nextQty);
-
             // Play supermarket beep immediately on verified real product
-            console.log('[SCANNER 8] success beep');
             playBeepSound();
 
             showToast({
@@ -163,7 +153,6 @@ export function GlobalScannerProvider({ children }) {
             };
           } else {
             // Product not found
-            console.log('[SCANNER ERROR] product not found for barcode:', trimmed);
             playErrorSound();
             showToast(
               {
@@ -179,7 +168,6 @@ export function GlobalScannerProvider({ children }) {
             };
           }
         } catch (err) {
-          console.error('[SCANNER ERROR] global process error:', err);
           playErrorSound();
           showToast(
             {

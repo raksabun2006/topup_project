@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { env } from '../config/env';
+import { safeJsonStringify } from '../utils/security';
 
 /**
  * Enterprise-grade, Dynamic SEO & Social Graph Component.
@@ -253,7 +254,7 @@ export default function SEO({
         scriptEl.type = 'application/ld+json';
         document.head.appendChild(scriptEl);
       }
-      scriptEl.textContent = JSON.stringify(payload);
+      scriptEl.textContent = safeJsonStringify(payload);
     } else if (scriptEl) {
       scriptEl.remove();
     }

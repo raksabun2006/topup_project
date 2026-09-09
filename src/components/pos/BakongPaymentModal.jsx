@@ -11,6 +11,7 @@ import { saleApi } from '../../api/saleApi';
 import { orderApi } from '../../api/orderApi';
 import { getErrorMessage } from '../../api/client';
 import { formatCurrency, parseBackendDate, formatCountdown } from '../../utils/format';
+import { sanitizeUrl } from '../../utils/security';
 
 const ACTIVE_PAYMENT_KEY = 'pos_active_bakong_payment';
 
@@ -195,10 +196,9 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
       // 1. Fetch latest verified sale entity from backend using originalSaleId
       let updatedSale = null;
       try {
-        console.log(`[BakongPaymentModal] Completing sale: fetching sale with originalSaleId:`, originalSaleId);
         updatedSale = await saleApi.getById(originalSaleId, { isGuest });
-      } catch (err) {
-        console.warn('Notice fetching sale by ID:', err);
+      } catch {
+        // Sale fetch catch
       }
 
       // Visual confirmation of payment success before transitioning to receipt
@@ -208,8 +208,7 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
       // 2. Complete sale in POS (moves to Receipt modal and resets cart)
       onPaid(updatedSale || { ...sale, paymentStatus: 'PAID', status: 'COMPLETED' });
-    } catch (err) {
-      console.warn('Notice during sale completion:', err);
+    } catch {
       if (mountedRef.current) {
         onPaid({ ...sale, paymentStatus: 'PAID', status: 'COMPLETED' });
       }
@@ -238,7 +237,6 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     const stored = getStoredPaymentSession(originalSaleId);
 
     if (initialQr || stored?.qr || stored?.qrString) {
-      console.log(`[BakongPaymentModal] Existing active payment found for saleId:`, originalSaleId);
       const existingData = {
         saleId: originalSaleId,
         paymentId: initialPaymentId || stored?.paymentId || paymentIdRef.current,
@@ -275,7 +273,6 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
     (async () => {
       try {
-        console.log(`[BakongPaymentModal] Creating payment (POST ${isOrder ? '/orders/{id}/payment' : '/sales/{id}/payment'}) for originalSaleId:`, originalSaleId);
         const created = await activePaymentApi.create(originalSaleId, 'BAKONG', {
           isGuest,
           signal: controller.signal,
@@ -286,12 +283,6 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         if (created?.paymentId) {
           paymentIdRef.current = created.paymentId;
         }
-
-        console.log(`[BakongPaymentModal] Payment created successfully:`, {
-          originalSaleId,
-          paymentId: created?.paymentId,
-          status: created?.status,
-        });
 
         setPayment(created);
         setIsExpiredLocal(false);
@@ -329,7 +320,6 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
         // If backend returned 409 Conflict (payment already created for this sale/order)
         if (err?.response?.status === 409) {
           try {
-            console.log(`[BakongPaymentModal] 409 Conflict: payment already exists. Fetching existing payment for ID:`, originalSaleId);
             const fallback = await activePaymentApi.get(originalSaleId, {
               isGuest,
               signal: controller.signal,
@@ -428,7 +418,6 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
     clearPaymentSession();
 
     try {
-      console.log(`[BakongPaymentModal.regenerateQr] Creating new payment QR with ID:`, originalSaleId);
       const created = await activePaymentApi.create(originalSaleId, 'BAKONG', { isGuest });
       if (created?.paymentId) {
         paymentIdRef.current = created.paymentId;
@@ -524,13 +513,12 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
 
     // Cancellation uses paymentId for payment cancellation
     const activePaymentId = paymentIdRef.current || payment?.paymentId || payment?.id;
-    console.log(`[BakongPaymentModal.handleCancel] Canceling payment with paymentId:`, activePaymentId, `and ID:`, originalSaleId);
 
     if (activePaymentId) {
       try {
         await activePaymentApi.cancel(activePaymentId, { isGuest });
-      } catch (err) {
-        console.warn('Notice canceling payment:', err?.message);
+      } catch {
+        // Payment cancellation notice
       }
     }
 
@@ -810,9 +798,10 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
                   )}
                 </button>
 
-                {payment?.deeplinkUrl && (
+                {payment?.deeplinkUrl && sanitizeUrl(payment.deeplinkUrl) && (
                   <a
-                    href={payment.deeplinkUrl}
+                    href={sanitizeUrl(payment.deeplinkUrl)}
+                    rel="noopener noreferrer"
                     className="mt-2 flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-2 sm:py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
                   >
                     <Smartphone size={14} />

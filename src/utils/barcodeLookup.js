@@ -55,7 +55,6 @@ export async function prefetchCatalogCache() {
   if (catalogCache.length > 0 && now - catalogCacheTime <= CACHE_TTL_MS) return;
 
   try {
-    console.log('[SCANNER 4] API page requested (prefetch): page 0, size 50');
     const res = await productApi.list({ page: 0, size: 50 });
     const items = extractProductsFromResponse(res);
     const totalPages = extractTotalPages(res);
@@ -66,10 +65,9 @@ export async function prefetchCatalogCache() {
       if (totalPages <= 1) {
         isCacheComplete = true;
       }
-      console.log('[SCANNER] catalog prefetch cache ready, products:', items.length);
     }
-  } catch (err) {
-    console.warn('[SCANNER ERROR] prefetch catalog notice:', err?.message);
+  } catch {
+    // Silent catch for prefetch background cache
   }
 }
 
@@ -90,13 +88,11 @@ export async function lookupProductByBarcode(code, localProducts = []) {
   }
 
   const normalized = trimmed.toLowerCase();
-  console.log('[SCANNER 3] lookup started for barcode/SKU:', trimmed);
 
   // 1. Instant check in local products
   if (Array.isArray(localProducts) && localProducts.length > 0) {
     const localMatch = localProducts.find((p) => matchProductExact(p, normalized));
     if (localMatch) {
-      console.log('[SCANNER 5] product found (local):', localMatch.name);
       return { status: 'found', product: localMatch, code: trimmed };
     }
   }
@@ -108,13 +104,11 @@ export async function lookupProductByBarcode(code, localProducts = []) {
   if (catalogCache.length > 0 && isCacheFresh) {
     const cachedMatch = catalogCache.find((p) => matchProductExact(p, normalized));
     if (cachedMatch) {
-      console.log('[SCANNER 5] product found (cache):', cachedMatch.name);
       return { status: 'found', product: cachedMatch, code: trimmed };
     }
 
     // If cache is complete and verified fresh, the item genuinely doesn't exist
     if (isCacheComplete) {
-      console.log('[SCANNER 3] lookup result: not found in complete cache');
       return {
         status: 'not_found',
         code: trimmed,
@@ -141,7 +135,6 @@ export async function lookupProductByBarcode(code, localProducts = []) {
 
   try {
     while (currentPage < totalPages && currentPage < MAX_PAGES_SAFETY_LIMIT) {
-      console.log(`[SCANNER 4] API page requested: page ${currentPage}, size ${PAGE_SIZE}`);
       const pageRes = await productApi.list({ page: currentPage, size: PAGE_SIZE });
       const pageItems = extractProductsFromResponse(pageRes);
       totalPages = extractTotalPages(pageRes);
@@ -162,7 +155,6 @@ export async function lookupProductByBarcode(code, localProducts = []) {
       if (foundItem) {
         catalogCache = Array.from(accumulated.values());
         catalogCacheTime = Date.now();
-        console.log('[SCANNER 5] product found (API):', foundItem.name);
         return { status: 'found', product: foundItem, code: trimmed };
       }
 
@@ -174,14 +166,12 @@ export async function lookupProductByBarcode(code, localProducts = []) {
     catalogCacheTime = Date.now();
     isCacheComplete = true;
 
-    console.log('[SCANNER 3] lookup result: not found after checking all pages');
     return {
       status: 'not_found',
       code: trimmed,
       message: `រកមិនឃើញទំនិញដែលមានបាកូដ "${trimmed}" ទេ`,
     };
   } catch (err) {
-    console.error('[SCANNER ERROR] lookupProductByBarcode API error:', err);
     return {
       status: 'error',
       code: trimmed,

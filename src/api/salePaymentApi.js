@@ -218,19 +218,12 @@ export const salePaymentApi = {
    * POST /api/v1/sales/{saleId}/payment
    */
   create: async (saleId, provider = 'BAKONG', config = {}) => {
-    console.log(`[salePaymentApi.create] Creating payment for saleId:`, saleId);
     const res = await apiClient.post(
       `/api/v1/sales/${saleId}/payment`,
       { provider },
       config
     );
-    const normalized = normalizePaymentResponse(res.data, saleId);
-    console.log(`[salePaymentApi.create] Payment created:`, {
-      saleId: normalized?.saleId,
-      paymentId: normalized?.paymentId,
-      status: normalized?.status,
-    });
-    return normalized;
+    return normalizePaymentResponse(res.data, saleId);
   },
 
   /**
@@ -238,7 +231,6 @@ export const salePaymentApi = {
    * GET /api/v1/sales/{saleId}/payment
    */
   get: async (saleId, config = {}) => {
-    console.log(`[salePaymentApi.get] Fetching payment for saleId:`, saleId);
     const res = await apiClient.get(`/api/v1/sales/${saleId}/payment`, config);
     return normalizePaymentResponse(res.data, saleId);
   },
@@ -249,16 +241,8 @@ export const salePaymentApi = {
    * GET /api/v1/sales/{saleId}/payment/status (expects SALE ID)
    */
   checkStatus: async (saleId, config = {}) => {
-    console.log(`[salePaymentApi.checkStatus] GET /api/v1/sales/${saleId}/payment/status (using saleId: ${saleId})`);
     const res = await apiClient.get(`/api/v1/sales/${saleId}/payment/status`, config);
-    const normalized = normalizePaymentResponse(res.data, saleId);
-    console.log(`[salePaymentApi.checkStatus] Result:`, {
-      saleId,
-      paymentId: normalized?.paymentId,
-      status: normalized?.status,
-      paid: normalized?.paid,
-    });
-    return normalized;
+    return normalizePaymentResponse(res.data, saleId);
   },
 
   /**
@@ -266,7 +250,6 @@ export const salePaymentApi = {
    * POST /api/v1/sales/payment/{paymentId}/cancel (expects PAYMENT ID)
    */
   cancel: async (paymentId, config = {}) => {
-    console.log(`[salePaymentApi.cancel] POST /api/v1/sales/payment/${paymentId}/cancel (using paymentId: ${paymentId})`);
     try {
       const res = await apiClient.post(`/api/v1/sales/payment/${paymentId}/cancel`, undefined, config);
       return normalizePaymentResponse(res.data);

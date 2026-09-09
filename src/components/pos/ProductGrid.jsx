@@ -15,6 +15,7 @@ import { playBeepSound } from '../../utils/sound';
 import { formatCurrency } from '../../utils/format';
 import { getCategoryIcon, AllCategoriesIcon } from '../../utils/categoryIcons';
 import { env } from '../../config/env';
+import { safeJsonStringify } from '../../utils/security';
 
 export default function ProductGrid({
   category = '',
@@ -167,7 +168,7 @@ export default function ProductGrid({
       {productJsonLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonStringify(productJsonLd) }}
         />
       )}
 

@@ -9,6 +9,7 @@ import { useAuth, getRoleDashboardPath } from '../context/AuthContext';
 import { authApi } from '../api/authApi';
 import { getErrorMessage } from '../api/client';
 import { env } from '../config/env';
+import { getSafeRedirectUrl } from '../utils/security';
 import SEO from '../components/SEO';
 import ThemeToggle from '../components/ui/ThemeToggle';
 import GoogleLoginButton from '../components/auth/GoogleLoginButton';
@@ -111,11 +112,8 @@ export default function Register() {
   // Auto-redirect if user is already authenticated
   useEffect(() => {
     if (!loading && isAuthenticated && user) {
-      const destination = from
-        ? typeof from === 'string'
-          ? from
-          : `${from.pathname || '/customer/dashboard'}${from.search ?? ''}`
-        : getRoleDashboardPath(user.role);
+      const fallback = getRoleDashboardPath(user.role);
+      const destination = from ? getSafeRedirectUrl(from, fallback) : fallback;
       navigate(destination, { replace: true });
     }
   }, [loading, isAuthenticated, user, from, navigate]);
@@ -196,11 +194,8 @@ export default function Register() {
 
     try {
       const loggedUser = await loginWithGoogle(credential);
-      const destination = from
-        ? typeof from === 'string'
-          ? from
-          : `${from.pathname || '/customer/dashboard'}${from.search ?? ''}`
-        : getRoleDashboardPath(loggedUser?.role);
+      const fallback = getRoleDashboardPath(loggedUser?.role);
+      const destination = from ? getSafeRedirectUrl(from, fallback) : fallback;
       navigate(destination, { replace: true });
     } catch (err) {
       setError(getErrorMessage(err) || 'Unable to register with Google.');
