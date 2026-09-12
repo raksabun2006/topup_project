@@ -18,16 +18,23 @@ User-agent: *
 Allow: /
 Allow: /shop
 Allow: /categories
+Allow: /category/*
 Allow: /products
+Allow: /products/*
 Allow: /product/*
 Allow: /about
 Allow: /about-developer
 Allow: /developer
+Allow: /guide
+Allow: /user-guide
+Allow: /help
 Allow: /mart.jpg
 Allow: /favicon.svg
 Allow: /og-image.png
 Allow: /developer.jpg
 Allow: /site.webmanifest
+Allow: /assets/*.js
+Allow: /assets/*.css
 
 # Disallow authenticated, admin, cart and transactional paths
 Disallow: /admin
@@ -45,6 +52,8 @@ Disallow: /orders
 Disallow: /my-orders
 Disallow: /customer/dashboard
 Disallow: /staff/dashboard
+Disallow: /pos
+Disallow: /pos/
 Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
@@ -52,8 +61,11 @@ Disallow: /reset-password
 Disallow: /unauthorized
 Disallow: /cart
 Disallow: /checkout
+Disallow: /order-success
+Disallow: /order-success/
 Disallow: /payment
 Disallow: /payment/
+Disallow: /api/
 
 # Canonical Host & XML Sitemap
 Host: https://martsystemkh.software

@@ -16,6 +16,7 @@ import ProductCard from '../components/ProductCard';
 import SEO from '../components/SEO';
 import { formatCurrency } from '../utils/format';
 import { getCategoryIcon, getCategoryTheme } from '../utils/categoryIcons';
+import { getProductUrl } from '../utils/seoSlug';
 import { env } from '../config/env';
 
 export default function Home() {
@@ -185,6 +186,35 @@ export default function Home() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  const homeFaqs = useMemo(() => [
+    {
+      q: 'How fast is Mart System delivery in Phnom Penh?',
+      a: 'Mart System provides express doorstep delivery across Phnom Penh for a flat fee of $1.50 within operating hours (06:00 AM – 11:00 PM).'
+    },
+    {
+      q: 'How can I pay using Bakong KHQR?',
+      a: 'During checkout, select Bakong KHQR to display a dynamic KHQR code. Scan with any Cambodian banking app (ABA, Wing, ACLEDA, Canadia, etc.) for instant automated confirmation.'
+    },
+    {
+      q: 'What categories are available at Mart System?',
+      a: 'We offer fresh groceries, beverages, snacks, dairy products, pantry essentials, and household goods from verified Cambodian and international brands.'
+    },
+    {
+      q: 'What is the return and exchange policy?',
+      a: 'Mart System provides a 7-day return and exchange policy for verified defective or incorrect items.'
+    }
+  ], []);
+
+  const homeItemList = useMemo(() => {
+    return productList.slice(0, 8).map((p) => ({
+      name: p.name,
+      url: getProductUrl(p),
+      image: p.imageUrl,
+      price: p.price,
+      currency: 'USD',
+    }));
+  }, [productList]);
+
   return (
     <div className="min-h-screen bg-[#FDFDFE] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 transition-colors">
       <SEO
@@ -192,6 +222,8 @@ export default function Home() {
         description="Shop fresh everyday groceries, beverages, snacks, and products from top brands in Cambodia with $1.50 express delivery and seamless Bakong KHQR scan."
         keywords="Mart System Cambodia, Online Grocery Phnom Penh, Bakong KHQR Shopping, Buy Groceries Cambodia, Drink & Snacks Delivery, Express Delivery Mart"
         canonical="/"
+        itemList={homeItemList}
+        faq={homeFaqs}
       />
 
       {/* 1. HERO SECTION */}

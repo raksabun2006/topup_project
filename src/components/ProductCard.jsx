@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Package, Plus, Minus, Trash2, Heart, ShoppingBag, Check, Star, Flame } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
+import { getProductUrl } from '../utils/seoSlug';
 import { useLanguage } from '../context/LanguageContext';
 import { useWishlist } from '../hooks/useWishlist';
 
@@ -48,11 +49,13 @@ export default function ProductCard({
     badgeText && (badgeText.startsWith('-') || badgeText.includes('%') || badgeText.toLowerCase().includes('sale'))
   );
 
+  const productUrl = getProductUrl(product);
+
   const handleCardClick = () => {
     if (onOpenDetails) {
       onOpenDetails(product);
     } else if (product?.id) {
-      navigate(`/product/${product.id}`);
+      navigate(productUrl);
     }
   };
 
@@ -138,11 +141,23 @@ export default function ProductCard({
       </div>
 
       {/* Product Image Stage (Clean Unified Soft Canvas) */}
-      <div className="relative aspect-square w-full rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-850 p-2 sm:p-2.5 flex items-center justify-center overflow-hidden mb-2.5">
+      <Link
+        to={productUrl}
+        onClick={(e) => {
+          if (onOpenDetails) {
+            e.preventDefault();
+            onOpenDetails(product);
+          }
+        }}
+        aria-label={product.name}
+        className="relative aspect-square w-full rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-850 p-2 sm:p-2.5 flex items-center justify-center overflow-hidden mb-2.5 block"
+      >
         {product.imageUrl && !imageBroken ? (
           <img
             src={product.imageUrl}
             alt={product.name}
+            width="200"
+            height="200"
             loading="lazy"
             decoding="async"
             className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
@@ -151,16 +166,25 @@ export default function ProductCard({
         ) : (
           <Package size={32} className="text-slate-300" />
         )}
-      </div>
+      </Link>
 
       {/* Product Information */}
       <div className="space-y-1.5">
         {/* Product Name */}
-        <h3
-          className="line-clamp-2 text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug min-h-[32px]"
-          title={product.name}
-        >
-          {product.name}
+        <h3 className="line-clamp-2 text-xs font-bold leading-snug min-h-[32px]">
+          <Link
+            to={productUrl}
+            onClick={(e) => {
+              if (onOpenDetails) {
+                e.preventDefault();
+                onOpenDetails(product);
+              }
+            }}
+            className="text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+            title={product.name}
+          >
+            {product.name}
+          </Link>
         </h3>
 
         {/* Stars Rating */}

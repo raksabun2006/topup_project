@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { useSearchParams, useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Search, SlidersHorizontal, ArrowUpDown, X, PackageX, ChevronLeft,
   ChevronRight, ChevronDown, Tag, Check, Filter, RotateCcw, Sparkles, TrendingUp,
@@ -50,6 +50,7 @@ function addStoredSearchHistory(term) {
 }
 
 export default function Shop() {
+  const { categoryName: routeCategory } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category') || '';
   const searchParam = searchParams.get('search') || '';
@@ -60,7 +61,9 @@ export default function Shop() {
   const ratingParam = Number(searchParams.get('rating')) || 0;
 
   const [search, setSearch] = useState(searchParam);
-  const [selectedCategory, setSelectedCategory] = useState(categoryParam);
+  const [selectedCategory, setSelectedCategory] = useState(() => (
+    routeCategory ? decodeURIComponent(routeCategory) : categoryParam
+  ));
   const [minPrice, setMinPrice] = useState(minPriceParam);
   const [maxPrice, setMaxPrice] = useState(maxPriceParam);
   const [categorySearch, setCategorySearch] = useState('');
@@ -98,8 +101,12 @@ export default function Shop() {
   }, []);
 
   useEffect(() => {
-    setSelectedCategory(categoryParam);
-  }, [categoryParam]);
+    if (routeCategory) {
+      setSelectedCategory(decodeURIComponent(routeCategory));
+    } else {
+      setSelectedCategory(categoryParam);
+    }
+  }, [routeCategory, categoryParam]);
 
   useEffect(() => {
     setSearch(searchParam);
@@ -499,6 +506,7 @@ export default function Shop() {
         }
         canonical={dynamicCanonical}
         ogImage="/mart.jpg"
+        robots={search ? 'noindex, follow' : 'index, follow'}
         breadcrumbs={[
           { name: 'Home', url: '/' },
           { name: 'Shop', url: '/shop' },
@@ -508,6 +516,35 @@ export default function Shop() {
       />
 
       <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 space-y-6">
+        {/* Semantic SEO Header & Breadcrumbs */}
+        <header className="space-y-1.5 pb-1">
+          <nav aria-label="Breadcrumb Navigation" className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
+            <Link to="/" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">Home</Link>
+            <span>/</span>
+            <Link to="/shop" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">Shop</Link>
+            {selectedCategory && (
+              <>
+                <span>/</span>
+                <span className="text-slate-800 dark:text-slate-200 font-bold">{selectedCategory}</span>
+              </>
+            )}
+          </nav>
+          <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              {selectedCategory
+                ? selectedCategory
+                : search
+                ? `Results for "${search}"`
+                : 'Shop All Products & Groceries'}
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {selectedCategory
+                ? `Explore quality ${selectedCategory} products with $1.50 express delivery in Phnom Penh.`
+                : 'Fresh groceries, drinks, snacks, and daily items delivered fast across Cambodia.'}
+            </p>
+          </div>
+        </header>
+
         {/* Active Backend Promotions Alert / Banner */}
         {activeDiscounts.length > 0 && (
           <div className="rounded-2xl border border-rose-200/80 dark:border-rose-900/50 bg-gradient-to-r from-rose-500/10 via-amber-500/10 to-rose-500/10 p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-2xs">

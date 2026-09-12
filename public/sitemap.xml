@@ -2,30 +2,27 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  
-  <!-- 1. Homepage / Official Storefront -->
+
   <url>
     <loc>https://martsystemkh.software/</loc>
     <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/" />
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://martsystemkh.software/mart.jpg</image:loc>
-      <image:title>Mart System — Online Store &amp; E-Commerce</image:title>
-      <image:caption>Shop everyday fresh groceries, drinks, and snacks with $1.50 express delivery and Bakong KHQR checkout.</image:caption>
+      <image:title>Mart System — Online Store &amp; E-Commerce Cambodia</image:title>
+      <image:caption>Shop everyday groceries, drinks, and snacks with $1.50 express delivery and Bakong KHQR checkout.</image:caption>
     </image:image>
   </url>
-
-  <!-- 2. Shop Catalog -->
   <url>
     <loc>https://martsystemkh.software/shop</loc>
     <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/shop" />
     <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/shop" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/shop" />
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
     <image:image>
@@ -34,43 +31,442 @@
       <image:caption>Browse full collection of groceries, drinks, snacks and lifestyle products in Phnom Penh.</image:caption>
     </image:image>
   </url>
-
-  <!-- 3. All Categories -->
   <url>
     <loc>https://martsystemkh.software/categories</loc>
     <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/categories" />
     <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/categories" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/categories" />
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
-
-  <!-- 4. Products Alias -->
-  <url>
-    <loc>https://martsystemkh.software/products</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products" />
-    <lastmod>2026-09-08</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.90</priority>
-  </url>
-
-  <!-- 5. About Developer & System Architecture -->
   <url>
     <loc>https://martsystemkh.software/about</loc>
     <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/about" />
     <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/about" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/about" />
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <image:image>
       <image:loc>https://martsystemkh.software/developer.jpg</image:loc>
-      <image:title>Bun Raksa — Full-Stack Developer &amp; Creator of Mart System</image:title>
-      <image:caption>Full-Stack Engineer specialized in Spring Boot, React, and Bakong KHQR Payment Systems.</image:caption>
+      <image:title>Bun Raksa — Creator of Mart System</image:title>
+      <image:caption>Full-Stack Developer specialized in Spring Boot, React, and Bakong KHQR Payment Systems.</image:caption>
     </image:image>
   </url>
-
+  <url>
+    <loc>https://martsystemkh.software/help</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/help" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/help" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/help" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/guide</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/guide" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/guide" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/guide" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/Beverages%20%26%20Drinks</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/Beverages%20%26%20Drinks" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/Beverages%20%26%20Drinks" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/Beverages%20%26%20Drinks" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%9F%E1%9E%98%E1%9F%92%E1%9E%9A%E1%9E%93%E1%9F%8B</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%9F%E1%9E%98%E1%9F%92%E1%9E%9A%E1%9E%93%E1%9F%8B" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%9F%E1%9E%98%E1%9F%92%E1%9E%9A%E1%9E%93%E1%9F%8B" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%9F%E1%9E%98%E1%9F%92%E1%9E%9A%E1%9E%93%E1%9F%8B" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/%E1%9E%82%E1%9F%92%E1%9E%9A%E1%9E%BF%E1%9E%84%E1%9E%95%E1%9F%92%E1%9E%9F%E1%9F%86%E1%9E%85%E1%9E%98%E1%9F%92%E1%9E%A2%E1%9E%B7%E1%9E%93%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%82%E1%9F%92%E1%9E%9A%E1%9E%BF%E1%9E%84%E1%9E%95%E1%9F%92%E1%9E%9F%E1%9F%86%E1%9E%85%E1%9E%98%E1%9F%92%E1%9E%A2%E1%9E%B7%E1%9E%93%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%82%E1%9F%92%E1%9E%9A%E1%9E%BF%E1%9E%84%E1%9E%95%E1%9F%92%E1%9E%9F%E1%9F%86%E1%9E%85%E1%9E%98%E1%9F%92%E1%9E%A2%E1%9E%B7%E1%9E%93%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%82%E1%9F%92%E1%9E%9A%E1%9E%BF%E1%9E%84%E1%9E%95%E1%9F%92%E1%9E%9F%E1%9F%86%E1%9E%85%E1%9E%98%E1%9F%92%E1%9E%A2%E1%9E%B7%E1%9E%93%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/Groceries%20%26%20Staples</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/%E1%9E%98%E1%9E%B8%20%E1%9E%93%E1%9E%B7%E1%9E%84%E1%9E%94%E1%9F%89%E1%9E%B6%E1%9E%9F%E1%9F%92%E1%9E%8F%E1%9E%B6</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%98%E1%9E%B8%20%E1%9E%93%E1%9E%B7%E1%9E%84%E1%9E%94%E1%9F%89%E1%9E%B6%E1%9E%9F%E1%9F%92%E1%9E%8F%E1%9E%B6" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%98%E1%9E%B8%20%E1%9E%93%E1%9E%B7%E1%9E%84%E1%9E%94%E1%9F%89%E1%9E%B6%E1%9E%9F%E1%9F%92%E1%9E%8F%E1%9E%B6" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%98%E1%9E%B8%20%E1%9E%93%E1%9E%B7%E1%9E%84%E1%9E%94%E1%9F%89%E1%9E%B6%E1%9E%9F%E1%9F%92%E1%9E%8F%E1%9E%B6" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%80%E1%9E%80</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%80%E1%9E%80" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%80%E1%9E%80" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%80%E1%9E%80" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/%E1%9E%90%E1%9F%82%E1%9E%9A%E1%9E%80%E1%9F%92%E1%9E%9F%E1%9E%B6%E1%9E%95%E1%9F%92%E1%9E%91%E1%9E%B6%E1%9E%9B%E1%9F%8B%E1%9E%81%E1%9F%92%E1%9E%9B%E1%9E%BD%E1%9E%93</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%90%E1%9F%82%E1%9E%9A%E1%9E%80%E1%9F%92%E1%9E%9F%E1%9E%B6%E1%9E%95%E1%9F%92%E1%9E%91%E1%9E%B6%E1%9E%9B%E1%9F%8B%E1%9E%81%E1%9F%92%E1%9E%9B%E1%9E%BD%E1%9E%93" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%90%E1%9F%82%E1%9E%9A%E1%9E%80%E1%9F%92%E1%9E%9F%E1%9E%B6%E1%9E%95%E1%9F%92%E1%9E%91%E1%9E%B6%E1%9E%9B%E1%9F%8B%E1%9E%81%E1%9F%92%E1%9E%9B%E1%9E%BD%E1%9E%93" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%90%E1%9F%82%E1%9E%9A%E1%9E%80%E1%9F%92%E1%9E%9F%E1%9E%B6%E1%9E%95%E1%9F%92%E1%9E%91%E1%9E%B6%E1%9E%9B%E1%9F%8B%E1%9E%81%E1%9F%92%E1%9E%9B%E1%9E%BD%E1%9E%93" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/%E1%9E%9F%E1%9E%B6%E1%9E%85%E1%9F%8B%20%E1%9E%93%E1%9E%B7%E1%9E%84%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%80%E1%9E%80</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%9F%E1%9E%B6%E1%9E%85%E1%9F%8B%20%E1%9E%93%E1%9E%B7%E1%9E%84%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%80%E1%9E%80" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%9F%E1%9E%B6%E1%9E%85%E1%9F%8B%20%E1%9E%93%E1%9E%B7%E1%9E%84%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%80%E1%9E%80" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%9F%E1%9E%B6%E1%9E%85%E1%9F%8B%20%E1%9E%93%E1%9E%B7%E1%9E%84%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%80%E1%9E%80" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/%E1%9E%9F%E1%9F%8A%E1%9E%BB%E1%9E%8F</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%9F%E1%9F%8A%E1%9E%BB%E1%9E%8F" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%9F%E1%9F%8A%E1%9E%BB%E1%9E%8F" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%9F%E1%9F%8A%E1%9E%BB%E1%9E%8F" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/Kitchen%20%26%20Dining</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/Kitchen%20%26%20Dining" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/Kitchen%20%26%20Dining" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/Kitchen%20%26%20Dining" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/sting-energy-drink--c9470588-9c66-427a-a36c-aafa770ed1ed</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/sting-energy-drink--c9470588-9c66-427a-a36c-aafa770ed1ed" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/sting-energy-drink--c9470588-9c66-427a-a36c-aafa770ed1ed" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/sting-energy-drink--c9470588-9c66-427a-a36c-aafa770ed1ed" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtHVRa0AlN6NP7HjDi24Geewo0EDo44wwfR2c4VMz1Wg&amp;s=10</image:loc>
+      <image:title>Sting Energy drink</image:title>
+      <image:caption>Sting is a popular carbonated energy drink in Cambodia, distributed by Cambrew Ltd under PepsiCo</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-500ml-x-24--ffeb2bc9-640b-46aa-82a8-5c80874930c6</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-500ml-x-24--ffeb2bc9-640b-46aa-82a8-5c80874930c6" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-500ml-x-24--ffeb2bc9-640b-46aa-82a8-5c80874930c6" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-500ml-x-24--ffeb2bc9-640b-46aa-82a8-5c80874930c6" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQY4HWBd6269GKwtnfPL476wnbLiS4geRe3R4ZFmIE5w&amp;s=10</image:loc>
+      <image:title>ទឹកបរិសុទ្ធ កម្ពុជា 500ml x 24</image:title>
+      <image:caption>ទឹកបរិសុទ្ធដបតូច សាកសមសម្រាប់យកតាមខ្លួន</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/farm-fresh-milk-2l--7f711b2b-0875-42b5-acea-b2d73d35b338</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/farm-fresh-milk-2l--7f711b2b-0875-42b5-acea-b2d73d35b338" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/farm-fresh-milk-2l--7f711b2b-0875-42b5-acea-b2d73d35b338" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/farm-fresh-milk-2l--7f711b2b-0875-42b5-acea-b2d73d35b338" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2P0GPRbxXblQqU2cGKWYVqrFSUlcJ_hIPTSZOiMvAAA&amp;s=10</image:loc>
+      <image:title>Farm Fresh Milk 2L</image:title>
+      <image:caption>ទឹកដោះគោ Farm Fresh 2 លីត្រ</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/lays-natural-classic-flavor-80g--c2221d97-9eb1-45fb-b4ab-9fd8e9a12be7</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/lays-natural-classic-flavor-80g--c2221d97-9eb1-45fb-b4ab-9fd8e9a12be7" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/lays-natural-classic-flavor-80g--c2221d97-9eb1-45fb-b4ab-9fd8e9a12be7" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/lays-natural-classic-flavor-80g--c2221d97-9eb1-45fb-b4ab-9fd8e9a12be7" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfFgvnUzO5EA__LiMrgqedBhuMSSHMM6muV2vyR7R8xg&amp;s=10</image:loc>
+      <image:title>Lay&apos;s Natural Classic Flavor 80g</image:title>
+      <image:caption>ដំឡូងបំពង Lay&apos;s រសជាតិធម្មជាតិ</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/eau-kulen-mineral-water-15l-x-12--ed13cf5d-cfd4-4f16-bcfb-74f01aa1692e</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/eau-kulen-mineral-water-15l-x-12--ed13cf5d-cfd4-4f16-bcfb-74f01aa1692e" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/eau-kulen-mineral-water-15l-x-12--ed13cf5d-cfd4-4f16-bcfb-74f01aa1692e" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/eau-kulen-mineral-water-15l-x-12--ed13cf5d-cfd4-4f16-bcfb-74f01aa1692e" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpQTsbuJEmr1uSouEH_NRZc5t6Jj4WnraNZYtIIN5KgA&amp;s=10</image:loc>
+      <image:title>Eau Kulen Mineral Water 1.5L x 12</image:title>
+      <image:caption>ទឹករ៉ែធម្មជាតិ Eau Kulen</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/simply-pure-soybean-oil-2l--4aadef24-6d8f-4f09-8c12-bc57965cbad9</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/simply-pure-soybean-oil-2l--4aadef24-6d8f-4f09-8c12-bc57965cbad9" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/simply-pure-soybean-oil-2l--4aadef24-6d8f-4f09-8c12-bc57965cbad9" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/simply-pure-soybean-oil-2l--4aadef24-6d8f-4f09-8c12-bc57965cbad9" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDrjdSrkH3IdcTgTDeL-qmOVF2OEOSUF1dRvNs2cchGA&amp;s=10</image:loc>
+      <image:title>Simply Pure Soybean Oil 2L</image:title>
+      <image:caption>ប្រេងសណ្តែកសៀងសម្រាប់ចម្អិនអាហារ</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeDEQcT8fXPDG0EOeGK3ntRu6QsIgGy-Wb_1d3ihK60Q&amp;s=10</image:loc>
+      <image:title>Angkormilk Strawberry Yogurt</image:title>
+      <image:caption>ទឹកដោះគោជូរ Angkormilk រសជាតិស្ត្របឺរី</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYi4_Sg8Ce3YqLX-oAXBMz6B42yOgIXcb56S3zD-xWPQ&amp;s=10</image:loc>
+      <image:title>Yakult Probiotic Drinking Yoghurt Less Sugar 65g</image:title>
+      <image:caption>ភេសជ្ជៈទឹកដោះគោជូរ Probiotic ស្ករតិច</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHguxuWCpApinQFedDrBG-9bAPjyoVeTSUkoS6JqO8vg&amp;s=10</image:loc>
+      <image:title>Coca Cola Can 330ml</image:title>
+      <image:caption>Classic refreshing carbonated soft drink, served chilled.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsybjD4tx5kBPGN7ijPVOH8x1LD98qeMktgszUf55N4A&amp;s</image:loc>
+      <image:title>Dasani Water 1.5L x 6</image:title>
+      <image:caption>ទឹកសុទ្ធ Dasani សម្រាប់ការប្រើប្រាស់ប្រចាំថ្ងៃ</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9yOpeLR6mdJiIZzolFtxWJPxZHHQ_DRmIkwPaFKBzqg&amp;s</image:loc>
+      <image:title>Malys Angkor Jasmine Rice 5kg</image:title>
+      <image:caption>Premium quality fragrant Phka Rumduol jasmine rice from Cambodia, known for its soft texture and natural pandan-like aroma.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-15l-x-12--ca6670b7-5a68-4656-b1d9-7ce7c30abb54</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-15l-x-12--ca6670b7-5a68-4656-b1d9-7ce7c30abb54" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-15l-x-12--ca6670b7-5a68-4656-b1d9-7ce7c30abb54" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-15l-x-12--ca6670b7-5a68-4656-b1d9-7ce7c30abb54" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSv8OWMZ4Er_lTl7oTVtQU2pmLtcej9_krsCatHdyxAOw&amp;s=10</image:loc>
+      <image:title>ទឹកបរិសុទ្ធ កម្ពុជា 1.5L x 12</image:title>
+      <image:caption>ទឹកបរិសុទ្ធសម្រាប់ផឹកប្រចាំថ្ងៃ</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/samyang-buldak-carbo-hot-chicken-ramen-105g--78ada5c9-4ddc-4bb1-879d-b1b6ddbc6431</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/samyang-buldak-carbo-hot-chicken-ramen-105g--78ada5c9-4ddc-4bb1-879d-b1b6ddbc6431" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/samyang-buldak-carbo-hot-chicken-ramen-105g--78ada5c9-4ddc-4bb1-879d-b1b6ddbc6431" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/samyang-buldak-carbo-hot-chicken-ramen-105g--78ada5c9-4ddc-4bb1-879d-b1b6ddbc6431" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZWNozSPzo7f5jAuVRUd6utTpgzTkpQZ8aV6tjE3mRgQ&amp;s=10</image:loc>
+      <image:title>Samyang Buldak Carbo Hot Chicken Ramen 105g</image:title>
+      <image:caption>មីកញ្ចប់ Samyang រសជាតិមាន់ហឹរ Carbonara</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/want-want-seaweed-rice-cracker-102g--1a50b493-a8f2-4fbf-a970-f1fcf1036de6</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/want-want-seaweed-rice-cracker-102g--1a50b493-a8f2-4fbf-a970-f1fcf1036de6" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/want-want-seaweed-rice-cracker-102g--1a50b493-a8f2-4fbf-a970-f1fcf1036de6" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/want-want-seaweed-rice-cracker-102g--1a50b493-a8f2-4fbf-a970-f1fcf1036de6" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeLWDqz3ToiP25K8v6nyPeKrqZBMuWqje7BQX3lMrpVQ&amp;s</image:loc>
+      <image:title>Want Want Seaweed Rice Cracker 102g</image:title>
+      <image:caption>នំអង្កររសជាតិសារាយ</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/richmama-cheese-fish-ball-250g--d395b2a7-a504-41a0-b7ed-8f03e4ab4b40</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/richmama-cheese-fish-ball-250g--d395b2a7-a504-41a0-b7ed-8f03e4ab4b40" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/richmama-cheese-fish-ball-250g--d395b2a7-a504-41a0-b7ed-8f03e4ab4b40" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/richmama-cheese-fish-ball-250g--d395b2a7-a504-41a0-b7ed-8f03e4ab4b40" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqnPbO2V-RqoBiuDoYgQpnaROlcjvwnjGTQxdu9Jly2w&amp;s=10</image:loc>
+      <image:title>Richmama Cheese Fish Ball 250g</image:title>
+      <image:caption>ប្រហិតត្រីស្នូលឈីស Richmama</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/tos-tos-roasted-corn-tortilla-chips-145g--1f6908fd-a4ce-4518-b676-0447b4a382c7</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/tos-tos-roasted-corn-tortilla-chips-145g--1f6908fd-a4ce-4518-b676-0447b4a382c7" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/tos-tos-roasted-corn-tortilla-chips-145g--1f6908fd-a4ce-4518-b676-0447b4a382c7" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/tos-tos-roasted-corn-tortilla-chips-145g--1f6908fd-a4ce-4518-b676-0447b4a382c7" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://upload.wikimedia.org/wikipedia/commons/4/4f/Tortilla_chips_2.jpg</image:loc>
+      <image:title>Tos Tos Roasted Corn Tortilla Chips 145g</image:title>
+      <image:caption>Chips ពោតអាំង Tos Tos</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/dettol-anti-bacterial-body-wash-950g--483b5b2a-1360-49a1-af48-bcd859c75b40</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/dettol-anti-bacterial-body-wash-950g--483b5b2a-1360-49a1-af48-bcd859c75b40" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/dettol-anti-bacterial-body-wash-950g--483b5b2a-1360-49a1-af48-bcd859c75b40" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/dettol-anti-bacterial-body-wash-950g--483b5b2a-1360-49a1-af48-bcd859c75b40" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSiQ189Z-8gfimOaYMjF2MKaf7lWS9qvBz6jmIZvxDj4Q&amp;s=10</image:loc>
+      <image:title>Dettol Anti Bacterial Body Wash 950g</image:title>
+      <image:caption>ជែលងូតទឹក Dettol ប្រឆាំងបាក់តេរី</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/hoy-hoy-beef-meatball-500g--837c2748-4ab9-4f55-a3b9-f67d25dc5637</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/hoy-hoy-beef-meatball-500g--837c2748-4ab9-4f55-a3b9-f67d25dc5637" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/hoy-hoy-beef-meatball-500g--837c2748-4ab9-4f55-a3b9-f67d25dc5637" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/hoy-hoy-beef-meatball-500g--837c2748-4ab9-4f55-a3b9-f67d25dc5637" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4Bz27Ue7KVwl74gABb0YtVbF00qJTU3qsTrHsPYAOjw&amp;s=10</image:loc>
+      <image:title>Hoy Hoy Beef Meatball 500g</image:title>
+      <image:caption>ប្រហិតសាច់គោ Hoy Hoy 500g</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/battambang-chicken-egg-size-3-30pcs--4ccf7240-147c-4200-bba6-8633fdbd72a5</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/battambang-chicken-egg-size-3-30pcs--4ccf7240-147c-4200-bba6-8633fdbd72a5" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/battambang-chicken-egg-size-3-30pcs--4ccf7240-147c-4200-bba6-8633fdbd72a5" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/battambang-chicken-egg-size-3-30pcs--4ccf7240-147c-4200-bba6-8633fdbd72a5" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtGHXACwvdSe9_eemqfyjGprR8nrRNPWUgTBS6jpFd_A&amp;s</image:loc>
+      <image:title>Battambang Chicken Egg Size 3 - 30pcs</image:title>
+      <image:caption>ពងមាន់ Battambang ចំនួន 30 គ្រាប់</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/electric-coffee-maker--87c514e9-843d-455c-bf1f-651ea19df6f8</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/electric-coffee-maker--87c514e9-843d-455c-bf1f-651ea19df6f8" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/electric-coffee-maker--87c514e9-843d-455c-bf1f-651ea19df6f8" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/electric-coffee-maker--87c514e9-843d-455c-bf1f-651ea19df6f8" />
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=600&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Electric Coffee Maker</image:title>
+      <image:caption>Compact electric coffee maker for convenient home brewing.</image:caption>
+    </image:image>
+  </url>
 </urlset>
