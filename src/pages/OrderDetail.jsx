@@ -148,8 +148,45 @@ export default function OrderDetail() {
   const deliveryFee = Number(order.deliveryFee ?? (order.deliveryMethod === 'PICKUP' ? 0 : 1.5));
   const discount = Number(order.discount ?? 0);
 
+  const resolvedCustomerName =
+    (typeof order.customerName === 'string' && order.customerName.trim()) ||
+    (typeof order.receiverName === 'string' && order.receiverName.trim()) ||
+    (typeof order.deliveryAddress === 'object' && typeof order.deliveryAddress?.receiverName === 'string' && order.deliveryAddress.receiverName.trim()) ||
+    (typeof order.customer === 'object' ? order.customer?.name || order.customer?.displayName : null) ||
+    'Customer';
+
+  const resolvedCustomerPhone =
+    (typeof order.customerPhone === 'string' && order.customerPhone.trim()) ||
+    (typeof order.phoneNumber === 'string' && order.phoneNumber.trim()) ||
+    (typeof order.deliveryAddress === 'object' && typeof order.deliveryAddress?.phoneNumber === 'string' && order.deliveryAddress.phoneNumber.trim()) ||
+    (typeof order.customer === 'object' ? order.customer?.phone || order.customer?.phoneNumber : null) ||
+    '';
+
+  const resolvedDeliveryAddress = (() => {
+    const raw = order.deliveryAddress || order.shippingAddress || order.address;
+    if (!raw) {
+      return order.deliveryMethod === 'PICKUP' ? 'Store Pickup at Mart System' : 'Phnom Penh, Cambodia';
+    }
+    if (typeof raw === 'string') {
+      return raw.trim() || (order.deliveryMethod === 'PICKUP' ? 'Store Pickup at Mart System' : 'Phnom Penh, Cambodia');
+    }
+    if (typeof raw === 'object' && raw !== null) {
+      const parts = [
+        raw.address || raw.street || raw.detail,
+        raw.district,
+        raw.province || raw.city,
+        raw.note ? `(Note: ${raw.note})` : null,
+      ].filter(Boolean);
+      return parts.join(', ') || raw.receiverName || raw.phoneNumber || 'Phnom Penh, Cambodia';
+    }
+    return String(raw);
+  })();
+
   const receiptSaleData = {
     ...order,
+    customerName: resolvedCustomerName,
+    customerPhone: resolvedCustomerPhone,
+    deliveryAddress: resolvedDeliveryAddress,
     items,
     total,
     subtotal,
@@ -329,19 +366,19 @@ export default function OrderDetail() {
                 <div className="flex items-center gap-2">
                   <User size={13} className="text-slate-400 shrink-0" />
                   <span className="font-bold text-slate-900 dark:text-white">
-                    {order.customerName || 'Customer'}
+                    {resolvedCustomerName}
                   </span>
                 </div>
-                {order.customerPhone && (
+                {resolvedCustomerPhone && (
                   <div className="flex items-center gap-2">
                     <Phone size={13} className="text-slate-400 shrink-0" />
-                    <span>{order.customerPhone}</span>
+                    <span>{resolvedCustomerPhone}</span>
                   </div>
                 )}
                 <div className="flex items-start gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-800">
                   <MapPin size={13} className="text-slate-400 shrink-0 mt-0.5" />
                   <span className="leading-relaxed">
-                    {order.deliveryAddress || (order.deliveryMethod === 'PICKUP' ? 'Store Pickup at Mart System' : 'Phnom Penh, Cambodia')}
+                    {resolvedDeliveryAddress}
                   </span>
                 </div>
               </div>

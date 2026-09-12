@@ -52,6 +52,28 @@ export default function OrderSuccess() {
     lineTotal: (Number(i.unitPrice || i.product?.price || i.price || 0)) * (i.quantity || i.qty || 1),
   }));
 
+  const resolvedDeliveryAddress = (() => {
+    const raw = order.deliveryAddress || order.shippingAddress || order.address;
+    if (!raw) return '';
+    if (typeof raw === 'string') return raw.trim();
+    if (typeof raw === 'object' && raw !== null) {
+      const parts = [
+        raw.address || raw.street || raw.detail,
+        raw.district,
+        raw.province || raw.city,
+        raw.note ? `(Note: ${raw.note})` : null,
+      ].filter(Boolean);
+      return parts.join(', ') || raw.receiverName || raw.phoneNumber || '';
+    }
+    return String(raw);
+  })();
+
+  const resolvedCustomerPhone =
+    (typeof order.customerPhone === 'string' && order.customerPhone.trim()) ||
+    (typeof order.phoneNumber === 'string' && order.phoneNumber.trim()) ||
+    (typeof order.deliveryAddress === 'object' && typeof order.deliveryAddress?.phoneNumber === 'string' && order.deliveryAddress.phoneNumber.trim()) ||
+    '';
+
   const enrichedSale = {
     ...order,
     items: formattedItems,
@@ -60,8 +82,8 @@ export default function OrderSuccess() {
     deliveryFee,
     paymentMethod: 'KHQR',
     customerName: order.customerName || 'Customer',
-    customerPhone: order.customerPhone || '',
-    deliveryAddress: order.deliveryAddress,
+    customerPhone: resolvedCustomerPhone,
+    deliveryAddress: resolvedDeliveryAddress,
   };
 
   return (
@@ -104,14 +126,14 @@ export default function OrderSuccess() {
           </div>
 
           {/* Delivery Details Callout */}
-          {order.deliveryAddress && (
+          {resolvedDeliveryAddress && (
             <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-3.5 text-left flex items-start gap-3 text-xs border border-slate-100 dark:border-slate-800">
               <Truck size={16} className="text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
               <div className="space-y-0.5 min-w-0">
                 <p className="font-black text-slate-900 dark:text-white">Delivery Information</p>
-                <p className="text-slate-600 dark:text-slate-400">{order.deliveryAddress}</p>
-                {order.customerPhone && (
-                  <p className="text-slate-400 font-mono text-[11px]">Phone: {order.customerPhone}</p>
+                <p className="text-slate-600 dark:text-slate-400">{resolvedDeliveryAddress}</p>
+                {resolvedCustomerPhone && (
+                  <p className="text-slate-400 font-mono text-[11px]">Phone: {resolvedCustomerPhone}</p>
                 )}
               </div>
             </div>

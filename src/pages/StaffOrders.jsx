@@ -23,6 +23,21 @@ const STATUS_OPTIONS = [
   { key: 'CANCELLED', label: 'Cancelled' },
 ];
 
+function formatSafeAddress(addr, isDelivery) {
+  if (!addr) return isDelivery ? 'Phnom Penh, Cambodia' : 'Store Pickup at Mart System';
+  if (typeof addr === 'string') return addr.trim() || (isDelivery ? 'Phnom Penh, Cambodia' : 'Store Pickup at Mart System');
+  if (typeof addr === 'object' && addr !== null) {
+    const parts = [
+      addr.address || addr.street || addr.detail,
+      addr.district,
+      addr.province || addr.city,
+      addr.note ? `(Note: ${addr.note})` : null,
+    ].filter(Boolean);
+    return parts.join(', ') || addr.receiverName || addr.phoneNumber || (isDelivery ? 'Phnom Penh, Cambodia' : 'Store Pickup at Mart System');
+  }
+  return String(addr);
+}
+
 export default function StaffOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -326,7 +341,7 @@ export default function StaffOrders() {
                   <div>
                     <p className="flex items-start gap-1.5 text-slate-600 dark:text-slate-300 leading-relaxed">
                       <MapPin size={13} className="text-emerald-600 shrink-0 mt-0.5" />
-                      <span>{order.deliveryAddress || (isDelivery ? 'Phnom Penh, Cambodia' : 'Store Pickup at Mart System')}</span>
+                      <span>{formatSafeAddress(order.deliveryAddress, isDelivery)}</span>
                     </p>
                   </div>
                 </div>
