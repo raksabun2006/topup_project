@@ -37,26 +37,79 @@ export default function Checkout() {
   const [customerName, setCustomerName] = useState(user?.displayName || user?.name || savedDraft?.customerName || '');
   const [customerPhone, setCustomerPhone] = useState(user?.phoneNumber || savedDraft?.customerPhone || '');
   const [deliveryAddress, setDeliveryAddress] = useState(savedDraft?.deliveryAddress || '');
+  const [province, setProvince] = useState(savedDraft?.province || 'Phnom Penh');
+  const [district, setDistrict] = useState(savedDraft?.district || '');
   const [note, setNote] = useState(savedDraft?.note || '');
+
+  // Saved Addresses State
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+
+  // Pre-applied coupon from cart
+  const [appliedCoupon, setAppliedCoupon] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem('mart_applied_coupon');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingSale, setPendingSale] = useState(null);
   const [completedOrder, setCompletedOrder] = useState(null);
 
+  // Fetch saved addresses if authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setSavedAddresses([]);
+      return;
+    }
+    let isMounted = true;
+    const fetchAddresses = async () => {
+      setLoadingAddresses(true);
+      try {
+        const list = await orderApi.getAddresses();
+        if (isMounted && Array.isArray(list) && list.length > 0) {
+          setSavedAddresses(list);
+          // Default to the first address or defaultAddress
+          const def = list.find((a) => a.defaultAddress) || list[0];
+          setSelectedAddressId(def.id);
+          setCustomerName(def.receiverName || user?.displayName || user?.name || '');
+          setCustomerPhone(def.phoneNumber || user?.phoneNumber || '');
+          setDeliveryAddress(def.address || '');
+          if (def.province) setProvince(def.province);
+          if (def.district) setDistrict(def.district);
+        } else if (isMounted) {
+          setIsAddingNewAddress(true);
+        }
+      } catch {
+        if (isMounted) setIsAddingNewAddress(true);
+      } finally {
+        if (isMounted) setLoadingAddresses(false);
+      }
+    };
+    fetchAddresses();
+    return () => { isMounted = false; };
+  }, [isAuthenticated, user]);
+
   // Sync draft state to sessionStorage
   useEffect(() => {
     try {
       sessionStorage.setItem(
         CHECKOUT_DRAFT_KEY,
-        JSON.stringify({ customerName, customerPhone, deliveryAddress, note, deliveryMethod })
+        JSON.stringify({ customerName, customerPhone, deliveryAddress, province, district, note, deliveryMethod })
       );
     } catch {
       // ignore
     }
-  }, [customerName, customerPhone, deliveryAddress, note, deliveryMethod]);
+  }, [customerName, customerPhone, deliveryAddress, province, district, note, deliveryMethod]);
 
-  // Update user name and phone if authentication state changes
+  // Update user name and phone if authentication state changes and fields are empty
   useEffect(() => {
     if (user) {
       if (!customerName) setCustomerName(user.displayName || user.name || '');
@@ -64,9 +117,23 @@ export default function Checkout() {
     }
   }, [user]);
 
+  // Address selection handler
+  const handleSelectAddress = (addr) => {
+    setSelectedAddressId(addr.id);
+    setIsAddingNewAddress(false);
+    setCustomerName(addr.receiverName || '');
+    setCustomerPhone(addr.phoneNumber || '');
+    setDeliveryAddress(addr.address || '');
+    if (addr.province) setProvince(addr.province);
+    if (addr.district) setDistrict(addr.district);
+  };
+
   // Authoritative estimated display pricing (final amount is returned by backend on checkout)
   const deliveryFee = deliveryMethod === 'DELIVERY' ? 1.50 : 0.00;
-  const estimatedTotal = Math.max(0, subtotal + deliveryFee);
+  const couponDiscount = appliedCoupon
+    ? appliedCoupon.discountAmount || (subtotal * (appliedCoupon.discountPercent || 0)) / 100
+    : 0;
+  const estimatedTotal = Math.max(0, subtotal - couponDiscount + deliveryFee);
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
@@ -98,25 +165,34 @@ export default function Checkout() {
       // 1. Synchronize frontend cart items with backend customer cart
       await orderApi.syncCart(items);
 
-      // 2. Optionally create delivery address record if logged in and delivery is selected
-      let deliveryAddressId = null;
-      if (deliveryMethod === 'DELIVERY' && deliveryAddress.trim()) {
-        try {
-          const addr = await orderApi.createAddress({
-            receiverName: customerName.trim(),
-            phoneNumber: customerPhone.trim(),
-            address: deliveryAddress.trim(),
-            note: note.trim(),
-          });
-          deliveryAddressId = addr?.id || null;
-        } catch {
-          // address creation is optional, continue with checkout
+      // 2. Optionally create delivery address record if adding new address
+      let deliveryAddressId = selectedAddressId;
+      if (deliveryMethod === 'DELIVERY') {
+        if (isAddingNewAddress || !deliveryAddressId) {
+          try {
+            const addr = await orderApi.createAddress({
+              receiverName: customerName.trim(),
+              phoneNumber: customerPhone.trim(),
+              address: deliveryAddress.trim(),
+              province: province.trim() || 'Phnom Penh',
+              district: district.trim(),
+              note: note.trim(),
+            });
+            deliveryAddressId = addr?.id || null;
+            if (addr?.id) {
+              setSavedAddresses((prev) => [addr, ...prev]);
+              setSelectedAddressId(addr.id);
+              setIsAddingNewAddress(false);
+            }
+          } catch {
+            // address creation is optional, continue with checkout
+          }
         }
       }
 
       // 3. Perform Customer E-Commerce Order Checkout: POST /api/v1/orders/checkout
       const destinationText = deliveryMethod === 'DELIVERY'
-        ? `${deliveryAddress.trim()}${note ? ` (Note: ${note.trim()})` : ''}`
+        ? `${deliveryAddress.trim()}${district ? `, ${district}` : ''}${province ? `, ${province}` : ''}${note ? ` (Note: ${note.trim()})` : ''}`
         : `Store Pickup at Mart System${note ? ` (Note: ${note.trim()})` : ''}`;
 
       const checkoutRes = await orderApi.checkout({
@@ -132,7 +208,7 @@ export default function Checkout() {
       // Authoritative backend total
       const authoritativeTotal = checkoutRes.amount ?? checkoutRes.order?.amount ?? checkoutRes.finalTotal ?? estimatedTotal;
       const authoritativeDeliveryFee = checkoutRes.order?.deliveryFee ?? (deliveryMethod === 'DELIVERY' ? 1.50 : 0.00);
-      const authoritativeDiscount = checkoutRes.order?.discount ?? 0;
+      const authoritativeDiscount = checkoutRes.order?.discount ?? couponDiscount;
       const authoritativeSubtotal = checkoutRes.order?.subtotal ?? subtotal;
 
       const orderData = {
@@ -180,6 +256,7 @@ export default function Checkout() {
       deliveryAddress: (deliveryMethod === 'DELIVERY' ? `${deliveryAddress.trim()}${note ? ` (Note: ${note.trim()})` : ''}` : 'Store Pickup at Mart System') || sale.deliveryAddress,
       deliveryMethod: deliveryMethod || sale.deliveryMethod || 'DELIVERY',
       deliveryFee: sale.deliveryFee ?? (deliveryMethod === 'DELIVERY' ? 1.50 : 0.00),
+      discount: sale.discount ?? couponDiscount,
       total: sale.finalTotal ?? sale.total ?? sale.amount ?? estimatedTotal,
       subtotal: sale.subtotal ?? subtotal,
       paymentMethod: 'KHQR',
@@ -189,7 +266,15 @@ export default function Checkout() {
     saveCustomerOrder(fullOrder);
     setPendingSale(null);
     clear();
+    try {
+      sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
+      sessionStorage.removeItem('mart_applied_coupon');
+      sessionStorage.setItem('mart_last_completed_order', JSON.stringify(fullOrder));
+    } catch {
+      // ignore
+    }
     setCompletedOrder(fullOrder);
+    navigate('/order-success', { state: { order: fullOrder } });
   };
 
   if (completedOrder) {
@@ -440,69 +525,152 @@ export default function Checkout() {
 
             {/* 2. Customer & Address Information Card */}
             <div className="rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-5 sm:p-6 space-y-4">
-              <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
-                <User size={16} className="text-emerald-600" />
-                <span>2. {deliveryMethod === 'DELIVERY' ? 'ព័ត៌មានអតិថិជន និងអាសយដ្ឋានដឹកជញ្ជូន' : 'ព័ត៌មានទំនាក់ទំនងអតិថិជន'}</span>
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
-                    ឈ្មោះអ្នកទទួល (Full Name) *
-                  </label>
-                  <div className="relative">
-                    <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      required
-                      type="text"
-                      placeholder="e.g. Bun Raksa"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-sm font-semibold text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
-                    លេខទូរស័ព្ទ (Phone Number) *
-                  </label>
-                  <div className="relative">
-                    <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      required
-                      type="tel"
-                      placeholder="096 XXX XXXX"
-                      value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-sm font-semibold text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs"
-                    />
-                  </div>
-                </div>
+              <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-3">
+                <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <User size={16} className="text-emerald-600" />
+                  <span>2. {deliveryMethod === 'DELIVERY' ? 'ព័ត៌មានអតិថិជន និងអាសយដ្ឋានដឹកជញ្ជូន' : 'ព័ត៌មានទំនាក់ទំនងអតិថិជន'}</span>
+                </h3>
+                {deliveryMethod === 'DELIVERY' && savedAddresses.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingNewAddress(!isAddingNewAddress)}
+                    className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                  >
+                    {isAddingNewAddress ? 'ជ្រើសរើសអាសយដ្ឋានដែលមានស្រាប់' : '+ បន្ថែមអាសយដ្ឋានថ្មី'}
+                  </button>
+                )}
               </div>
 
-              {deliveryMethod === 'DELIVERY' ? (
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
-                    អាសយដ្ឋានដឹកជញ្ជូន (Delivery Address) *
-                  </label>
-                  <div className="relative">
-                    <MapPin size={15} className="absolute left-3.5 top-3 text-slate-400" />
-                    <textarea
-                      required
-                      rows={2}
-                      placeholder="ផ្ទះលេខ/ផ្លូវ, សង្កាត់, ខណ្ឌ, រាជធានីភ្នំពេញ..."
-                      value={deliveryAddress}
-                      onChange={(e) => setDeliveryAddress(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-sm font-semibold text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs resize-none"
-                    />
+              {/* Saved Addresses List (if available and not adding new) */}
+              {deliveryMethod === 'DELIVERY' && savedAddresses.length > 0 && !isAddingNewAddress && (
+                <div className="space-y-2.5">
+                  <p className="text-xs font-semibold text-slate-500">ជ្រើសរើសអាសយដ្ឋានដឹកជញ្ជូន (Select Delivery Address):</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {savedAddresses.map((addr) => {
+                      const isSelected = selectedAddressId === addr.id;
+                      return (
+                        <div
+                          key={addr.id}
+                          onClick={() => handleSelectAddress(addr)}
+                          className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                            isSelected
+                              ? 'border-emerald-600 dark:border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 ring-1 ring-emerald-600'
+                              : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-800/60 hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="font-extrabold text-slate-900 dark:text-white">
+                              {addr.receiverName} ({addr.phoneNumber})
+                            </span>
+                            {addr.defaultAddress && (
+                              <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 text-[10px] font-black text-emerald-700 dark:text-emerald-300">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-1.5">
+                            <MapPin size={13} className="text-emerald-600 shrink-0 mt-0.5" />
+                            <span>{addr.address}{addr.district ? `, ${addr.district}` : ''}{addr.province ? `, ${addr.province}` : ''}</span>
+                          </p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              ) : (
-                <div className="rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 p-3.5 border border-emerald-200/60 dark:border-emerald-900/40 text-xs text-emerald-800 dark:text-emerald-300">
-                  <span className="font-bold block mb-0.5">ទីតាំងទទួលទំនិញ (Pickup Location):</span>
-                  <p>Mart System Store — Phnom Penh, Cambodia (ម៉ោងបើក៖ 7:00 AM - 10:00 PM)</p>
-                </div>
+              )}
+
+              {/* Input Form Fields (if pickup, no saved addresses, or adding new address) */}
+              {(deliveryMethod === 'PICKUP' || savedAddresses.length === 0 || isAddingNewAddress) && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                        ឈ្មោះអ្នកទទួល (Full Name) *
+                      </label>
+                      <div className="relative">
+                        <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                          required
+                          type="text"
+                          placeholder="e.g. Bun Raksa"
+                          value={customerName}
+                          onChange={(e) => setCustomerName(e.target.value)}
+                          className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-sm font-semibold text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                        លេខទូរស័ព្ទ (Phone Number) *
+                      </label>
+                      <div className="relative">
+                        <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                          required
+                          type="tel"
+                          placeholder="096 XXX XXXX"
+                          value={customerPhone}
+                          onChange={(e) => setCustomerPhone(e.target.value)}
+                          className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-sm font-semibold text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {deliveryMethod === 'DELIVERY' ? (
+                    <div className="space-y-3.5">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                          អាសយដ្ឋានដឹកជញ្ជូន (Street Address / Location) *
+                        </label>
+                        <div className="relative">
+                          <MapPin size={15} className="absolute left-3.5 top-3 text-slate-400" />
+                          <textarea
+                            required
+                            rows={2}
+                            placeholder="ផ្ទះលេខ/ផ្លូវ, សង្កាត់, ខណ្ឌ, រាជធានីភ្នំពេញ..."
+                            value={deliveryAddress}
+                            onChange={(e) => setDeliveryAddress(e.target.value)}
+                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-sm font-semibold text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs resize-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                          <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                            ខណ្ឌ / ស្រុក (District)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Chamkarmon / Toul Kork"
+                            value={district}
+                            onChange={(e) => setDistrict(e.target.value)}
+                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 px-3.5 text-sm font-semibold text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+                            រាជធានី / ខេត្ត (Province/City)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Phnom Penh"
+                            value={province}
+                            onChange={(e) => setProvince(e.target.value)}
+                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 px-3.5 text-sm font-semibold text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-white focus:outline-none transition shadow-2xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 p-3.5 border border-emerald-200/60 dark:border-emerald-900/40 text-xs text-emerald-800 dark:text-emerald-300">
+                      <span className="font-bold block mb-0.5">ទីតាំងទទួលទំនិញ (Pickup Location):</span>
+                      <p>Mart System Store — Phnom Penh, Cambodia (ម៉ោងបើក៖ 7:00 AM - 10:00 PM)</p>
+                    </div>
+                  )}
+                </>
               )}
 
               <div>
@@ -590,6 +758,14 @@ export default function Checkout() {
                 <span>សរុបទំនិញ (Subtotal)</span>
                 <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(subtotal)}</span>
               </div>
+              {couponDiscount > 0 && (
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
+                  <span className="flex items-center gap-1">
+                    <span>បញ្ចុះតម្លៃ (Coupon {appliedCoupon?.code})</span>
+                  </span>
+                  <span className="font-bold">-{formatCurrency(couponDiscount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-slate-600 dark:text-slate-400 font-medium">
                 <span className="flex items-center gap-1">
                   <Truck size={13} className="text-emerald-600" />

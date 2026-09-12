@@ -29,6 +29,14 @@ import CustomerDashboard from '../pages/CustomerDashboard';
 import Reports from '../pages/Reports';
 import Expenses from '../pages/Expenses';
 import Discounts from '../pages/Discounts';
+import Wishlist from '../pages/Wishlist';
+import OrderSuccess from '../pages/OrderSuccess';
+import OrderDetail from '../pages/OrderDetail';
+import AddressManagement from '../pages/AddressManagement';
+import LoyaltyPoints from '../pages/LoyaltyPoints';
+import CustomerSupport from '../pages/CustomerSupport';
+import HelpCenter from '../pages/HelpCenter';
+import StaffOrders from '../pages/StaffOrders';
 import Unauthorized from '../pages/Unauthorized';
 import NotFound from '../pages/NotFound';
 
@@ -61,9 +69,18 @@ export default function AppRoutes() {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/order-success" element={<OrderSuccess />} />
         <Route path="/orders" element={<Orders />} />
+        <Route path="/orders/:id" element={<OrderDetail />} />
         <Route path="/my-orders" element={<Orders />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/account/orders" element={<Orders />} />
+        <Route path="/account/orders/:id" element={<OrderDetail />} />
+        <Route path="/account/addresses" element={<AddressManagement />} />
+        <Route path="/account/loyalty" element={<LoyaltyPoints />} />
+        <Route path="/account/support" element={<CustomerSupport />} />
+        <Route path="/help" element={<HelpCenter />} />
         <Route path="/about" element={<AboutDeveloper />} />
         <Route path="/about-developer" element={<AboutDeveloper />} />
         <Route path="/developer" element={<AboutDeveloper />} />
@@ -179,6 +196,22 @@ export default function AppRoutes() {
           }
         />
         <Route
+          path="/dashboard/orders"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+              <StaffOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/orders"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+              <StaffOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/dashboard/profile"
           element={
             <ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'CUSTOMER']}>
@@ -198,6 +231,10 @@ export default function AppRoutes() {
       <Route path="/customers" element={<Navigate to="/dashboard/customers" replace />} />
       <Route path="/admin/products" element={<Navigate to="/dashboard/products" replace />} />
       <Route path="/profile" element={<Navigate to="/dashboard/profile" replace />} />
+      <Route path="/orders/success" element={<Navigate to="/order-success" replace />} />
+      <Route path="/loyalty" element={<Navigate to="/account/loyalty" replace />} />
+      <Route path="/addresses" element={<Navigate to="/account/addresses" replace />} />
+      <Route path="/support" element={<Navigate to="/account/support" replace />} />
 
       {/* 404 Fallback */}
       <Route path="*" element={<NotFound />} />

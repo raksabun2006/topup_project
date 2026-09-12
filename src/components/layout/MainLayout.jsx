@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import CustomerBottomNav from './CustomerBottomNav';
 import CartDrawer from '../cart/CartDrawer';
 import { useAuth } from '../../context/AuthContext';
 
@@ -20,12 +21,17 @@ export default function MainLayout() {
         <Navbar onOpenCart={() => setCartDrawerOpen(true)} />
       )}
 
-      <main className={isFullScreen ? 'min-h-0 flex-1 flex flex-col overflow-hidden' : 'flex-1'}>
+      <main className={isFullScreen ? 'min-h-0 flex-1 flex flex-col overflow-hidden' : 'flex-1 pb-16 md:pb-0'}>
         <Outlet />
       </main>
 
       {/* Global Slide-out Cart Drawer */}
       <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
+
+      {/* Mobile Sticky Bottom Navigation */}
+      {!isFullScreen && (
+        <CustomerBottomNav onOpenCart={() => setCartDrawerOpen(true)} />
+      )}
 
       {/* Modern E-Commerce Footer */}
       {!isFullScreen && <Footer />}

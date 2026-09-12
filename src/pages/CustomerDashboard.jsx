@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import {
   ShoppingBag, Receipt, CheckCircle2, Clock, CreditCard,
   User, ShieldCheck, ArrowRight, RefreshCw, AlertCircle,
-  Eye, Package, Settings, ExternalLink, ChevronRight
+  Eye, Package, Settings, ExternalLink, ChevronRight,
+  Heart, MapPin, Award, HelpCircle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getCustomerOrders } from '../components/pos/CustomerOrdersModal';
@@ -173,35 +174,19 @@ export default function CustomerDashboard() {
           </div>
         </div>
 
-        {/* Quick Shopping Shortcuts */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* Quick Customer Hub Shortcuts */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <Link
             to="/shop"
-            className="group flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-blue-400 transition"
+            className="group flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-emerald-500 transition"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#164E87] dark:text-blue-400 group-hover:scale-105 transition-transform">
                 <ShoppingBag size={18} />
               </div>
               <div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white">Explore Store Catalog</h3>
-                <p className="text-[11px] text-slate-400">20+ fresh grocery & tech items</p>
-              </div>
-            </div>
-            <ChevronRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-
-          <Link
-            to="/cart"
-            className="group flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-blue-400 transition"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">
-                <Package size={18} />
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white">My Shopping Bag</h3>
-                <p className="text-[11px] text-slate-400">View items ready for checkout</p>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white">Store Catalog</h3>
+                <p className="text-[11px] text-slate-400">Fresh grocery & electronic items</p>
               </div>
             </div>
             <ChevronRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
@@ -209,7 +194,7 @@ export default function CustomerDashboard() {
 
           <Link
             to="/orders"
-            className="group flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-blue-400 transition"
+            className="group flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-emerald-500 transition"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
@@ -217,7 +202,71 @@ export default function CustomerDashboard() {
               </div>
               <div>
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white">Orders & Receipts</h3>
-                <p className="text-[11px] text-slate-400">Track and download invoices</p>
+                <p className="text-[11px] text-slate-400">Track order delivery & status</p>
+              </div>
+            </div>
+            <ChevronRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+
+          <Link
+            to="/wishlist"
+            className="group flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-emerald-500 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 group-hover:scale-105 transition-transform">
+                <Heart size={18} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white">Saved Wishlist</h3>
+                <p className="text-[11px] text-slate-400">View favorite bookmarked items</p>
+              </div>
+            </div>
+            <ChevronRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+
+          <Link
+            to="/account/addresses"
+            className="group flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-emerald-500 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
+                <MapPin size={18} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white">Delivery Addresses</h3>
+                <p className="text-[11px] text-slate-400">Manage home & work locations</p>
+              </div>
+            </div>
+            <ChevronRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+
+          <Link
+            to="/account/loyalty"
+            className="group flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-emerald-500 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">
+                <Award size={18} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white">Loyalty & Rewards</h3>
+                <p className="text-[11px] text-slate-400">Redeem points for discounts</p>
+              </div>
+            </div>
+            <ChevronRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+
+          <Link
+            to="/help"
+            className="group flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-emerald-500 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 group-hover:scale-105 transition-transform">
+                <HelpCircle size={18} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white">Help Center & Support</h3>
+                <p className="text-[11px] text-slate-400">FAQs, KHQR guides & tickets</p>
               </div>
             </div>
             <ChevronRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />

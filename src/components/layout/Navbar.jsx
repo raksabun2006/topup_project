@@ -3,10 +3,11 @@ import { NavLink, Link, useNavigate, useLocation, useSearchParams } from 'react-
 import {
   Home, Menu, X, User, LogOut, Package, ShoppingCart, Search,
   ChevronDown, Layers, ShoppingBag, LogIn, UserPlus, LayoutDashboard, Shield,
-  ArrowRight, Sparkles, Globe, Compass
+  ArrowRight, Sparkles, Globe, Compass, Heart, MapPin, HelpCircle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { useWishlist } from '../../hooks/useWishlist';
 import { useLanguage } from '../../context/LanguageContext';
 import { productApi } from '../../api/productApi';
 import { DEFAULT_PRODUCTS } from '../../constants/products';
@@ -20,6 +21,7 @@ import BrandLogo from '../ui/BrandLogo';
 export default function Navbar({ onOpenCart }) {
   const { isAuthenticated, user, logout, isAdmin, isManagerOrAdmin, isStaff, displayRole } = useAuth();
   const { itemCount, subtotal } = useCart();
+  const { count: wishlistCount } = useWishlist();
   const { t, isKhmer, language } = useLanguage();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -285,6 +287,14 @@ export default function Navbar({ onOpenCart }) {
               {t('shop')}
             </NavLink>
             <NavLink
+              to="/categories"
+              className={({ isActive }) =>
+                `hover:text-black dark:hover:text-white transition ${isActive ? 'text-black dark:text-white font-extrabold' : ''}`
+              }
+            >
+              {t('categories')}
+            </NavLink>
+            <NavLink
               to="/orders"
               className={({ isActive }) =>
                 `hover:text-black dark:hover:text-white transition ${isActive ? 'text-black dark:text-white font-extrabold' : ''}`
@@ -300,14 +310,6 @@ export default function Navbar({ onOpenCart }) {
             >
               {t('guide')}
             </NavLink>
-            <NavLink
-              to="/about"
-              className={({ isActive }) =>
-                `hover:text-black dark:hover:text-white transition ${isActive ? 'text-black dark:text-white font-extrabold' : ''}`
-              }
-            >
-              {t('about')}
-            </NavLink>
           </div>
 
           {/* Language Switcher (Desktop & Tablet top header) */}
@@ -316,27 +318,40 @@ export default function Navbar({ onOpenCart }) {
           {/* Theme Mode Toggle (Desktop & Tablet top header) */}
           <ThemeToggle className="hidden sm:inline-flex" />
 
-          {/* Cart Pill Button (Only for users with an account) */}
-          {isAuthenticated && (
-            <button
-              type="button"
-              onClick={onOpenCart}
-              aria-label={`Shopping cart with ${itemCount} items`}
-              className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 transition cursor-pointer shadow-2xs active:scale-95 shrink-0"
-            >
-              <div className="relative flex items-center justify-center text-slate-900 dark:text-white">
-                <ShoppingCart size={17} />
-                {itemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white shadow-xs">
-                    {itemCount}
-                  </span>
-                )}
-              </div>
-              <span className="hidden sm:inline font-black">
-                {formatCurrency(subtotal)}
+          {/* Wishlist Link Button */}
+          <Link
+            to="/wishlist"
+            aria-label={`Wishlist with ${wishlistCount} items`}
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition shadow-2xs active:scale-95 shrink-0"
+            title={t('wishlist')}
+          >
+            <Heart size={17} className={wishlistCount > 0 ? "fill-rose-500 text-rose-500" : ""} />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white shadow-xs">
+                {wishlistCount}
               </span>
-            </button>
-          )}
+            )}
+          </Link>
+
+          {/* Cart Pill Button (Accessible for all users including guests) */}
+          <button
+            type="button"
+            onClick={onOpenCart}
+            aria-label={`Shopping cart with ${itemCount} items`}
+            className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 transition cursor-pointer shadow-2xs active:scale-95 shrink-0"
+          >
+            <div className="relative flex items-center justify-center text-slate-900 dark:text-white">
+              <ShoppingCart size={17} />
+              {itemCount > 0 && (
+                <span className="absolute -top-2 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white shadow-xs">
+                  {itemCount}
+                </span>
+              )}
+            </div>
+            <span className="hidden sm:inline font-black">
+              {formatCurrency(subtotal)}
+            </span>
+          </button>
 
           {/* Account / Auth Profile Menu (Desktop & Tablet only ≥ 640px) */}
           {!isAuthenticated ? (
@@ -496,6 +511,23 @@ export default function Navbar({ onOpenCart }) {
                       </Link>
 
                       <Link
+                        to="/wishlist"
+                        role="menuitem"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center justify-between rounded-2xl px-3 py-2.5 min-h-[44px] text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Heart size={18} className="text-slate-400 shrink-0" />
+                          <span>{t('wishlist')}</span>
+                        </div>
+                        {wishlistCount > 0 && (
+                          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-black text-white">
+                            {wishlistCount}
+                          </span>
+                        )}
+                      </Link>
+
+                      <Link
                         to="/orders"
                         role="menuitem"
                         onClick={() => setMenuOpen(false)}
@@ -503,6 +535,26 @@ export default function Navbar({ onOpenCart }) {
                       >
                         <Package size={18} className="text-slate-400 shrink-0" />
                         <span>{t('myOrders')}</span>
+                      </Link>
+
+                      <Link
+                        to="/account/addresses"
+                        role="menuitem"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-3 rounded-2xl px-3 py-2.5 min-h-[44px] text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                      >
+                        <MapPin size={18} className="text-slate-400 shrink-0" />
+                        <span>អាសយដ្ឋាន (Addresses)</span>
+                      </Link>
+
+                      <Link
+                        to="/help"
+                        role="menuitem"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-3 rounded-2xl px-3 py-2.5 min-h-[44px] text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                      >
+                        <HelpCircle size={18} className="text-slate-400 shrink-0" />
+                        <span>ជំនួយ (Help Center)</span>
                       </Link>
 
                       <button
@@ -667,7 +719,10 @@ export default function Navbar({ onOpenCart }) {
             {[
               { to: '/', label: t('home'), icon: Home },
               { to: '/shop', label: t('shop'), icon: ShoppingBag },
+              { to: '/wishlist', label: t('wishlist'), icon: Heart },
               { to: '/orders', label: t('myOrders'), icon: Package },
+              { to: '/account/addresses', label: 'អាសយដ្ឋាន (Addresses)', icon: MapPin },
+              { to: '/help', label: 'ជំនួយ (Help Center)', icon: HelpCircle },
               { to: '/guide', label: t('guide'), icon: Compass },
               { to: '/about', label: t('about'), icon: Sparkles },
               ...(isAuthenticated ? [{ to: '/cart', label: t('myCart'), icon: ShoppingCart }] : []),

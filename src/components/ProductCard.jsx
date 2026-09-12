@@ -1,37 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Plus, Minus, Trash2, Heart, ShoppingBag, Check, Star } from 'lucide-react';
+import { Package, Plus, Minus, Trash2, Heart, ShoppingBag, Check, Star, Flame } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import { useLanguage } from '../context/LanguageContext';
-
-const WISHLIST_STORAGE_KEY = 'mart_customer_wishlist';
-
-function isProductWishlisted(id) {
-  try {
-    const raw = localStorage.getItem(WISHLIST_STORAGE_KEY);
-    const set = raw ? JSON.parse(raw) : [];
-    return Array.isArray(set) && set.includes(id);
-  } catch {
-    return false;
-  }
-}
-
-function toggleWishlist(id) {
-  try {
-    const raw = localStorage.getItem(WISHLIST_STORAGE_KEY);
-    let set = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(set)) set = [];
-    if (set.includes(id)) {
-      set = set.filter((x) => x !== id);
-    } else {
-      set.push(id);
-    }
-    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(set));
-    return set.includes(id);
-  } catch {
-    return false;
-  }
-}
+import { useWishlist } from '../hooks/useWishlist';
 
 export default function ProductCard({
   product,
@@ -43,18 +15,16 @@ export default function ProductCard({
 }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const [imageBroken, setImageBroken] = useState(false);
-  const [wishlisted, setWishlisted] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
 
   useEffect(() => {
     setImageBroken(false);
-    if (product?.id) {
-      setWishlisted(isProductWishlisted(product.id));
-    }
   }, [product?.id, product?.imageUrl]);
 
   if (!product) return null;
+  const wishlisted = isInWishlist(product.id);
   const stock = product.stockQuantity ?? 0;
   const outOfStock = stock <= 0;
   const isLowStock = !outOfStock && stock <= 5;
@@ -62,12 +32,21 @@ export default function ProductCard({
   const atMaxStock = available <= 0 && cartQuantity > 0;
   const isSelected = cartQuantity > 0;
 
+  const hasDiscount =
+    Boolean(product.originalPrice) &&
+    Number(product.originalPrice) > Number(product.price);
+  const savings = hasDiscount ? Number(product.originalPrice) - Number(product.price) : 0;
+
   // Resolve dynamic badge
   let badgeText = product.badge;
   if (!badgeText) {
     if (outOfStock) badgeText = t('outOfStock');
     else if (isLowStock) badgeText = `LOW STOCK (${stock})`;
   }
+
+  const isDiscountBadge = Boolean(
+    badgeText && (badgeText.startsWith('-') || badgeText.includes('%') || badgeText.toLowerCase().includes('sale'))
+  );
 
   const handleCardClick = () => {
     if (onOpenDetails) {
@@ -80,8 +59,7 @@ export default function ProductCard({
   const handleWishlistToggle = (e) => {
     e.stopPropagation();
     if (product?.id) {
-      const next = toggleWishlist(product.id);
-      setWishlisted(next);
+      toggleWishlist(product.id);
     }
   };
 
@@ -116,17 +94,19 @@ export default function ProductCard({
   return (
     <div
       onClick={handleCardClick}
-      className={`group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-3.5 transition-all duration-300 hover:shadow-xl hover:border-indigo-500/40 dark:hover:border-slate-700 hover:-translate-y-0.5 cursor-pointer shadow-2xs ${
+      className={`group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 transition-all duration-300 hover:shadow-xl hover:border-indigo-500/40 dark:hover:border-slate-700 hover:-translate-y-0.5 cursor-pointer shadow-2xs ${
         outOfStock ? 'opacity-75' : ''
       }`}
     >
       {/* Top Overlay: Badges & Wishlist Heart */}
-      <div className="absolute top-2.5 inset-x-2.5 z-10 flex items-center justify-between pointer-events-none">
+      <div className="absolute top-3 inset-x-3 z-10 flex items-center justify-between pointer-events-none">
         {badgeText ? (
           <span
             className={`rounded-lg px-2 py-0.5 text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-white shadow-xs ${
               outOfStock
-                ? 'bg-rose-500'
+                ? 'bg-slate-700'
+                : isDiscountBadge
+                ? 'bg-gradient-to-r from-rose-600 to-red-600 ring-1 ring-white/20'
                 : isLowStock
                 ? 'bg-amber-500'
                 : 'bg-[#635BFF]'
@@ -157,15 +137,15 @@ export default function ProductCard({
         </button>
       </div>
 
-      {/* Product Image Stage (Clean Unified Rounded White Canvas) */}
-      <div className="relative aspect-square w-full rounded-xl sm:rounded-2xl bg-white p-2.5 sm:p-3 flex items-center justify-center overflow-hidden mb-2.5 sm:mb-3 shadow-2xs border border-slate-100 dark:border-slate-800/50">
+      {/* Product Image Stage (Clean Unified Soft Canvas) */}
+      <div className="relative aspect-square w-full rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-850 p-2 sm:p-2.5 flex items-center justify-center overflow-hidden mb-2.5">
         {product.imageUrl && !imageBroken ? (
           <img
             src={product.imageUrl}
             alt={product.name}
             loading="lazy"
             decoding="async"
-            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
             onError={() => setImageBroken(true)}
           />
         ) : (
@@ -195,18 +175,55 @@ export default function ProductCard({
           </span>
         </div>
 
+        {/* Flash Sale Progress Bar (if claimedPercent provided) */}
+        {product.claimedPercent != null && (
+          <div className="pt-0.5 space-y-1">
+            <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-bold">
+              <span className="text-rose-600 dark:text-rose-400 flex items-center gap-0.5">
+                <Flame size={10} className="fill-rose-500 text-rose-500" />
+                {product.claimedPercent >= 80 ? 'Almost Sold' : 'Selling Fast'}
+              </span>
+              <span className="text-slate-400 text-[9px]">{product.claimedPercent}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-amber-500 to-rose-600 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, product.claimedPercent)}%` }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Price & Action Row */}
-        <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
-          <span className="text-xs sm:text-sm font-black text-slate-950 dark:text-white">
-            {formatCurrency(product.price)}
-          </span>
+        <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col min-w-0 pr-1">
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span
+                className={`text-xs sm:text-sm font-black ${
+                  hasDiscount ? 'text-rose-600 dark:text-rose-400' : 'text-slate-950 dark:text-white'
+                }`}
+              >
+                {formatCurrency(product.price)}
+              </span>
+              {hasDiscount && (
+                <span className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 line-through font-semibold">
+                  {formatCurrency(product.originalPrice)}
+                </span>
+              )}
+            </div>
+            {hasDiscount && savings > 0 && (
+              <span className="text-[8px] sm:text-[9px] font-bold text-emerald-600 dark:text-emerald-400 truncate">
+                Save {formatCurrency(savings)}
+              </span>
+            )}
+          </div>
 
           {/* Stepper or 1-Click Cart Button */}
           {outOfStock ? (
-            <span className="text-[9px] font-bold text-rose-500">{t('outOfStock')}</span>
+            <span className="text-[9px] font-bold text-rose-500 shrink-0">{t('outOfStock')}</span>
           ) : isSelected ? (
             <div
-              className="flex h-7 items-center rounded-full bg-indigo-50 dark:bg-slate-800 border border-indigo-500/60 p-0.5 shadow-2xs"
+              className="flex h-7 items-center rounded-full bg-indigo-50 dark:bg-slate-800 border border-indigo-500/60 p-0.5 shadow-2xs shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -233,7 +250,7 @@ export default function ProductCard({
               type="button"
               onClick={handleQuickAdd}
               aria-label={`Add ${product.name} to cart`}
-              className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full transition-all active:scale-90 shadow-xs cursor-pointer ${
+              className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full transition-all active:scale-90 shadow-xs cursor-pointer shrink-0 ${
                 justAdded
                   ? 'bg-emerald-600 text-white'
                   : 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 hover:bg-[#635BFF] hover:text-white'

@@ -68,6 +68,24 @@ const translations = {
     previous: 'Previous',
     next: 'Next',
     
+    // Sections & E-Commerce
+    wishlist: 'Wishlist',
+    myWishlist: 'My Wishlist',
+    bestSellers: 'Best Sellers',
+    flashSale: 'Flash Sale',
+    recentlyViewed: 'Recently Viewed',
+    reviews: 'Reviews',
+    writeReview: 'Write a Review',
+    customerReviews: 'Customer Reviews',
+    support: 'Support',
+    addresses: 'Addresses',
+    loyaltyPoints: 'Loyalty Points',
+    coupons: 'Coupons',
+    apply: 'Apply',
+    enterCoupon: 'Enter coupon code',
+    orderTimeline: 'Order Timeline',
+    helpCenter: 'Help Center',
+    
     // Status
     completed: 'Completed',
     pending: 'Pending',
@@ -138,6 +156,24 @@ const translations = {
     products: 'មុខទំនិញ',
     previous: 'ថយក្រោយ',
     next: 'បន្ទាប់',
+
+    // Sections & E-Commerce
+    wishlist: 'ទំនិញពេញចិត្ត',
+    myWishlist: 'ទំនិញពេញចិត្តរបស់ខ្ញុំ',
+    bestSellers: 'ទំនិញលក់ដាច់បំផុត',
+    flashSale: 'ការបញ្ចុះតម្លៃពិសេស (Flash Sale)',
+    recentlyViewed: 'ទំនិញដែលបានមើលថ្មីៗ',
+    reviews: 'ការវាយតម្លៃ',
+    writeReview: 'សរសេរការវាយតម្លៃ',
+    customerReviews: 'ការវាយតម្លៃរបស់អតិថិជន',
+    support: 'ជំនួយ និងសេវាកម្ម',
+    addresses: 'អាសយដ្ឋានដឹកជញ្ជូន',
+    loyaltyPoints: 'ពិន្ទុភក្ដីភាព',
+    coupons: 'ប័ណ្ណបញ្ចុះតម្លៃ',
+    apply: 'ប្រើប្រាស់',
+    enterCoupon: 'បញ្ចូលកូដបញ្ចុះតម្លៃ',
+    orderTimeline: 'ដំណាក់កាលបញ្ជាទិញ',
+    helpCenter: 'មជ្ឈមណ្ឌលជំនួយ',
 
     // Status
     completed: 'ជោគជ័យ',

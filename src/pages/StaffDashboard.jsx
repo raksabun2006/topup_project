@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Receipt, CheckCircle2, DollarSign, ShoppingCart, AlertCircle, RefreshCw,
-  TrendingUp, Calendar, ArrowRight, Package, Users, Shield, ArrowUpRight
+  TrendingUp, Calendar, ArrowRight, Package, Users, Shield, ArrowUpRight, Truck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSales } from '../hooks/useSales';
@@ -86,7 +86,7 @@ export default function StaffDashboard() {
       </div>
 
       {/* Staff Operational Shortcuts */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <Link
           to="/pos"
           className="group flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-emerald-500 transition"
@@ -97,7 +97,23 @@ export default function StaffDashboard() {
             </div>
             <div>
               <h3 className="text-xs font-bold text-slate-900 dark:text-white">Point of Sale (POS)</h3>
-              <p className="text-[11px] text-slate-400">Barcode scanner & quick checkout</p>
+              <p className="text-[11px] text-slate-400">Barcode scanner & checkout</p>
+            </div>
+          </div>
+          <ArrowUpRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+        </Link>
+
+        <Link
+          to="/dashboard/orders"
+          className="group flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-purple-500 transition"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
+              <Truck size={18} />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white">Online Orders Dispatch</h3>
+              <p className="text-[11px] text-slate-400">Track delivery & preparation</p>
             </div>
           </div>
           <ArrowUpRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
@@ -113,7 +129,7 @@ export default function StaffDashboard() {
             </div>
             <div>
               <h3 className="text-xs font-bold text-slate-900 dark:text-white">Sales & Receipts</h3>
-              <p className="text-[11px] text-slate-400">Order logs & invoice printing</p>
+              <p className="text-[11px] text-slate-400">Order logs & invoices</p>
             </div>
           </div>
           <ArrowUpRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />

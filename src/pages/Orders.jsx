@@ -15,7 +15,7 @@ export default function Orders() {
   const { isAuthenticated, user } = useAuth();
   const [orders, setOrders] = useState(getCustomerOrders);
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState('ALL'); // 'ALL', 'COMPLETED', 'PENDING'
+  const [tab, setTab] = useState('ALL'); // 'ALL', 'PENDING', 'PAID', 'PREPARING', 'SHIPPED', 'DELIVERED', 'CANCELLED'
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [search, setSearch] = useState('');
 
@@ -47,7 +47,7 @@ export default function Orders() {
                 items: ro.items || ro.orderItems || [],
                 paymentMethod: typeof ro.paymentMethod === 'string' ? ro.paymentMethod : ro.paymentMethod?.name || 'KHQR',
                 paymentStatus: typeof ro.paymentStatus === 'string' ? ro.paymentStatus : typeof ro.status === 'string' ? ro.status : 'PAID',
-                status: typeof ro.status === 'string' ? ro.status : 'COMPLETED',
+                status: typeof ro.status === 'string' ? ro.status : 'PAID',
                 createdAt: ro.createdAt || ro.orderDate || new Date().toISOString(),
                 rawOrder: ro,
               };
@@ -67,10 +67,18 @@ export default function Orders() {
   const filtered = useMemo(() => {
     let list = [...orders];
 
-    if (tab === 'COMPLETED') {
-      list = list.filter((o) => o.paymentStatus === 'PAID' || o.status === 'COMPLETED');
-    } else if (tab === 'PENDING') {
-      list = list.filter((o) => o.paymentStatus !== 'PAID' && o.status !== 'COMPLETED');
+    if (tab === 'PENDING') {
+      list = list.filter((o) => (o.status === 'PENDING_PAYMENT' || o.paymentStatus === 'PENDING') && o.status !== 'CANCELLED');
+    } else if (tab === 'PAID') {
+      list = list.filter((o) => (o.paymentStatus === 'PAID' || o.status === 'PAID') && o.status !== 'CANCELLED');
+    } else if (tab === 'PREPARING') {
+      list = list.filter((o) => o.status === 'PREPARING' || o.status === 'CONFIRMED');
+    } else if (tab === 'SHIPPED') {
+      list = list.filter((o) => o.status === 'SHIPPED' || o.status === 'READY' || o.status === 'OUT_FOR_DELIVERY');
+    } else if (tab === 'DELIVERED') {
+      list = list.filter((o) => o.status === 'DELIVERED' || o.status === 'COMPLETED');
+    } else if (tab === 'CANCELLED') {
+      list = list.filter((o) => o.status === 'CANCELLED');
     }
 
     if (search.trim()) {
@@ -84,6 +92,15 @@ export default function Orders() {
 
     return list;
   }, [orders, tab, search]);
+
+  const TABS = [
+    { key: 'ALL', label: `All (${orders.length})` },
+    { key: 'PENDING', label: 'Pending' },
+    { key: 'PAID', label: 'Paid' },
+    { key: 'PREPARING', label: 'Preparing' },
+    { key: 'SHIPPED', label: 'Shipped' },
+    { key: 'DELIVERED', label: 'Delivered' },
+  ];
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 pb-20">
@@ -116,40 +133,21 @@ export default function Orders() {
         {/* Search & Tabs */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Status Tabs */}
-          <div className="flex items-center gap-1 rounded-full bg-[#F7F7F8] dark:bg-slate-900 p-1 border border-slate-200/60 dark:border-slate-800">
-            <button
-              type="button"
-              onClick={() => setTab('ALL')}
-              className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${
-                tab === 'ALL'
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              All ({orders.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab('COMPLETED')}
-              className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${
-                tab === 'COMPLETED'
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              Completed
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab('PENDING')}
-              className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${
-                tab === 'PENDING'
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              Pending
-            </button>
+          <div className="flex items-center gap-1 rounded-2xl bg-[#F7F7F8] dark:bg-slate-900 p-1 border border-slate-200/60 dark:border-slate-800 overflow-x-auto max-w-full">
+            {TABS.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => setTab(t.key)}
+                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition cursor-pointer ${
+                  tab === t.key
+                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
 
           {/* Search Box */}
@@ -286,14 +284,23 @@ export default function Orders() {
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setSelectedReceipt(order)}
-                      className="flex items-center justify-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-black text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer shadow-2xs shrink-0"
-                    >
-                      <Eye size={13} />
-                      <span>មើលលម្អិត (View Receipt)</span>
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Link
+                        to={`/orders/${order.id || order.orderNumber || order.invoiceNumber}`}
+                        className="flex items-center justify-center gap-1.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2 text-xs font-black hover:opacity-90 transition cursor-pointer shadow-2xs"
+                      >
+                        <Truck size={13} />
+                        <span>តាមដាន (Track)</span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedReceipt(order)}
+                        className="flex items-center justify-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer shadow-2xs"
+                      >
+                        <Receipt size={13} />
+                        <span>វិក្កយបត្រ</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
