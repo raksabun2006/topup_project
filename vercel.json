@@ -1,14 +1,25 @@
 {
   "redirects": [
     {
-      "source": "/:path*",
+      "source": "/",
       "has": [
         {
           "type": "host",
           "value": "www.martsystemkh.software"
         }
       ],
-      "destination": "https://martsystemkh.software/:path*",
+      "destination": "https://martsystemkh.software/",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.martsystemkh.software"
+        }
+      ],
+      "destination": "https://martsystemkh.software/$1",
       "permanent": true
     }
   ],
