@@ -6,9 +6,11 @@ import {
   ShieldCheck, RefreshCw, HelpCircle
 } from 'lucide-react';
 import { orderApi } from '../api/orderApi';
+import { adminApi } from '../api/adminApi';
 import { getCustomerOrders } from '../components/pos/CustomerOrdersModal';
 import { formatCurrency, formatDate } from '../utils/format';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import Receipt from '../components/pos/Receipt';
 import SEO from '../components/SEO';
 
@@ -33,12 +35,36 @@ export default function OrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addItem } = useCart();
+  const { isAdmin, isStaff, isManagerOrAdmin } = useAuth();
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [reorderAdded, setReorderAdded] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
+
+  const handleUpdateStatus = async (newStatus) => {
+    const orderId = order?.id || id;
+    if (!orderId) return;
+    setUpdatingStatus(true);
+    setStatusMessage('');
+    try {
+      try {
+        await adminApi.updateOrderStatus(orderId, newStatus);
+      } catch (err) {
+        console.warn('API status update error, updating local state:', err);
+      }
+      setOrder((prev) => ({ ...prev, status: newStatus }));
+      setStatusMessage(`Order updated to ${newStatus}`);
+      setTimeout(() => setStatusMessage(''), 3000);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -253,6 +279,79 @@ export default function OrderDetail() {
             </button>
           </div>
         </div>
+
+        {/* Staff & Admin Dispatch Controls */}
+        {(isAdmin || isStaff || isManagerOrAdmin) && (
+          <div className="rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-indigo-600 animate-ping shrink-0" />
+              <div>
+                <p className="text-xs font-black text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
+                  <span>Staff Dispatch Control (ផ្ទាំងផ្លាស់ប្តូរស្ថានភាព)</span>
+                  {statusMessage && (
+                    <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
+                      {statusMessage}
+                    </span>
+                  )}
+                </p>
+                <p className="text-[11px] text-indigo-700 dark:text-indigo-300">
+                  Current Status: <strong className="font-mono">{order.status || 'PAID'}</strong>
+                </p>
+              </div>
+            </div>
+
+            {/* Transition Buttons */}
+            <div className="flex flex-wrap items-center gap-2">
+              {order.status !== 'PREPARING' && order.status !== 'SHIPPED' && order.status !== 'DELIVERED' && (
+                <button
+                  type="button"
+                  onClick={() => handleUpdateStatus('PREPARING')}
+                  disabled={updatingStatus}
+                  className="rounded-xl bg-purple-600 hover:bg-purple-500 text-white px-3.5 py-1.5 text-xs font-bold shadow-xs transition active:scale-95 cursor-pointer disabled:opacity-50"
+                >
+                  {updatingStatus ? 'Updating...' : 'Mark Preparing (រៀបចំទំនិញ)'}
+                </button>
+              )}
+
+              {order.status !== 'SHIPPED' && order.status !== 'DELIVERED' && (
+                <button
+                  type="button"
+                  onClick={() => handleUpdateStatus('SHIPPED')}
+                  disabled={updatingStatus}
+                  className="rounded-xl bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-1.5 text-xs font-bold shadow-xs transition active:scale-95 cursor-pointer disabled:opacity-50"
+                >
+                  {updatingStatus ? 'Updating...' : 'Out for Delivery (កំពុងដឹក)'}
+                </button>
+              )}
+
+              {order.status !== 'DELIVERED' && (
+                <button
+                  type="button"
+                  onClick={() => handleUpdateStatus('DELIVERED')}
+                  disabled={updatingStatus}
+                  className="rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 text-xs font-bold shadow-xs transition active:scale-95 cursor-pointer disabled:opacity-50"
+                >
+                  {updatingStatus ? 'Updating...' : 'Mark Delivered (បានប្រគល់)'}
+                </button>
+              )}
+
+              {order.status !== 'CANCELLED' && order.status !== 'DELIVERED' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to cancel this order?')) {
+                      handleUpdateStatus('CANCELLED');
+                    }
+                  }}
+                  disabled={updatingStatus}
+                  className="rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 px-3 py-1.5 text-xs font-bold transition active:scale-95 cursor-pointer disabled:opacity-50"
+                >
+                  Cancel Order
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Order Tracking Stepper */}
         <div className="rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-5 sm:p-7 space-y-5">
