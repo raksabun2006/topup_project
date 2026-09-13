@@ -13,6 +13,7 @@ export default function ProductCard({
   onRemove,
   cartQuantity = 0,
   onOpenDetails,
+  quickAddOnCardClick = false,
 }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -51,7 +52,20 @@ export default function ProductCard({
 
   const productUrl = getProductUrl(product);
 
-  const handleCardClick = () => {
+  const handleCardClick = (e) => {
+    if (quickAddOnCardClick) {
+      e?.preventDefault?.();
+      e?.stopPropagation?.();
+      if (outOfStock || atMaxStock) return;
+      if (cartQuantity > 0 && onSetQuantity) {
+        onSetQuantity(product.id, cartQuantity + 1);
+      } else if (onAdd) {
+        onAdd(product);
+      }
+      setJustAdded(true);
+      setTimeout(() => setJustAdded(false), 900);
+      return;
+    }
     if (onOpenDetails) {
       onOpenDetails(product);
     } else if (product?.id) {
@@ -94,13 +108,146 @@ export default function ProductCard({
     }
   };
 
+  const isCompact = quickAddOnCardClick;
+
+  if (isCompact) {
+    return (
+      <div
+        onClick={handleCardClick}
+        className={`group relative flex flex-col justify-between rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-2 sm:p-2.5 transition-all duration-150 hover:shadow-md hover:border-emerald-500/60 dark:hover:border-emerald-500/50 hover:-translate-y-0.5 cursor-pointer shadow-2xs select-none ${
+          outOfStock ? 'opacity-70' : ''
+        } ${justAdded ? 'ring-2 ring-emerald-500 shadow-emerald-500/20 scale-[0.98]' : ''}`}
+      >
+        {/* Quick Click Add Feedback Overlay */}
+        {justAdded && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center rounded-xl sm:rounded-2xl bg-emerald-500/15 backdrop-blur-2xs pointer-events-none animate-fade-in">
+            <span className="rounded-full bg-emerald-600 text-white text-[11px] font-black px-2 py-0.5 shadow-md animate-bounce flex items-center gap-1">
+              <Check size={11} /> +1
+            </span>
+          </div>
+        )}
+
+        {/* Top Badges & Quantity Pill */}
+        <div className="flex items-center justify-between gap-1 mb-1 pointer-events-none">
+          {badgeText ? (
+            <span
+              className={`rounded-md px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider text-white shadow-2xs ${
+                outOfStock
+                  ? 'bg-slate-700'
+                  : isDiscountBadge
+                  ? 'bg-rose-600'
+                  : isLowStock
+                  ? 'bg-amber-500'
+                  : 'bg-emerald-600'
+              }`}
+            >
+              {badgeText}
+            </span>
+          ) : (
+            <span />
+          )}
+
+          {isSelected && (
+            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-black text-white shadow-xs">
+              x{cartQuantity}
+            </span>
+          )}
+        </div>
+
+        {/* Compact Product Image */}
+        <div className="relative h-20 sm:h-24 w-full rounded-lg bg-slate-50 dark:bg-slate-850 p-1 flex items-center justify-center overflow-hidden mb-1.5">
+          {product.imageUrl && !imageBroken ? (
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-contain transition-transform duration-200 group-hover:scale-105"
+              onError={() => setImageBroken(true)}
+            />
+          ) : (
+            <Package size={22} className="text-slate-400" />
+          )}
+        </div>
+
+        {/* Product Information */}
+        <div className="space-y-1 min-w-0 flex-1 flex flex-col justify-between">
+          <h3
+            className="line-clamp-2 text-[11px] sm:text-xs font-bold leading-tight text-slate-900 dark:text-white"
+            title={product.name}
+          >
+            {product.name}
+          </h3>
+
+          {/* Compact Price & Add/Qty Row */}
+          <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80 mt-1">
+            <div className="flex flex-col min-w-0 pr-1 leading-none">
+              <span
+                className={`text-xs sm:text-[13px] font-black ${
+                  hasDiscount ? 'text-rose-600 dark:text-rose-400' : 'text-slate-950 dark:text-white'
+                }`}
+              >
+                {formatCurrency(product.price)}
+              </span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
+                {formatKhr(product.price)}
+              </span>
+            </div>
+
+            {/* Tactile Mini Action */}
+            {outOfStock ? (
+              <span className="text-[8px] font-bold text-rose-500 shrink-0">អស់ស្តុក</span>
+            ) : isSelected ? (
+              <div
+                className="flex h-5 items-center rounded-full bg-emerald-50 dark:bg-slate-800 border border-emerald-500/60 p-0.5 shadow-2xs shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={handleDecrement}
+                  className="flex h-4 w-4 items-center justify-center rounded-full text-emerald-700 dark:text-emerald-300 hover:bg-rose-100 transition cursor-pointer"
+                >
+                  {cartQuantity === 1 ? <Trash2 size={8} className="text-rose-500" /> : <Minus size={8} />}
+                </button>
+                <span className="px-1 text-[9px] font-black text-emerald-700 dark:text-emerald-300 select-none">
+                  {cartQuantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleIncrement}
+                  disabled={atMaxStock}
+                  className="flex h-4 w-4 items-center justify-center rounded-full bg-[#009F6B] text-white hover:bg-emerald-700 transition disabled:opacity-40 cursor-pointer"
+                >
+                  <Plus size={8} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 dark:bg-slate-800 text-[#009F6B] dark:text-emerald-400 border border-emerald-200 dark:border-slate-700 group-hover:bg-[#009F6B] group-hover:text-white transition-colors shrink-0">
+                <Plus size={13} />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       onClick={handleCardClick}
-      className={`group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 transition-all duration-300 hover:shadow-xl hover:border-indigo-500/40 dark:hover:border-slate-700 hover:-translate-y-0.5 cursor-pointer shadow-2xs ${
+      className={`group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 transition-all duration-200 hover:shadow-xl hover:border-emerald-500/50 dark:hover:border-slate-700 hover:-translate-y-0.5 cursor-pointer shadow-2xs ${
         outOfStock ? 'opacity-75' : ''
-      }`}
+      } ${justAdded ? 'ring-2 ring-emerald-500 shadow-emerald-500/20 scale-[0.98]' : ''}`}
     >
+      {/* Quick Click Add Feedback Overlay */}
+      {justAdded && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center rounded-2xl sm:rounded-3xl bg-emerald-500/15 backdrop-blur-2xs pointer-events-none animate-fade-in">
+          <span className="rounded-full bg-emerald-600 text-white text-xs font-black px-2.5 py-1 shadow-md animate-bounce flex items-center gap-1">
+            <Check size={13} /> +1
+          </span>
+        </div>
+      )}
+
       {/* Top Overlay: Badges & Wishlist Heart */}
       <div className="absolute top-3 inset-x-3 z-10 flex items-center justify-between pointer-events-none">
         {badgeText ? (

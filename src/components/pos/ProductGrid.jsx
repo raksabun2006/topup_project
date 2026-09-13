@@ -5,7 +5,6 @@ import {
 } from 'lucide-react';
 import ProductCard from '../ProductCard';
 import ProductFormModal from '../admin/ProductFormModal';
-import ProductDetailModal from './ProductDetailModal';
 import { useProducts } from '../../hooks/useProducts';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -32,7 +31,6 @@ export default function ProductGrid({
   const [sortBy, setSortBy] = useState('DEFAULT'); // 'DEFAULT', 'PRICE_ASC', 'PRICE_DESC', 'NAME'
   const [filterStockOnly, setFilterStockOnly] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
-  const [selectedProductDetails, setSelectedProductDetails] = useState(null);
   const [toastData, setToastData] = useState(null);
 
   const { isAdmin } = useAuth();
@@ -410,9 +408,9 @@ export default function ProductGrid({
           </div>
         )}
 
-        {/* Product Cards Grid: 2 cols on mobile, 3 on tablet, 3-5 on desktop */}
+        {/* Product Cards Grid: High-density compact POS grid */}
         {!loading && !error && filtered && filtered.length > 0 && (
-          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3">
+          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-2.5">
             {filtered.filter(Boolean).map((product) => (
               <ProductCard
                 key={product?.id || product?.sku || Math.random()}
@@ -421,7 +419,7 @@ export default function ProductGrid({
                 onSetQuantity={onSetQuantity}
                 onRemove={onRemove}
                 cartQuantity={cartQuantities.get(product?.id) ?? 0}
-                onOpenDetails={(p) => setSelectedProductDetails(p)}
+                quickAddOnCardClick={true}
               />
             ))}
           </div>
@@ -454,18 +452,6 @@ export default function ProductGrid({
             </button>
           </div>
         </div>
-      )}
-
-      {/* Product Detail Modal */}
-      {selectedProductDetails && (
-        <ProductDetailModal
-          product={selectedProductDetails}
-          onClose={() => setSelectedProductDetails(null)}
-          onAdd={(p, qty) => {
-            handleAddWithFeedback(p, qty);
-          }}
-          cartQuantity={cartQuantities.get(selectedProductDetails?.id) ?? 0}
-        />
       )}
 
       {/* Admin: Product Form Modal */}

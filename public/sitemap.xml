@@ -73,6 +73,15 @@
     <priority>0.80</priority>
   </url>
   <url>
+    <loc>https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
     <loc>https://martsystemkh.software/category/Beverages%20%26%20Drinks</loc>
     <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/Beverages%20%26%20Drinks" />
     <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/Beverages%20%26%20Drinks" />
@@ -82,10 +91,10 @@
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <loc>https://martsystemkh.software/category/Groceries%20%26%20Staples</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
     <lastmod>2026-09-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -122,15 +131,6 @@
     <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A" />
     <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A" />
-    <lastmod>2026-09-13</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/category/Groceries%20%26%20Staples</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
     <lastmod>2026-09-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -190,20 +190,6 @@
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
-    <lastmod>2026-09-13</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHguxuWCpApinQFedDrBG-9bAPjyoVeTSUkoS6JqO8vg&amp;s=10</image:loc>
-      <image:title>Coca Cola Can 330ml</image:title>
-      <image:caption>Classic refreshing carbonated soft drink, served chilled.</image:caption>
-    </image:image>
-  </url>
-  <url>
     <loc>https://martsystemkh.software/products/eau-kulen-mineral-water-15l-x-12--ed13cf5d-cfd4-4f16-bcfb-74f01aa1692e</loc>
     <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/eau-kulen-mineral-water-15l-x-12--ed13cf5d-cfd4-4f16-bcfb-74f01aa1692e" />
     <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/eau-kulen-mineral-water-15l-x-12--ed13cf5d-cfd4-4f16-bcfb-74f01aa1692e" />
@@ -229,6 +215,34 @@
       <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQY4HWBd6269GKwtnfPL476wnbLiS4geRe3R4ZFmIE5w&amp;s=10</image:loc>
       <image:title>ទឹកបរិសុទ្ធ កម្ពុជា 500ml x 24</image:title>
       <image:caption>ទឹកបរិសុទ្ធដបតូច សាកសមសម្រាប់យកតាមខ្លួន</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHguxuWCpApinQFedDrBG-9bAPjyoVeTSUkoS6JqO8vg&amp;s=10</image:loc>
+      <image:title>Coca Cola Can 330ml</image:title>
+      <image:caption>Classic refreshing carbonated soft drink, served chilled.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9yOpeLR6mdJiIZzolFtxWJPxZHHQ_DRmIkwPaFKBzqg&amp;s</image:loc>
+      <image:title>Malys Angkor Jasmine Rice 5kg</image:title>
+      <image:caption>Premium quality fragrant Phka Rumduol jasmine rice from Cambodia, known for its soft texture and natural pandan-like aroma.</image:caption>
     </image:image>
   </url>
   <url>
@@ -327,20 +341,6 @@
       <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsybjD4tx5kBPGN7ijPVOH8x1LD98qeMktgszUf55N4A&amp;s</image:loc>
       <image:title>Dasani Water 1.5L x 6</image:title>
       <image:caption>ទឹកសុទ្ធ Dasani សម្រាប់ការប្រើប្រាស់ប្រចាំថ្ងៃ</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
-    <lastmod>2026-09-13</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9yOpeLR6mdJiIZzolFtxWJPxZHHQ_DRmIkwPaFKBzqg&amp;s</image:loc>
-      <image:title>Malys Angkor Jasmine Rice 5kg</image:title>
-      <image:caption>Premium quality fragrant Phka Rumduol jasmine rice from Cambodia, known for its soft texture and natural pandan-like aroma.</image:caption>
     </image:image>
   </url>
   <url>
