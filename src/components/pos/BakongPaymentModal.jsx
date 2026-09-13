@@ -12,6 +12,7 @@ import { orderApi } from '../../api/orderApi';
 import { getErrorMessage } from '../../api/client';
 import { formatCurrency, parseBackendDate, formatCountdown } from '../../utils/format';
 import { sanitizeUrl } from '../../utils/security';
+import { broadcastPosState, POS_SYNC_STORAGE_KEY } from './CustomerFacingDisplay';
 
 const ACTIVE_PAYMENT_KEY = 'pos_active_bakong_payment';
 
@@ -546,7 +547,45 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const paymentAmount = payment?.amount ?? sale?.total;
   const paymentCurrency = payment?.currency || 'USD';
   const merchantDisplayName = payment?.merchantName || 'Mart System';
-  const qrValue = payment?.qrString || payment?.qr || (typeof payment?.getQr === 'function' ? payment.getQr() : null);
+  // Broadcast active Bakong KHQR state to Customer-Facing Display
+  useEffect(() => {
+    if (qrValue && isQrActive) {
+      broadcastPosState({
+        status: 'CHECKOUT',
+        qrData: qrValue,
+        total: paymentAmount,
+        currency: paymentCurrency,
+        billNumber: billNo,
+      });
+    } else if (isSuccess) {
+      broadcastPosState({
+        status: 'COMPLETED',
+        completedSale: {
+          billNumber: billNo,
+          total: paymentAmount,
+        },
+      });
+    }
+  }, [qrValue, isQrActive, isSuccess, paymentAmount, paymentCurrency, billNo]);
+
+  useEffect(() => {
+    return () => {
+      try {
+        const raw = localStorage.getItem(POS_SYNC_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.status === 'CHECKOUT' && !isPaid) {
+            broadcastPosState({
+              status: parsed.items?.length > 0 ? 'CART' : 'IDLE',
+              qrData: null,
+            });
+          }
+        }
+      } catch {
+        // ignore
+      }
+    };
+  }, [isPaid]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4 backdrop-blur-sm animate-fade-in">

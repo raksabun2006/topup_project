@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   Store,
   QrCode,
@@ -10,6 +11,8 @@ import {
   User,
   ShieldCheck,
   Package,
+  Smartphone,
+  Check,
 } from 'lucide-react';
 import { formatCurrency, formatKhr, KHR_RATE } from '../../utils/format';
 
@@ -19,17 +22,27 @@ export const POS_SYNC_STORAGE_KEY = 'mart_pos_sync_state';
 /** Helper to broadcast POS cashier state to any active customer displays */
 export function broadcastPosState(state) {
   try {
+    let existing = {};
+    try {
+      const raw = localStorage.getItem(POS_SYNC_STORAGE_KEY);
+      if (raw) existing = JSON.parse(raw);
+    } catch {
+      // ignore
+    }
+
     const payload = {
+      ...existing,
       ...state,
       timestamp: Date.now(),
     };
-    // 1. BroadcastChannel (fast, same origin)
+
+    // 1. BroadcastChannel (instant in same browser context)
     if (typeof BroadcastChannel !== 'undefined') {
       const bc = new BroadcastChannel(POS_SYNC_CHANNEL);
       bc.postMessage(payload);
       bc.close();
     }
-    // 2. localStorage fallback for cross-window / tab sync
+    // 2. localStorage fallback (cross-window/tab sync)
     localStorage.setItem(POS_SYNC_STORAGE_KEY, JSON.stringify(payload));
   } catch {
     // ignore
@@ -54,16 +67,16 @@ export default function CustomerFacingDisplay({
 
   const [time, setTime] = useState(new Date());
 
-  // Clock
+  // Real-time clock
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Listen for broadcasts from POS cashier window
+  // Listen for live broadcasts from POS cashier window
   useEffect(() => {
     if (initialState) {
-      setSyncedState(initialState);
+      setSyncedState((prev) => ({ ...prev, ...initialState }));
       return;
     }
 
@@ -72,7 +85,7 @@ export default function CustomerFacingDisplay({
       bc = new BroadcastChannel(POS_SYNC_CHANNEL);
       bc.onmessage = (event) => {
         if (event?.data) {
-          setSyncedState(event.data);
+          setSyncedState((prev) => ({ ...prev, ...event.data }));
         }
       };
     }
@@ -80,7 +93,8 @@ export default function CustomerFacingDisplay({
     const handleStorage = (e) => {
       if (e.key === POS_SYNC_STORAGE_KEY && e.newValue) {
         try {
-          setSyncedState(JSON.parse(e.newValue));
+          const parsed = JSON.parse(e.newValue);
+          setSyncedState((prev) => ({ ...prev, ...parsed }));
         } catch {
           // ignore
         }
@@ -103,6 +117,7 @@ export default function CustomerFacingDisplay({
   const total = Number(syncedState?.total) || 0;
   const status = syncedState?.status || 'IDLE'; // 'IDLE', 'CART', 'CHECKOUT', 'COMPLETED'
   const qrData = syncedState?.qrData || null;
+  const billNumber = syncedState?.billNumber || syncedState?.completedSale?.billNumber || 'INV';
   const completedSale = syncedState?.completedSale || null;
   const cashTendered = Number(syncedState?.cashTendered) || 0;
   const changeDue = Number(syncedState?.changeDue) || 0;
@@ -119,46 +134,58 @@ export default function CustomerFacingDisplay({
     hour12: true,
   });
 
+  const dateFormatted = time.toLocaleDateString('km-KH', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+
+  const isCheckoutQr = Boolean(qrData && (status === 'CHECKOUT' || status === 'PENDING'));
+
   return (
     <div
-      className={`flex flex-col bg-slate-950 text-white select-none ${
+      className={`flex flex-col bg-[#F8FAFC] text-slate-900 select-none ${
         isEmbeddedPreview ? 'h-full w-full' : 'h-screen w-screen'
       } overflow-hidden font-sans`}
     >
-      {/* Top Customer Display Header */}
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-800/90 bg-slate-900/90 px-6 backdrop-blur-md">
+      {/* Top Customer Display Header - Crisp White */}
+      <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200/90 bg-white px-6 shadow-xs z-10">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-lg shadow-emerald-500/20">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-600/20">
             <Store size={22} />
           </div>
           <div>
-            <h1 className="text-base font-extrabold tracking-tight text-white flex items-center gap-2">
+            <h1 className="text-base font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
               <span>Mart System</span>
-              <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/30">
-                Customer Display
+              <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-[#009F6B] border border-emerald-200">
+                Customer Screen
               </span>
             </h1>
-            <p className="text-xs text-slate-400">សូមស្វាគមន៍ / Welcome to our store</p>
+            <p className="text-xs text-slate-500 font-medium">
+              សូមស្វាគមន៍ / Welcome to our store
+            </p>
           </div>
         </div>
 
-        {/* Center: Live Rate & Time */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/50 px-3 py-1 text-xs font-mono font-bold text-emerald-300">
-            <Coins size={14} className="text-emerald-400" />
+        {/* Center/Right: Live Rate & Time Pills */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-mono font-bold text-emerald-800 shadow-2xs">
+            <Coins size={14} className="text-[#009F6B]" />
             <span>$1 = {KHR_RATE.toLocaleString()} ៛</span>
           </div>
 
-          <div className="flex items-center gap-1.5 rounded-full border border-slate-800 bg-slate-800/60 px-3 py-1 text-xs font-mono text-slate-300">
+          <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-mono font-bold text-slate-700 shadow-2xs">
             <Clock size={13} className="text-slate-400" />
             <span>{timeFormatted}</span>
+            <span className="text-slate-300">·</span>
+            <span className="text-slate-500 text-[11px] font-medium">{dateFormatted}</span>
           </div>
 
           {isEmbeddedPreview && onClosePreview && (
             <button
               type="button"
               onClick={onClosePreview}
-              className="ml-2 rounded-xl border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-bold text-slate-300 hover:bg-slate-700 cursor-pointer"
+              className="ml-2 rounded-xl border border-slate-300 bg-white px-3 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-2xs cursor-pointer"
             >
               បិទផ្ទាំង
             </button>
@@ -166,176 +193,229 @@ export default function CustomerFacingDisplay({
         </div>
       </header>
 
-      {/* Main Body */}
-      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-        {/* State 1: COMPLETED (Success & Change Due) */}
+      {/* Main Body Canvas */}
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-4 sm:p-6 lg:p-8">
+        {/* ============================================================
+            STATE 1: COMPLETED SALE (Success banner & Change Due)
+        ============================================================ */}
         {status === 'COMPLETED' && (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-scale-in">
-            <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-emerald-500/20 border-2 border-emerald-500/60 text-emerald-400 shadow-2xl shadow-emerald-500/30 mb-6">
-              <CheckCircle2 size={56} className="animate-bounce" />
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-scale-in">
+            <div className="flex h-22 w-22 items-center justify-center rounded-3xl bg-emerald-100 border-2 border-emerald-500 text-[#009F6B] shadow-xl shadow-emerald-500/20 mb-5">
+              <CheckCircle2 size={54} className="animate-bounce" />
             </div>
 
-            <h2 className="text-3xl font-black text-white tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
               ការទូទាត់ជោគជ័យ!
             </h2>
-            <p className="text-base text-slate-400 mt-1">
-              Payment Successful! Thank you for shopping with us!
+            <p className="text-base text-slate-600 mt-1 font-medium">
+              Payment Completed! Thank you for shopping with us!
             </p>
 
-            {completedSale?.billNumber && (
-              <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-slate-900 border border-slate-800 px-4 py-1 text-xs font-mono text-emerald-400">
-                វិក្កយបត្រ #{completedSale.billNumber}
+            {billNumber && (
+              <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-slate-100 border border-slate-200 px-4 py-1 text-xs font-mono font-bold text-slate-800">
+                វិក្កយបត្រ #{billNumber}
               </span>
             )}
 
-            {/* Change Due Callout */}
+            {/* Change Due Callout Card */}
             {changeDue > 0 && (
-              <div className="mt-8 max-w-md w-full rounded-3xl border border-emerald-500/40 bg-emerald-950/40 p-6 shadow-xl">
-                <p className="text-xs font-bold text-emerald-300 uppercase tracking-wider">
+              <div className="mt-6 max-w-md w-full rounded-3xl border-2 border-emerald-300 bg-emerald-50/80 p-6 shadow-lg">
+                <p className="text-xs font-extrabold text-emerald-800 uppercase tracking-wider">
                   ប្រាក់អាប់ជូនអតិថិជន (Change Due)
                 </p>
                 <div className="mt-2 flex items-baseline justify-center gap-3">
-                  <span className="text-4xl font-black text-white tracking-tight">
+                  <span className="text-4xl font-black text-slate-900 tracking-tight">
                     {formatCurrency(changeDue)}
                   </span>
-                  <span className="text-2xl font-extrabold text-emerald-400">
+                  <span className="text-2xl font-extrabold text-[#009F6B]">
                     ({formatKhr(changeDue)})
                   </span>
                 </div>
                 {cashTendered > 0 && (
-                  <p className="mt-2 text-xs text-slate-400">
+                  <p className="mt-2 text-xs text-slate-500 font-semibold">
                     បានទទួល: {formatCurrency(cashTendered)} ({formatKhr(cashTendered)})
                   </p>
                 )}
               </div>
             )}
 
-            <div className="mt-8 flex items-center gap-2 text-xs text-slate-500">
-              <Sparkles size={14} className="text-amber-400" />
+            <div className="mt-8 flex items-center gap-2 text-xs text-slate-500 font-semibold">
+              <Sparkles size={15} className="text-amber-500" />
               <span>សូមពិនិត្យវិក្កយបត្រ និងទំនិញរបស់លោកអ្នក</span>
             </div>
           </div>
         )}
 
-        {/* State 2: CHECKOUT with BAKONG KHQR */}
-        {status === 'CHECKOUT' && qrData && (
-          <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10 items-center max-w-6xl mx-auto w-full animate-fade-in">
+        {/* ============================================================
+            STATE 2: CHECKOUT WITH BAKONG KHQR (Scan to Pay Mode)
+        ============================================================ */}
+        {status !== 'COMPLETED' && isCheckoutQr && (
+          <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-5xl mx-auto w-full animate-fade-in">
             {/* Left: Summary & Instructions */}
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 px-3 py-1 text-xs font-bold text-emerald-400">
-                  <QrCode size={14} />
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 border border-emerald-300 px-3.5 py-1 text-xs font-black text-emerald-800 shadow-2xs">
+                  <QrCode size={14} className="text-[#009F6B]" />
                   <span>Bakong KHQR Payment</span>
                 </span>
-                <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight mt-3">
-                  ស្កេនទូទាត់ប្រាក់
+                <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mt-2.5">
+                  ស្កេនដើម្បីបង់ប្រាក់
                 </h2>
-                <p className="text-sm text-slate-400 mt-1">
-                  Scan QR with any Cambodian Mobile Banking App
+                <p className="text-sm text-slate-600 mt-1 font-medium">
+                  Scan QR with any Cambodian Banking App (ABA, ACLEDA, Wing, etc.)
                 </p>
               </div>
 
-              {/* Total Card */}
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 space-y-3">
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span>ចំនួនទំនិញ (Total Items)</span>
-                  <span className="font-bold text-white">{totalItemCount} មុខ</span>
+              {/* Total Card - High Contrast White */}
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
+                  <span>ចំនួនទំនិញសរុប (Total Items)</span>
+                  <span className="font-extrabold text-slate-900 text-sm">
+                    {totalItemCount > 0 ? `${totalItemCount} មុខ` : `${items.length || 1} មុខ`}
+                  </span>
                 </div>
-                <div className="h-px bg-slate-800" />
+                {billNumber && (
+                  <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
+                    <span>លេខវិក្កយបត្រ (Invoice No.)</span>
+                    <span className="font-mono font-bold text-slate-800">{billNumber}</span>
+                  </div>
+                )}
+                <div className="h-px bg-slate-100" />
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-500">
                     ទឹកប្រាក់ត្រូវទូទាត់ (Amount to Pay)
                   </span>
                   <div className="mt-1 flex flex-col">
-                    <span className="text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight">
+                    <span className="text-4xl sm:text-5xl font-black text-[#009F6B] tracking-tight">
                       {formatCurrency(total)}
                     </span>
-                    <span className="text-2xl sm:text-3xl font-bold text-slate-300 mt-0.5">
+                    <span className="text-2xl sm:text-3xl font-extrabold text-slate-700 mt-0.5">
                       {formatKhr(total)}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Supported Banks */}
-              <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4">
-                <p className="text-xs font-bold text-slate-400 mb-2">
-                  គាំទ្រគ្រប់កម្មវិធីធនាគារក្នុងប្រទេសកម្ពុជា៖
+              {/* Supported Banks Cards */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs">
+                <p className="text-xs font-extrabold text-slate-700 mb-2.5 flex items-center gap-1.5">
+                  <Smartphone size={14} className="text-[#009F6B]" />
+                  <span>គាំទ្រគ្រប់កម្មវិធីធនាគារក្នុងប្រទេសកម្ពុជា៖</span>
                 </p>
-                <div className="flex flex-wrap gap-2 text-xs font-bold text-slate-300">
-                  <span className="rounded-lg bg-slate-800 px-2.5 py-1">ABA Bank</span>
-                  <span className="rounded-lg bg-slate-800 px-2.5 py-1">ACLEDA</span>
-                  <span className="rounded-lg bg-slate-800 px-2.5 py-1">Wing</span>
-                  <span className="rounded-lg bg-slate-800 px-2.5 py-1">Canadia</span>
-                  <span className="rounded-lg bg-slate-800 px-2.5 py-1">Bakong</span>
-                  <span className="rounded-lg bg-slate-800 px-2.5 py-1">+ 50 ធនាគារផ្សេងទៀត</span>
+                <div className="flex flex-wrap gap-2 text-xs font-bold">
+                  <span className="rounded-xl bg-slate-100 text-slate-800 px-3 py-1 border border-slate-200">
+                    ABA Bank
+                  </span>
+                  <span className="rounded-xl bg-slate-100 text-slate-800 px-3 py-1 border border-slate-200">
+                    ACLEDA
+                  </span>
+                  <span className="rounded-xl bg-slate-100 text-slate-800 px-3 py-1 border border-slate-200">
+                    Wing Bank
+                  </span>
+                  <span className="rounded-xl bg-slate-100 text-slate-800 px-3 py-1 border border-slate-200">
+                    Canadia
+                  </span>
+                  <span className="rounded-xl bg-slate-100 text-slate-800 px-3 py-1 border border-slate-200">
+                    Bakong App
+                  </span>
+                  <span className="rounded-xl bg-emerald-50 text-[#009F6B] px-3 py-1 border border-emerald-200 font-extrabold">
+                    + 50 ធនាគារផ្សេងទៀត
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Right: Bakong KHQR Frame */}
+            {/* Right: The Official KHQR Red Ticket */}
             <div className="flex flex-col items-center justify-center">
-              <div className="relative rounded-3xl border-4 border-emerald-500/80 bg-white p-6 shadow-2xl shadow-emerald-500/20 text-center max-w-sm w-full">
-                {/* Red KHQR Header Bar */}
-                <div className="mb-4 rounded-xl bg-rose-600 py-1.5 px-4 text-white">
-                  <span className="text-xs font-black tracking-widest uppercase">
-                    BAKONG KHQR
+              <div className="relative mx-auto w-full max-w-[300px] sm:max-w-[320px] overflow-hidden rounded-3xl bg-white shadow-2xl border border-slate-200 animate-scale-in">
+                {/* KHQR Header Banner */}
+                <div
+                  className="bg-[#E61924] px-5 py-3 text-right text-white font-bold tracking-wider"
+                  style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 93% 100%, 0 100%)' }}
+                >
+                  <span className="text-xl sm:text-2xl font-black italic tracking-tight">
+                    KHQR
                   </span>
                 </div>
 
-                {/* QR Display */}
-                <div className="mx-auto flex aspect-square w-64 items-center justify-center overflow-hidden rounded-2xl bg-white p-2">
-                  {qrData.startsWith('http') || qrData.startsWith('data:image') ? (
-                    <img
-                      src={qrData}
-                      alt="Bakong KHQR"
-                      className="h-full w-full object-contain"
-                    />
-                  ) : (
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(
-                        qrData
-                      )}`}
-                      alt="Bakong KHQR"
-                      className="h-full w-full object-contain"
-                    />
-                  )}
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-slate-900">
-                  <span className="text-xs font-bold">ទឹកប្រាក់សរុប</span>
-                  <span className="text-base font-black text-emerald-600">
+                {/* Merchant & Amount Details */}
+                <div className="px-5 pt-3 pb-2 text-left">
+                  <p className="truncate text-xs font-black uppercase tracking-wider text-slate-500">
+                    MART SYSTEM
+                  </p>
+                  <p className="mt-0.5 text-2xl sm:text-3xl font-black text-slate-900">
                     {formatCurrency(total)}
-                  </span>
+                  </p>
+                  <p className="text-xs font-bold text-slate-500 mt-0.5">
+                    {formatKhr(total)}
+                  </p>
+                </div>
+
+                {/* Dashed Separator */}
+                <div className="mx-5 border-t-2 border-dashed border-slate-200 my-1" />
+
+                {/* Real High-Resolution KHQR QR Code */}
+                <div className="flex items-center justify-center p-5 bg-white">
+                  <QRCodeSVG
+                    value={qrData}
+                    size={220}
+                    level="M"
+                    marginSize={0}
+                    className="max-w-full h-auto rounded-lg"
+                  />
+                </div>
+
+                {/* Acceptance Networks Footer */}
+                <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-4 py-2.5 text-[10px] text-slate-500">
+                  <div className="flex flex-col text-left">
+                    <span className="text-[8px] uppercase tracking-wider text-slate-400">
+                      Member of
+                    </span>
+                    <span className="font-extrabold italic text-slate-700">KHQR</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="rounded bg-[#00427A] px-2 py-0.5 text-[8px] font-bold text-white">
+                      UnionPay
+                    </span>
+                    <span className="rounded bg-[#E60012] px-2 py-0.5 text-[8px] font-bold text-white">
+                      云闪付
+                    </span>
+                    <span className="rounded bg-[#1677FF] px-2 py-0.5 text-[8px] font-bold text-white">
+                      Alipay+
+                    </span>
+                  </div>
                 </div>
               </div>
-              <p className="mt-4 text-xs font-medium text-slate-400 flex items-center gap-1.5">
-                <ShieldCheck size={14} className="text-emerald-400" />
-                <span>ការទូទាត់មានសុវត្ថិភាពខ្ពស់ និងទទួលប្រាក់ភ្លាមៗ</span>
-              </p>
+
+              <div className="mt-4 flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-4 py-1.5 rounded-full">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+                <span>សូមបើកកម្មវិធីធនាគាររបស់លោកអ្នកដើម្បីស្កេនទូទាត់</span>
+              </div>
             </div>
           </div>
         )}
 
-        {/* State 3: ACTIVE CART (Items scanning live) */}
-        {status !== 'COMPLETED' && (!qrData || status !== 'CHECKOUT') && items.length > 0 && (
-          <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-6 p-6 overflow-hidden">
-            {/* Left: Live Scanned Items List */}
-            <div className="flex flex-col min-h-0 rounded-3xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
-              <div className="flex items-center justify-between border-b border-slate-800 px-5 py-3.5 bg-slate-900/90">
-                <div className="flex items-center gap-2">
-                  <ShoppingBag size={18} className="text-emerald-400" />
-                  <span className="text-sm font-extrabold text-white">
+        {/* ============================================================
+            STATE 3: ACTIVE CART (Cashier scanning items)
+        ============================================================ */}
+        {status !== 'COMPLETED' && !isCheckoutQr && items.length > 0 && (
+          <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-6 overflow-hidden">
+            {/* Left: Scanned Items List - Crisp White Card */}
+            <div className="flex flex-col min-h-0 rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-xs">
+              <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/70">
+                <div className="flex items-center gap-2.5">
+                  <ShoppingBag size={18} className="text-[#009F6B]" />
+                  <span className="text-sm font-extrabold text-slate-900">
                     បញ្ជីទំនិញដែលបានស្កេន (Scanned Items)
                   </span>
                 </div>
-                <span className="rounded-full bg-slate-800 px-3 py-0.5 text-xs font-bold text-emerald-400">
+                <span className="rounded-full bg-emerald-50 text-[#009F6B] border border-emerald-200 px-3 py-0.5 text-xs font-extrabold">
                   {totalItemCount} មុខ
                 </span>
               </div>
 
               {/* Items scroll area */}
-              <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-800/80 p-3 space-y-1">
+              <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-100 p-3 space-y-1">
                 {items.map((item, index) => {
                   const unitPrice = Number(item.product?.price) || 0;
                   const qty = Number(item.quantity) || 1;
@@ -344,11 +424,11 @@ export default function CustomerFacingDisplay({
                   return (
                     <div
                       key={item.product?.id || index}
-                      className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-slate-900/40 hover:bg-slate-800/50 transition animate-fade-in"
+                      className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-white hover:bg-slate-50/80 transition animate-fade-in"
                     >
                       {/* Product image & details */}
                       <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                        <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-1">
+                        <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-1">
                           {item.product?.imageUrl ? (
                             <img
                               src={item.product.imageUrl}
@@ -359,29 +439,31 @@ export default function CustomerFacingDisplay({
                               }}
                             />
                           ) : (
-                            <Package size={22} className="text-slate-500" />
+                            <Package size={22} className="text-slate-400" />
                           )}
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <h3 className="truncate text-base font-bold text-white">
+                          <h3 className="truncate text-base font-extrabold text-slate-900 leading-tight">
                             {item.product?.name}
                           </h3>
-                          <p className="text-xs text-slate-400 mt-0.5">
-                            {formatCurrency(unitPrice)} ({formatKhr(unitPrice)}) ×{' '}
-                            <span className="font-extrabold text-emerald-400 text-sm">
+                          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium mt-1">
+                            <span>{formatCurrency(unitPrice)}</span>
+                            <span>({formatKhr(unitPrice)})</span>
+                            <span>×</span>
+                            <span className="rounded-full bg-emerald-100 text-emerald-800 font-black px-2 py-0.2 text-xs">
                               {qty}
                             </span>
-                          </p>
+                          </div>
                         </div>
                       </div>
 
                       {/* Line Total */}
                       <div className="text-right shrink-0">
-                        <span className="block text-lg font-black text-emerald-400">
+                        <span className="block text-lg font-black text-[#009F6B]">
                           {formatCurrency(lineTotal)}
                         </span>
-                        <span className="block text-xs font-semibold text-slate-400">
+                        <span className="block text-xs font-bold text-slate-500">
                           {formatKhr(lineTotal)}
                         </span>
                       </div>
@@ -391,53 +473,53 @@ export default function CustomerFacingDisplay({
               </div>
             </div>
 
-            {/* Right: Realtime Order Summary & Big Grand Total */}
-            <div className="flex flex-col justify-between rounded-3xl border border-slate-800 bg-slate-900/90 p-6 shadow-2xl">
+            {/* Right: Realtime Summary & Big Grand Total */}
+            <div className="flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
-                    សង្ខេបវិក្កយបត្រ (Summary)
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-500">
+                    សង្ខេបវិក្កយបត្រ (SUMMARY)
                   </span>
                   {customer?.name && (
-                    <div className="flex items-center gap-1.5 rounded-full bg-emerald-950/60 border border-emerald-500/40 px-2.5 py-0.5 text-xs font-bold text-emerald-300">
-                      <User size={12} />
-                      <span className="max-w-[120px] truncate">{customer.name}</span>
+                    <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-bold text-emerald-800">
+                      <User size={13} className="text-[#009F6B]" />
+                      <span className="max-w-[130px] truncate">{customer.name}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between text-slate-400">
+                <div className="space-y-2.5 text-sm">
+                  <div className="flex justify-between text-slate-600 font-semibold">
                     <span>សរុបរង (Subtotal)</span>
-                    <span className="font-bold text-white">{formatCurrency(subtotal)}</span>
+                    <span className="font-extrabold text-slate-900">{formatCurrency(subtotal)}</span>
                   </div>
 
                   {discountAmount > 0 && (
-                    <div className="flex justify-between text-emerald-400">
+                    <div className="flex justify-between text-[#009F6B] font-semibold">
                       <span>បញ្ចុះតម្លៃ (Discount)</span>
-                      <span className="font-bold">-{formatCurrency(discountAmount)}</span>
+                      <span className="font-extrabold">-{formatCurrency(discountAmount)}</span>
                     </div>
                   )}
 
                   {taxAmount > 0 && (
-                    <div className="flex justify-between text-slate-400">
+                    <div className="flex justify-between text-slate-600 font-semibold">
                       <span>ពន្ធ (Tax)</span>
-                      <span className="font-bold text-white">{formatCurrency(taxAmount)}</span>
+                      <span className="font-extrabold text-slate-900">{formatCurrency(taxAmount)}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Big Grand Total Box */}
-              <div className="mt-6 rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-b from-emerald-950/30 to-slate-900/80 p-5 text-center">
-                <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
+              {/* Big Grand Total Container - Crisp Emerald on Light */}
+              <div className="mt-6 rounded-3xl border-2 border-emerald-400 bg-gradient-to-b from-emerald-50/90 to-emerald-100/50 p-6 text-center shadow-xs">
+                <span className="text-xs font-black uppercase tracking-widest text-emerald-800">
                   សរុបត្រូវបង់ (GRAND TOTAL)
                 </span>
                 <div className="mt-2">
-                  <span className="block text-4xl sm:text-5xl font-black text-white tracking-tight">
+                  <span className="block text-4xl sm:text-5xl font-black text-slate-950 tracking-tight">
                     {formatCurrency(total)}
                   </span>
-                  <span className="mt-1 block text-2xl sm:text-3xl font-extrabold text-emerald-400">
+                  <span className="mt-1 block text-2xl sm:text-3xl font-black text-[#009F6B]">
                     {formatKhr(total)}
                   </span>
                 </div>
@@ -446,11 +528,13 @@ export default function CustomerFacingDisplay({
           </div>
         )}
 
-        {/* State 4: IDLE / WELCOME (Empty cart) */}
-        {status !== 'COMPLETED' && items.length === 0 && (
+        {/* ============================================================
+            STATE 4: IDLE / WELCOME (Empty cart on white canvas)
+        ============================================================ */}
+        {status !== 'COMPLETED' && !isCheckoutQr && items.length === 0 && (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
             <div className="relative mb-6">
-              <div className="flex h-28 w-28 items-center justify-center rounded-3xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-2xl shadow-emerald-500/30">
+              <div className="flex h-28 w-28 items-center justify-center rounded-3xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-xl shadow-emerald-500/20">
                 <Store size={60} />
               </div>
               <div className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 shadow-md">
@@ -458,40 +542,40 @@ export default function CustomerFacingDisplay({
               </div>
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
               សូមស្វាគមន៍មកកាន់ Mart System
             </h2>
-            <p className="text-base text-slate-400 mt-2 max-w-md">
+            <p className="text-base text-slate-600 mt-2 max-w-md font-medium">
               ទំនិញស្រស់ៗ តម្លៃសមរម្យ និងទូទាត់ប្រាក់រហ័សទាន់ចិត្តជាមួយ Bakong KHQR
             </p>
 
             {/* In-Store Badges */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 max-w-lg">
-              <div className="flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/80 px-4 py-2 text-xs font-bold text-slate-300">
-                <Coins size={16} className="text-amber-400" />
+              <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xs">
+                <Coins size={16} className="text-amber-500" />
                 <span>$1 = {KHR_RATE.toLocaleString()} ៛ (អត្រាថេរ)</span>
               </div>
 
-              <div className="flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/80 px-4 py-2 text-xs font-bold text-slate-300">
-                <QrCode size={16} className="text-emerald-400" />
+              <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xs">
+                <QrCode size={16} className="text-[#009F6B]" />
                 <span>ស្កេន Bakong KHQR បានគ្រប់ធនាគារ</span>
               </div>
 
-              <div className="flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/80 px-4 py-2 text-xs font-bold text-slate-300">
-                <ShieldCheck size={16} className="text-blue-400" />
+              <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xs">
+                <ShieldCheck size={16} className="text-blue-500" />
                 <span>ទំនិញសុទ្ធ ១០០%</span>
               </div>
             </div>
 
-            <div className="mt-10 rounded-full border border-slate-800 bg-slate-900/40 px-5 py-2 text-xs text-slate-500 animate-pulse">
+            <div className="mt-10 rounded-full border border-emerald-200 bg-emerald-50 px-5 py-2 text-xs font-bold text-emerald-800 animate-pulse shadow-2xs">
               សូមរង់ចាំបុគ្គលិកគិតលុយស្កេនទំនិញ...
             </div>
           </div>
         )}
       </div>
 
-      {/* Footer / Store info */}
-      <footer className="h-10 shrink-0 border-t border-slate-800/80 bg-slate-900/60 px-6 flex items-center justify-between text-[11px] text-slate-500">
+      {/* Footer */}
+      <footer className="h-10 shrink-0 border-t border-slate-200 bg-white px-6 flex items-center justify-between text-[11px] text-slate-500 font-medium">
         <span>Mart System · In-Store POS & Customer Display</span>
         <span>Pay via Bakong KHQR · Cash in USD & KHR</span>
       </footer>
