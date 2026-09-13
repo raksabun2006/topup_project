@@ -126,4 +126,47 @@ export const orderApi = {
     const res = await apiClient.post(`/api/v1/customer/orders/${id}/cancel`, undefined, config);
     return res.data?.data ?? res.data;
   },
+
+  /**
+   * Get all orders for Admin / Staff:
+   * GET /api/v1/admin/orders
+   */
+  getAllOrders: async ({ page = 0, size = 50, sort = 'createdAt,desc' } = {}, config = {}) => {
+    try {
+      const res = await apiClient.get('/api/v1/admin/orders', {
+        params: { page, size, sort },
+        ...config,
+      });
+      return res.data?.data ?? res.data;
+    } catch {
+      const res = await apiClient.get('/admin/orders', {
+        params: { page, size, sort },
+        ...config,
+      });
+      return res.data?.data ?? res.data;
+    }
+  },
+
+  /**
+   * Get order statistics for dashboard:
+   * GET /api/v1/admin/orders/statistics
+   */
+  getOrderStatistics: async (config = {}) => {
+    try {
+      const res = await apiClient.get('/api/v1/admin/orders/statistics', config);
+      return res.data?.data ?? res.data;
+    } catch {
+      const res = await apiClient.get('/admin/orders/statistics', config);
+      return res.data?.data ?? res.data;
+    }
+  },
+
+  /**
+   * Get Customer Dashboard summary and recent orders:
+   * GET /api/v1/customer/dashboard
+   */
+  getCustomerDashboard: async (config = {}) => {
+    const res = await apiClient.get('/api/v1/customer/dashboard', config);
+    return res.data?.data ?? res.data;
+  },
 };

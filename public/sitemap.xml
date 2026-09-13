@@ -73,19 +73,19 @@
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <loc>https://martsystemkh.software/category/Beverages%20%26%20Drinks</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/Beverages%20%26%20Drinks" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/Beverages%20%26%20Drinks" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/Beverages%20%26%20Drinks" />
     <lastmod>2026-09-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/Beverages%20%26%20Drinks</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/Beverages%20%26%20Drinks" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/Beverages%20%26%20Drinks" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/Beverages%20%26%20Drinks" />
+    <loc>https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
     <lastmod>2026-09-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -190,6 +190,20 @@
     <priority>0.85</priority>
   </url>
   <url>
+    <loc>https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHguxuWCpApinQFedDrBG-9bAPjyoVeTSUkoS6JqO8vg&amp;s=10</image:loc>
+      <image:title>Coca Cola Can 330ml</image:title>
+      <image:caption>Classic refreshing carbonated soft drink, served chilled.</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-500ml-x-24--ffeb2bc9-640b-46aa-82a8-5c80874930c6</loc>
     <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-500ml-x-24--ffeb2bc9-640b-46aa-82a8-5c80874930c6" />
     <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-500ml-x-24--ffeb2bc9-640b-46aa-82a8-5c80874930c6" />
@@ -215,20 +229,6 @@
       <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpQTsbuJEmr1uSouEH_NRZc5t6Jj4WnraNZYtIIN5KgA&amp;s=10</image:loc>
       <image:title>Eau Kulen Mineral Water 1.5L x 12</image:title>
       <image:caption>ទឹករ៉ែធម្មជាតិ Eau Kulen</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249" />
-    <lastmod>2026-09-13</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHguxuWCpApinQFedDrBG-9bAPjyoVeTSUkoS6JqO8vg&amp;s=10</image:loc>
-      <image:title>Coca Cola Can 330ml</image:title>
-      <image:caption>Classic refreshing carbonated soft drink, served chilled.</image:caption>
     </image:image>
   </url>
   <url>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Receipt, CheckCircle2, DollarSign, ShoppingCart, AlertCircle, RefreshCw,
@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSales } from '../hooks/useSales';
+import { adminApi } from '../api/adminApi';
 import { formatCurrency, formatDate } from '../utils/format';
 import { SaleStatusBadge } from '../components/ui/SaleStatusBadge';
 import SEO from '../components/SEO';
@@ -13,25 +14,87 @@ import SEO from '../components/SEO';
 export default function StaffDashboard() {
   const navigate = useNavigate();
   const { user, displayRole } = useAuth();
-  const { sales, loading, error, reload } = useSales();
+  const { sales, loading: salesLoading, error: salesError, reload: reloadSales } = useSales();
+  const [onlineOrders, setOnlineOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
   const [period, setPeriod] = useState('TODAY');
 
-  // Filter sales for the logged-in staff member / cashier
-  const staffSales = useMemo(() => {
-    return sales.filter((s) => s.cashier === user?.sub || s.cashierName === user?.username || true);
-  }, [sales, user?.sub, user?.username]);
+  const fetchOnlineOrders = useCallback(async () => {
+    setOrdersLoading(true);
+    try {
+      const res = await adminApi.getAllOrders({ page: 0, size: 200, sort: 'createdAt,desc' });
+      const list = Array.isArray(res) ? res : (res?.content ?? res?.orders ?? []);
+      setOnlineOrders(list);
+    } catch {
+      // ignore
+    } finally {
+      setOrdersLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchOnlineOrders();
+  }, [fetchOnlineOrders]);
+
+  const handleRefresh = async () => {
+    await Promise.allSettled([
+      reloadSales(),
+      fetchOnlineOrders(),
+    ]);
+  };
+
+  const loading = salesLoading || ordersLoading;
+  const error = salesError;
+
+  // Filter sales & orders for staff view
+  const combinedTransactions = useMemo(() => {
+    const list = [];
+    (sales ?? []).forEach((s) => {
+      list.push({
+        id: s.id,
+        invoiceNumber: s.invoiceNumber || `INV-${String(s.id).slice(0, 8).toUpperCase()}`,
+        type: 'POS',
+        total: Number(s.total ?? s.finalTotal ?? 0),
+        status: (s.status || 'COMPLETED').toUpperCase(),
+        paymentStatus: (s.paymentStatus || (s.status === 'COMPLETED' ? 'PAID' : 'PENDING')).toUpperCase(),
+        customerName: s.customerName || (typeof s.customer === 'string' ? s.customer : '') || 'Store Customer',
+        cashierName: s.cashierName || s.cashier || 'Cashier',
+        createdAt: s.createdAt || new Date().toISOString(),
+        items: s.items || [],
+        raw: s,
+      });
+    });
+
+    (onlineOrders ?? []).forEach((o) => {
+      list.push({
+        id: o.id,
+        invoiceNumber: o.invoiceNumber || o.orderNumber || `ORD-${String(o.id).slice(0, 8).toUpperCase()}`,
+        type: 'ONLINE',
+        total: Number(o.finalTotal ?? o.total ?? o.amount ?? 0),
+        status: (o.status || 'COMPLETED').toUpperCase(),
+        paymentStatus: (o.paymentStatus || (o.status === 'COMPLETED' ? 'PAID' : 'PENDING')).toUpperCase(),
+        customerName: o.customerName || o.customer?.name || o.receiverName || 'Online Customer',
+        cashierName: 'Online Store',
+        createdAt: o.createdAt || o.orderDate || new Date().toISOString(),
+        items: o.items || o.orderItems || [],
+        raw: o,
+      });
+    });
+
+    return list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [sales, onlineOrders]);
 
   const filteredSales = useMemo(() => {
     if (period === 'TODAY') {
       const now = new Date();
       const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      return staffSales.filter((s) => new Date(s.createdAt) >= startOfToday);
+      return combinedTransactions.filter((s) => new Date(s.createdAt) >= startOfToday);
     }
-    return staffSales;
-  }, [staffSales, period]);
+    return combinedTransactions;
+  }, [combinedTransactions, period]);
 
   const stats = useMemo(() => {
-    const paid = filteredSales.filter((s) => s.status === 'COMPLETED' && s.paymentStatus === 'PAID');
+    const paid = filteredSales.filter((s) => s.status === 'COMPLETED' || s.paymentStatus === 'PAID');
     const revenue = paid.reduce((sum, s) => sum + (s.total || 0), 0);
     const avgTicket = paid.length > 0 ? revenue / paid.length : 0;
     const completionRate = filteredSales.length > 0 ? Math.round((paid.length / filteredSales.length) * 100) : 0;
@@ -66,7 +129,7 @@ export default function StaffDashboard() {
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
-            onClick={reload}
+            onClick={handleRefresh}
             disabled={loading}
             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition shadow-2xs cursor-pointer active:scale-95 disabled:opacity-50"
             title="Refresh sales data"

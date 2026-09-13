@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getCustomerOrders } from '../components/pos/CustomerOrdersModal';
+import { orderApi } from '../api/orderApi';
 import { formatCurrency, formatDate } from '../utils/format';
 import UserAvatar from '../components/ui/UserAvatar';
 import SEO from '../components/SEO';
@@ -15,6 +16,7 @@ import SEO from '../components/SEO';
 export default function CustomerDashboard() {
   const { user, refreshProfile } = useAuth();
   const [orders, setOrders] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -22,10 +24,47 @@ export default function CustomerDashboard() {
     setLoading(true);
     setError('');
     try {
-      // Sync fresh profile & customer order history
       await refreshProfile?.();
       const localOrders = getCustomerOrders();
-      setOrders(localOrders);
+
+      const [dashRes, myOrdersRes] = await Promise.allSettled([
+        orderApi.getCustomerDashboard(),
+        orderApi.getMyOrders(),
+      ]);
+
+      let combinedOrders = [...localOrders];
+
+      if (myOrdersRes.status === 'fulfilled' && Array.isArray(myOrdersRes.value)) {
+        const remoteOrders = myOrdersRes.value;
+        const map = new Map();
+        localOrders.forEach((o) => map.set(o.id || o.invoiceNumber, o));
+        remoteOrders.forEach((ro) => {
+          const key = ro.id || ro.orderNumber || ro.invoiceNumber;
+          map.set(key, {
+            id: ro.id,
+            orderId: ro.id,
+            orderNumber: ro.orderNumber || (ro.id ? `ORD-${ro.id.slice(0, 8).toUpperCase()}` : 'ORD'),
+            invoiceNumber: ro.invoiceNumber || ro.orderNumber || (ro.id ? `INV-${ro.id.slice(0, 8).toUpperCase()}` : 'INV'),
+            total: Number(ro.finalTotal ?? ro.total ?? ro.amount ?? 0),
+            subtotal: Number(ro.subtotal ?? ro.itemsTotal ?? 0),
+            status: typeof ro.status === 'string' ? ro.status : 'PAID',
+            paymentStatus: typeof ro.paymentStatus === 'string' ? ro.paymentStatus : 'PAID',
+            paymentMethod: typeof ro.paymentMethod === 'string' ? ro.paymentMethod : ro.paymentMethod?.name || 'KHQR',
+            items: ro.items || ro.orderItems || [],
+            createdAt: ro.createdAt || ro.orderDate || new Date().toISOString(),
+            rawOrder: ro,
+          });
+        });
+        combinedOrders = Array.from(map.values()).sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+      }
+
+      setOrders(combinedOrders);
+
+      if (dashRes.status === 'fulfilled' && dashRes.value) {
+        setDashboardStats(dashRes.value);
+      }
     } catch (err) {
       console.error('Failed to load customer dashboard data:', err);
       setError('Unable to load your latest customer data. Please try again.');
@@ -38,8 +77,8 @@ export default function CustomerDashboard() {
     loadData();
   }, []);
 
-  const totalSpent = orders.reduce((sum, ord) => sum + (Number(ord.total || ord.finalTotal || ord.totalAmount) || 0), 0);
-  const completedCount = orders.filter((ord) => ord.status !== 'CANCELLED').length;
+  const totalSpent = dashboardStats?.totalSpent ?? orders.reduce((sum, ord) => sum + (Number(ord.total || ord.finalTotal || ord.totalAmount) || 0), 0);
+  const completedCount = dashboardStats?.completedOrders ?? orders.filter((ord) => ord.status !== 'CANCELLED').length;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pb-20 font-sans">
@@ -146,7 +185,7 @@ export default function CustomerDashboard() {
             <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3 border border-slate-100 dark:border-slate-800/80">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">My Total Orders</span>
               <p className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-0.5">
-                {loading ? '—' : orders.length}
+                {loading ? '—' : (dashboardStats?.totalOrders ?? orders.length)}
               </p>
             </div>
 

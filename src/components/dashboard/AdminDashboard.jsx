@@ -12,6 +12,8 @@ import { useProducts } from '../../hooks/useProducts';
 import { useCustomers } from '../../hooks/useCustomers';
 import { adminApi } from '../../api/adminApi';
 import { reportApi } from '../../api/reportApi';
+import { orderApi } from '../../api/orderApi';
+import { deliveryReportApi } from '../../api/deliveryReportApi';
 import { getCustomerOrders } from '../pos/CustomerOrdersModal';
 import SaleSuccessModal from '../pos/SaleSuccessModal';
 import { formatCurrency, formatDate } from '../../utils/format';
@@ -35,6 +37,8 @@ export default function AdminDashboard() {
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState('');
   const [reportStats, setReportStats] = useState(null);
+  const [orderStats, setOrderStats] = useState(null);
+  const [deliveryStats, setDeliveryStats] = useState(null);
 
   const [activeRange, setActiveRange] = useState('7d');
   const [selectedReportType, setSelectedReportType] = useState('Total Sales');
@@ -50,9 +54,11 @@ export default function AdminDashboard() {
     setOrdersError('');
     try {
       const todayStr = new Date().toISOString().split('T')[0];
-      const [ordersRes, reportRes] = await Promise.allSettled([
+      const [ordersRes, reportRes, orderStatsRes, deliveryStatsRes] = await Promise.allSettled([
         adminApi.getAllOrders({ page: 0, size: 500, sort: 'createdAt,desc' }),
         reportApi.getDashboardReport(todayStr),
+        adminApi.getOrderStatistics(),
+        deliveryReportApi.getSummary(),
       ]);
 
       if (ordersRes.status === 'fulfilled' && ordersRes.value) {
@@ -63,6 +69,14 @@ export default function AdminDashboard() {
 
       if (reportRes.status === 'fulfilled' && reportRes.value) {
         setReportStats(reportRes.value);
+      }
+
+      if (orderStatsRes.status === 'fulfilled' && orderStatsRes.value) {
+        setOrderStats(orderStatsRes.value);
+      }
+
+      if (deliveryStatsRes.status === 'fulfilled' && deliveryStatsRes.value) {
+        setDeliveryStats(deliveryStatsRes.value);
       }
     } catch (err) {
       console.warn('Dashboard orders/reports fetch error:', err);
@@ -107,9 +121,9 @@ export default function AdminDashboard() {
 
     // 1. Process POS Sales
     (sales ?? []).forEach((s) => {
-      const id = String(s.id);
-      const invoiceNumber = s.invoiceNumber || `INV-${id.slice(0, 8).toUpperCase()}`;
-      map.set(id, {
+      const key = `pos_${s.id}`;
+      const invoiceNumber = s.invoiceNumber || `INV-${String(s.id).slice(0, 8).toUpperCase()}`;
+      map.set(key, {
         id: s.id,
         invoiceNumber,
         type: 'POS',
@@ -128,10 +142,10 @@ export default function AdminDashboard() {
 
     // 2. Process Online Orders from adminApi
     (onlineOrders ?? []).forEach((o) => {
-      const id = String(o.id);
-      const invoiceNumber = o.invoiceNumber || o.orderNumber || `ORD-${id.slice(0, 8).toUpperCase()}`;
-      if (!map.has(id)) {
-        map.set(id, {
+      const key = `ord_${o.id}`;
+      const invoiceNumber = o.invoiceNumber || o.orderNumber || `ORD-${String(o.id).slice(0, 8).toUpperCase()}`;
+      if (!map.has(key)) {
+        map.set(key, {
           id: o.id,
           invoiceNumber,
           type: 'ONLINE',
@@ -153,11 +167,11 @@ export default function AdminDashboard() {
     // 3. Process Local Customer Orders (if any from session)
     const localOrders = getCustomerOrders();
     (localOrders ?? []).forEach((lo) => {
-      const id = String(lo.id);
-      if (!map.has(id)) {
-        map.set(id, {
+      const key = `loc_${lo.id}`;
+      if (!map.has(key)) {
+        map.set(key, {
           id: lo.id,
-          invoiceNumber: lo.invoiceNumber || `ORD-${id.slice(0, 8).toUpperCase()}`,
+          invoiceNumber: lo.invoiceNumber || `ORD-${String(lo.id).slice(0, 8).toUpperCase()}`,
           type: 'ONLINE',
           deliveryMethod: lo.rawOrder?.deliveryMethod || 'DELIVERY',
           total: Number(lo.total ?? lo.rawOrder?.finalTotal ?? 0),
@@ -185,7 +199,10 @@ export default function AdminDashboard() {
     const cancelled = allTransactions.filter(
       (t) => t.status === 'CANCELLED' || t.status === 'REFUNDED'
     );
-    const totalRevenue = completed.reduce((sum, t) => sum + t.total, 0);
+    const calculatedRevenue = completed.reduce((sum, t) => sum + t.total, 0);
+    const totalRevenue = orderStats?.totalRevenue && orderStats.totalRevenue > 0
+      ? orderStats.totalRevenue
+      : calculatedRevenue;
 
     // Real total catalog products
     const totalProducts = totalProductsCount > 0 ? totalProductsCount : products.length;
@@ -196,24 +213,43 @@ export default function AdminDashboard() {
     );
     const uniqueCustomers = Math.max(customers.length, customerNamesSet.size, 1);
 
+    const completedOrders = orderStats?.completedOrders ?? completed.length;
+    const canceledOrders = cancelled.length;
+    const totalCount = orderStats?.totalOrders ?? allTransactions.length;
+
     // Completion Rate
-    const completionRate = allTransactions.length > 0
-      ? Math.round((completed.length / allTransactions.length) * 100)
+    const completionRate = totalCount > 0
+      ? Math.round((completedOrders / totalCount) * 100)
       : 100;
 
     return {
       totalProducts,
-      completedOrders: completed.length,
-      canceledOrders: cancelled.length,
+      completedOrders,
+      canceledOrders,
       topProducts: uniqueCustomers,
       totalRevenue,
       completionRate,
-      totalCount: allTransactions.length,
+      totalCount,
     };
-  }, [allTransactions, products, totalProductsCount, customers]);
+  }, [allTransactions, products, totalProductsCount, customers, orderStats]);
 
-  // Compute Real Top Selling Products from All Sales & Orders
+  // Compute Real Top Selling Products from API Report or Sales
   const topSellingProducts = useMemo(() => {
+    // If backend financial report provided top products, map and enrich them:
+    if (reportStats?.topProducts && Array.isArray(reportStats.topProducts) && reportStats.topProducts.length > 0) {
+      const catalogMap = new Map(products.map((p) => [String(p.id), p]));
+      return reportStats.topProducts.map((tp) => {
+        const p = catalogMap.get(String(tp.productId));
+        return {
+          id: tp.productId,
+          name: tp.productName || p?.name || 'Mart Item',
+          soldQty: tp.totalSold ?? tp.quantity ?? 1,
+          revenue: tp.totalRevenue ?? 0,
+          image: p?.image || p?.imageUrl || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=60',
+        };
+      });
+    }
+
     const salesMap = new Map();
 
     allTransactions.forEach((tx) => {
