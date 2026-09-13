@@ -1,13 +1,15 @@
-import { useState } from 'react';
-import { X, Loader2, AlertCircle, Banknote, Clock, QrCode, CreditCard, User, Phone, MapPin, Truck } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { X, Loader2, AlertCircle, Banknote, Clock, QrCode, CreditCard, User, Phone, MapPin, Truck, Coins } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { formatCurrency, formatCurrencyPrecise } from '../../utils/format';
+import { formatCurrency, formatCurrencyPrecise, formatKhr, toKhr, KHR_RATE } from '../../utils/format';
 import { saleApi } from '../../api/saleApi';
 import { getErrorMessage } from '../../api/client';
 import BakongPaymentModal from './BakongPaymentModal';
 import { saveCustomerOrder } from './CustomerOrdersModal';
+import { broadcastPosState } from './CustomerFacingDisplay';
 
-const QUICK_AMOUNTS = [5, 10, 20, 50, 100];
+const QUICK_USD = [1, 5, 10, 20, 50, 100];
+const QUICK_KHR = [5000, 10000, 20000, 50000, 100000];
 
 export default function CheckoutModal({
   items,
@@ -24,13 +26,39 @@ export default function CheckoutModal({
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [cashTendered, setCashTendered] = useState(total.toString());
+  const [tenderCurrency, setTenderCurrency] = useState('USD'); // 'USD' or 'KHR'
+  const [cashTenderedUsd, setCashTenderedUsd] = useState(total.toFixed(2));
+  const [cashTenderedKhr, setCashTenderedKhr] = useState(toKhr(total).toString());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [pendingSale, setPendingSale] = useState(null);
 
-  const tenderedNum = parseFloat(cashTendered) || 0;
-  const changeDue = Math.max(0, tenderedNum - total);
+  const tenderedUsd = useMemo(() => {
+    if (tenderCurrency === 'KHR') {
+      const khrVal = parseFloat(cashTenderedKhr) || 0;
+      return Math.round((khrVal / KHR_RATE) * 100) / 100;
+    }
+    return parseFloat(cashTenderedUsd) || 0;
+  }, [tenderCurrency, cashTenderedUsd, cashTenderedKhr]);
+
+  const changeDueUsd = Math.max(0, tenderedUsd - total);
+  const changeDueKhr = Math.round(changeDueUsd * KHR_RATE);
+
+  // Broadcast checkout status to Customer-Facing Display
+  useEffect(() => {
+    broadcastPosState({
+      items,
+      customer,
+      subtotal,
+      discountAmount,
+      taxAmount,
+      total,
+      status: 'CHECKOUT',
+      qrData: pendingSale?.qr || pendingSale?.qrString || null,
+      cashTendered: tenderedUsd,
+      changeDue: changeDueUsd,
+    });
+  }, [items, customer, subtotal, discountAmount, taxAmount, total, pendingSale, tenderedUsd, changeDueUsd]);
 
   const handleConfirm = async () => {
     if (submitting) return;
@@ -62,9 +90,15 @@ export default function CheckoutModal({
 
       const sale = await saleApi.create(payload, { isGuest });
 
+      const saleWithCash = {
+        ...sale,
+        cashTendered: tenderedUsd,
+        changeDue: changeDueUsd,
+      };
+
       // Save customer details and order to history
       saveCustomerOrder({
-        ...sale,
+        ...saleWithCash,
         items,
         total,
         customerName: customerName || customer?.name,
@@ -81,7 +115,7 @@ export default function CheckoutModal({
         if (method === 'CASH' || method === 'CARD' || method === 'PAID') {
           await saleApi.markPaid(sale.id);
         }
-        onSuccess(sale);
+        onSuccess(saleWithCash);
       }
     } catch (err) {
       setError(getErrorMessage(err));
@@ -283,58 +317,145 @@ export default function CheckoutModal({
 
           {/* Cash Tender Calculation (Staff Cash) */}
           {isAuthenticated && method === 'CASH' && (
-            <div className="space-y-2.5 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 p-3.5">
-              <div className="flex items-center justify-between text-xs font-bold text-[#172033] dark:text-slate-200">
-                <span>ប្រាក់បានទទួល (Amount Tendered)</span>
+            <div className="space-y-3 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 p-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#172033] dark:text-slate-200 flex items-center gap-1.5">
+                  <Coins size={14} className="text-[#009F6B]" />
+                  <span>ប្រាក់បានទទួល (Tendered)</span>
+                </span>
+
+                {/* Currency Switcher Tabs */}
+                <div className="flex items-center rounded-xl bg-slate-200/80 dark:bg-slate-700/80 p-0.5 text-[11px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setTenderCurrency('USD')}
+                    className={`rounded-lg px-2 py-0.5 transition cursor-pointer ${
+                      tenderCurrency === 'USD'
+                        ? 'bg-[#009F6B] text-white shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                    }`}
+                  >
+                    $ USD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTenderCurrency('KHR')}
+                    className={`rounded-lg px-2 py-0.5 transition cursor-pointer ${
+                      tenderCurrency === 'KHR'
+                        ? 'bg-[#009F6B] text-white shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                    }`}
+                  >
+                    ៛ KHR
+                  </button>
+                </div>
+              </div>
+
+              {/* Exact Amount Button */}
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400 text-[11px]">ជម្រើសលឿន៖</span>
                 <button
                   type="button"
-                  onClick={() => setCashTendered(total.toString())}
+                  onClick={() => {
+                    if (tenderCurrency === 'USD') {
+                      setCashTenderedUsd(total.toFixed(2));
+                    } else {
+                      setCashTenderedKhr(toKhr(total).toString());
+                    }
+                  }}
                   className="text-[11px] font-bold text-[#009F6B] hover:underline cursor-pointer"
                 >
-                  លុយគ្រប់ ({formatCurrency(total)})
+                  លុយគ្រប់ ({formatCurrency(total)} / {formatKhr(total)})
                 </button>
               </div>
 
-              {/* Quick Cash Buttons */}
+              {/* Quick Cash Denomination Buttons */}
               <div className="flex flex-wrap gap-1.5">
-                {QUICK_AMOUNTS.filter((amt) => amt >= total || amt === 100).slice(0, 4).map((amt) => (
-                  <button
-                    key={amt}
-                    type="button"
-                    onClick={() => setCashTendered(amt.toString())}
-                    className={`rounded-xl px-3 py-1.5 text-xs font-black transition cursor-pointer ${
-                      tenderedNum === amt
-                        ? 'bg-[#009F6B] text-white'
-                        : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[#172033] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    ${amt}
-                  </button>
-                ))}
+                {tenderCurrency === 'USD' ? (
+                  QUICK_USD.map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setCashTenderedUsd(amt.toString())}
+                      className={`rounded-xl px-3 py-1.5 text-xs font-black transition cursor-pointer ${
+                        tenderedUsd === amt
+                          ? 'bg-[#009F6B] text-white shadow-xs'
+                          : amt >= total
+                          ? 'border border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100'
+                          : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[#172033] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      ${amt}
+                    </button>
+                  ))
+                ) : (
+                  QUICK_KHR.map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setCashTenderedKhr(amt.toString())}
+                      className={`rounded-xl px-2.5 py-1.5 text-xs font-black transition cursor-pointer ${
+                        parseFloat(cashTenderedKhr) === amt
+                          ? 'bg-[#009F6B] text-white shadow-xs'
+                          : amt >= toKhr(total)
+                          ? 'border border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100'
+                          : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[#172033] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {amt.toLocaleString()} ៛
+                    </button>
+                  ))
+                )}
               </div>
 
               {/* Direct Input & Change Display */}
-              <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                 <div className="relative">
                   <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
-                    $
+                    {tenderCurrency === 'USD' ? '$' : '៛'}
                   </span>
                   <input
                     type="number"
-                    step="0.01"
+                    step={tenderCurrency === 'USD' ? '0.01' : '100'}
                     min="0"
-                    value={cashTendered}
-                    onChange={(e) => setCashTendered(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 py-2 pl-7 pr-3 text-sm font-bold text-[#172033] dark:text-white focus:border-[#009F6B] focus:outline-none"
+                    value={tenderCurrency === 'USD' ? cashTenderedUsd : cashTenderedKhr}
+                    onChange={(e) => {
+                      if (tenderCurrency === 'USD') {
+                        setCashTenderedUsd(e.target.value);
+                      } else {
+                        setCashTenderedKhr(e.target.value);
+                      }
+                    }}
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 py-2.5 pl-8 pr-3 text-sm font-bold text-[#172033] dark:text-white focus:border-[#009F6B] focus:outline-none"
                     placeholder="0.00"
                   />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
+                    {tenderCurrency === 'USD'
+                      ? `~ ${formatKhr(tenderedUsd)}`
+                      : `~ ${formatCurrency(tenderedUsd)}`}
+                  </span>
                 </div>
 
-                <div className="flex flex-col justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5">
-                  <span className="text-[10px] font-semibold text-[#667085] dark:text-slate-400">ប្រាក់អាប់ (Change)</span>
-                  <span className="text-sm font-black text-[#009F6B] dark:text-emerald-400">
-                    {formatCurrency(changeDue)}
-                  </span>
+                <div className="flex flex-col justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3.5 py-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[#667085] dark:text-slate-400 uppercase">
+                      ប្រាក់អាប់ (Change Due)
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
+                      {formatKhr(changeDueUsd)}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline justify-between mt-0.5">
+                    <span className="text-base font-black text-[#009F6B] dark:text-emerald-400">
+                      {formatCurrency(changeDueUsd)}
+                    </span>
+                    {/* Cambodian change breakdown if fractional dollars exist */}
+                    {changeDueUsd > 1 && Math.round((changeDueUsd % 1) * 100) > 0 && (
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                        ${Math.floor(changeDueUsd)} + {formatKhr(changeDueUsd % 1)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -366,7 +487,14 @@ export default function CheckoutModal({
             )}
             <div className="flex items-baseline justify-between border-t border-slate-200 dark:border-slate-700 pt-2 text-sm font-bold text-[#172033] dark:text-white">
               <span className="text-base font-extrabold">សរុបត្រូវបង់ (TOTAL)</span>
-              <span className="text-2xl font-black text-[#009F6B] dark:text-emerald-400">{formatCurrency(total)}</span>
+              <div className="text-right">
+                <span className="text-2xl font-black text-[#009F6B] dark:text-emerald-400 block leading-tight">
+                  {formatCurrency(total)}
+                </span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">
+                  {formatKhr(total)}
+                </span>
+              </div>
             </div>
           </div>
         </div>

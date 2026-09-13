@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { env } from '../config/env';
-import { authClient } from '../config/authClient';
+import { env } from '../config/env.js';
+import { authClient } from '../config/authClient.js';
 
 export const apiClient = axios.create({
   baseURL: env.apiBaseUrl,

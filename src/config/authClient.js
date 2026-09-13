@@ -1,4 +1,4 @@
-import { env } from './env';
+import { env } from './env.js';
 
 const STORAGE_TOKEN_KEY = 'access_token';
 const STORAGE_USER_KEY = 'pos_user_data';

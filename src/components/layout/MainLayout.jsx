@@ -12,12 +12,13 @@ export default function MainLayout() {
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
   const isStaffPos = pathname === '/pos';
+  const isCustomerDisplay = pathname === '/pos/customer-display' || pathname === '/pos-display';
   const isAdminDashboard = (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) && isAdmin;
-  const isFullScreen = isStaffPos || isAdminDashboard;
+  const isFullScreen = isStaffPos || isCustomerDisplay || isAdminDashboard;
 
   return (
     <div className={`flex flex-col bg-[#F8FAFC] dark:bg-slate-950 text-slate-800 dark:text-slate-200 selection:bg-emerald-500 selection:text-white transition-colors duration-200 ${isFullScreen ? 'h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-[100dvh]'}`}>
-      {!isAdminDashboard && (
+      {!isAdminDashboard && !isStaffPos && !isCustomerDisplay && (
         <Navbar onOpenCart={() => setCartDrawerOpen(true)} />
       )}
 

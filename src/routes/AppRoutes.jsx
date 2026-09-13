@@ -18,6 +18,7 @@ import Account from '../pages/Account';
 import AboutDeveloper from '../pages/AboutDeveloper';
 import UserGuide from '../pages/UserGuide';
 import Pos from '../pages/Pos';
+import PosCustomerDisplayPage from '../pages/PosCustomerDisplayPage';
 import Sales from '../pages/Sales';
 import SaleDetail from '../pages/SaleDetail';
 import Products from '../pages/Products';
@@ -45,6 +46,7 @@ import DeliveryDetail from '../pages/admin/DeliveryDetail';
 import DeliveryProviders from '../pages/admin/DeliveryProviders';
 import DeliveryZones from '../pages/admin/DeliveryZones';
 import DeliveryReports from '../pages/admin/DeliveryReports';
+import Notifications from '../pages/Notifications';
 
 function DashboardLayoutWrapper() {
   const { role, isStaff, isAdmin, loading } = useAuth();
@@ -100,6 +102,16 @@ export default function AppRoutes() {
         <Route path="/user-guide" element={<UserGuide />} />
         <Route path="/how-to-use" element={<Navigate to="/guide" replace />} />
 
+        {/* Real-time Notifications Center */}
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER', 'STAFF', 'ADMIN']}>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Dedicated Customer Dashboard */}
         <Route
           path="/customer/dashboard"
@@ -119,6 +131,10 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+        {/* Customer-Facing In-Store Display (Dual Monitor / Customer Tablet) */}
+        <Route path="/pos/customer-display" element={<PosCustomerDisplayPage />} />
+        <Route path="/pos-display" element={<PosCustomerDisplayPage />} />
       </Route>
 
       {/* ---------- ៣. DEDICATED ADMIN & STAFF DASHBOARD ROUTES ---------- */}
@@ -301,6 +317,8 @@ export default function AppRoutes() {
       <Route path="/admin/delivery-providers" element={<Navigate to="/dashboard/delivery-providers" replace />} />
       <Route path="/admin/delivery-zones" element={<Navigate to="/dashboard/delivery-zones" replace />} />
       <Route path="/admin/reports/delivery" element={<Navigate to="/dashboard/reports/delivery" replace />} />
+      <Route path="/dashboard/notifications" element={<Navigate to="/notifications" replace />} />
+      <Route path="/admin/notifications" element={<Navigate to="/notifications" replace />} />
 
       {/* 404 Fallback */}
       <Route path="*" element={<NotFound />} />

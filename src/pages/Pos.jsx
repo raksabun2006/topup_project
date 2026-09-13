@@ -10,6 +10,8 @@ import CheckoutModal from '../components/pos/CheckoutModal';
 import BakongPaymentModal from '../components/pos/BakongPaymentModal';
 import SaleSuccessModal from '../components/pos/SaleSuccessModal';
 import CustomerOrdersModal, { saveCustomerOrder } from '../components/pos/CustomerOrdersModal';
+import PosHeader from '../components/pos/PosHeader';
+import CustomerFacingDisplay, { broadcastPosState } from '../components/pos/CustomerFacingDisplay';
 import SEO from '../components/SEO';
 import { env } from '../config/env';
 import { formatCurrency, parseBackendDate } from '../utils/format';
@@ -88,6 +90,7 @@ export default function Pos() {
   const [completedSale, setCompletedSale] = useState(null);
   const [stockReloadSignal, setStockReloadSignal] = useState(0);
   const [mobileCartOpen, setMobileCartOpen] = useState(pathname === '/cart');
+  const [showCustomerPreview, setShowCustomerPreview] = useState(false);
 
   const searchInputRef = useRef(null);
   const categoryContainerRef = useRef(null);
@@ -117,7 +120,7 @@ export default function Pos() {
     sessionStorage.setItem(HELD_ORDERS_KEY, JSON.stringify(heldOrders));
   }, [heldOrders]);
 
-  // Global Keyboard Shortcuts (F2 / Ctrl+K, F4, F8, F9, ESC)
+  // Global Keyboard Shortcuts (F2 / Ctrl+K, F4, F6, F7, F8, F9, ESC)
   useEffect(() => {
     const handleKeyDown = (e) => {
       // F2 or Ctrl+K: Focus search input
@@ -132,6 +135,20 @@ export default function Pos() {
       if (e.key === 'F4' && isAuthenticated) {
         e.preventDefault();
         document.getElementById('pos-customer-button')?.click();
+        return;
+      }
+
+      // F6: Toggle Held Orders (Staff only)
+      if (e.key === 'F6' && isAuthenticated) {
+        e.preventDefault();
+        document.querySelector('[data-held-orders-trigger]')?.click();
+        return;
+      }
+
+      // F7: Open History / Customer Orders
+      if (e.key === 'F7' && isAuthenticated) {
+        e.preventDefault();
+        setShowOrdersModal((prev) => !prev);
         return;
       }
 
@@ -157,7 +174,10 @@ export default function Pos() {
 
       // Escape: Close modals
       if (e.key === 'Escape') {
-        if (showCheckout) {
+        if (showCustomerPreview) {
+          e.preventDefault();
+          setShowCustomerPreview(false);
+        } else if (showCheckout) {
           e.preventDefault();
           setShowCheckout(false);
         } else if (showOrdersModal) {
@@ -172,7 +192,7 @@ export default function Pos() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [items.length, showCheckout, showOrdersModal, completedSale, isAuthenticated]);
+  }, [items.length, showCheckout, showOrdersModal, completedSale, isAuthenticated, showCustomerPreview]);
 
   // For unauthenticated customers, discount and tax are calculated cleanly
   const activeDiscountPct = isAuthenticated ? discountPct : '0';
@@ -240,16 +260,55 @@ export default function Pos() {
     setHeldOrders((prev) => prev.filter((o) => o.id !== id));
   };
 
+  // Broadcast live cart changes to Customer-Facing Display
+  useEffect(() => {
+    if (!showCheckout && !completedSale) {
+      broadcastPosState({
+        items,
+        customer,
+        subtotal,
+        discountAmount,
+        taxAmount,
+        total,
+        status: items.length > 0 ? 'CART' : 'IDLE',
+        qrData: null,
+      });
+    }
+  }, [items, customer, subtotal, discountAmount, taxAmount, total, showCheckout, completedSale]);
+
   const handleSaleSuccess = (sale) => {
     setShowCheckout(false);
     saveCustomerOrder(sale);
     setCompletedSale(sale);
     resetActiveSale();
     setStockReloadSignal((n) => n + 1);
+    broadcastPosState({
+      items: [],
+      customer: null,
+      subtotal: 0,
+      discountAmount: 0,
+      taxAmount: 0,
+      total: 0,
+      status: 'COMPLETED',
+      completedSale: sale,
+      cashTendered: sale?.cashTendered || 0,
+      changeDue: sale?.changeDue || 0,
+    });
   };
 
   const handleNewSale = () => {
     setCompletedSale(null);
+    broadcastPosState({
+      items: [],
+      customer: null,
+      subtotal: 0,
+      discountAmount: 0,
+      taxAmount: 0,
+      total: 0,
+      status: 'IDLE',
+      qrData: null,
+      completedSale: null,
+    });
   };
 
   const handleFocusCategories = () => {
@@ -308,6 +367,22 @@ export default function Pos() {
         robots={pageRobots}
         jsonLd={homepageSchema}
       />
+
+      {/* Staff POS Register Header */}
+      {isPosPage && isAuthenticated && (
+        <PosHeader
+          heldCount={heldOrders.length}
+          onOpenHeld={() => {
+            document.querySelector('[data-held-orders-trigger]')?.click();
+          }}
+          onOpenHistory={() => setShowOrdersModal(true)}
+          onFocusSearch={() => {
+            searchInputRef.current?.focus();
+            searchInputRef.current?.select();
+          }}
+          onToggleCustomerPreview={() => setShowCustomerPreview((prev) => !prev)}
+        />
+      )}
 
       <header className="sr-only">
         <h1>Mart System — Customer Shopping POS</h1>
@@ -486,6 +561,24 @@ export default function Pos() {
 
       {/* Sale Success / Receipt Modal */}
       {completedSale && <SaleSuccessModal sale={completedSale} onNewSale={handleNewSale} />}
+
+      {/* Interactive In-App Customer Display Preview Modal */}
+      {showCustomerPreview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-6 backdrop-blur-xs animate-fade-in"
+          onClick={() => setShowCustomerPreview(false)}
+        >
+          <div
+            className="relative h-[85vh] w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-700 bg-slate-950 shadow-2xl animate-scale-in flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <CustomerFacingDisplay
+              isEmbeddedPreview={true}
+              onClosePreview={() => setShowCustomerPreview(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,8 +6,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="format-detection" content="telephone=no, address=no, email=no" />
 
-    <!-- Dark Mode Immediate Hydration Script -->
+    <!-- Environment & Theme Hydration Script -->
     <script>
+      if (typeof window !== 'undefined' && typeof window.global === 'undefined') {
+        window.global = window;
+      }
       (function() {
         try {
           var theme = localStorage.getItem('mart_theme');

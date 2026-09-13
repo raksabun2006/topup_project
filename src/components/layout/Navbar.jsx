@@ -3,7 +3,7 @@ import { NavLink, Link, useNavigate, useLocation, useSearchParams } from 'react-
 import {
   Home, Menu, X, User, LogOut, Package, ShoppingCart, Search,
   ChevronDown, Layers, ShoppingBag, LogIn, UserPlus, LayoutDashboard, Shield,
-  ArrowRight, Sparkles, Globe, Compass, Heart, MapPin, HelpCircle
+  ArrowRight, Sparkles, Globe, Compass, Heart, MapPin, HelpCircle, Bell
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -17,6 +17,7 @@ import ThemeToggle from '../ui/ThemeToggle';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import UserAvatar from '../ui/UserAvatar';
 import BrandLogo from '../ui/BrandLogo';
+import NotificationDropdown from '../ui/NotificationDropdown';
 
 export default function Navbar({ onOpenCart }) {
   const { isAuthenticated, user, logout, isAdmin, isManagerOrAdmin, isStaff, displayRole } = useAuth();
@@ -353,6 +354,13 @@ export default function Navbar({ onOpenCart }) {
             </span>
           </button>
 
+          {/* Real-time Notification Dropdown (Authenticated users) */}
+          {isAuthenticated && (
+            <div className="shrink-0">
+              <NotificationDropdown variant="navbar" />
+            </div>
+          )}
+
           {/* Account / Auth Profile Menu (Desktop & Tablet only ≥ 640px) */}
           {!isAuthenticated ? (
             <div className="hidden sm:flex items-center gap-2 text-xs font-bold shrink-0">
@@ -535,6 +543,16 @@ export default function Navbar({ onOpenCart }) {
                       >
                         <Package size={18} className="text-slate-400 shrink-0" />
                         <span>{t('myOrders')}</span>
+                      </Link>
+
+                      <Link
+                        to="/notifications"
+                        role="menuitem"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-3 rounded-2xl px-3 py-2.5 min-h-[44px] text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                      >
+                        <Bell size={18} className="text-slate-400 shrink-0" />
+                        <span>{t('notifications')}</span>
                       </Link>
 
                       <Link

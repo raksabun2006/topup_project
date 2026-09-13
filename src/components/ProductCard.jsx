@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Package, Plus, Minus, Trash2, Heart, ShoppingBag, Check, Star, Flame } from 'lucide-react';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, formatKhr } from '../utils/format';
 import { getProductUrl } from '../utils/seoSlug';
 import { useLanguage } from '../context/LanguageContext';
 import { useWishlist } from '../hooks/useWishlist';
@@ -228,6 +228,9 @@ export default function ProductCard({
                 }`}
               >
                 {formatCurrency(product.price)}
+              </span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                {formatKhr(product.price)}
               </span>
               {hasDiscount && (
                 <span className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 line-through font-semibold">

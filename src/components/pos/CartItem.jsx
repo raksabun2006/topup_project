@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Minus, Plus, Trash2, Package, AlertCircle } from 'lucide-react';
-import { formatCurrency } from '../../utils/format';
+import { formatCurrency, formatKhr } from '../../utils/format';
 
 export default function CartItem({ item, onSetQuantity, onRemove }) {
   const [imageBroken, setImageBroken] = useState(false);
@@ -87,9 +87,12 @@ export default function CartItem({ item, onSetQuantity, onRemove }) {
       </div>
 
       {/* Line Total */}
-      <div className="w-14 sm:w-16 shrink-0 text-right">
-        <span className="text-xs sm:text-[13px] font-black text-[#009F6B] dark:text-emerald-400">
+      <div className="w-16 sm:w-20 shrink-0 text-right">
+        <span className="text-xs sm:text-[13px] font-black text-[#009F6B] dark:text-emerald-400 block leading-tight">
           {formatCurrency(lineTotal)}
+        </span>
+        <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 block">
+          {formatKhr(lineTotal)}
         </span>
       </div>
 

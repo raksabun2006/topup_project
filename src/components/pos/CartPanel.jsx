@@ -15,7 +15,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import CartItem from './CartItem';
 import CustomerSelector from './CustomerSelector';
-import { formatCurrency, formatCurrencyPrecise } from '../../utils/format';
+import { formatCurrency, formatCurrencyPrecise, formatKhr } from '../../utils/format';
 
 function HeldOrders({ heldOrders, onResume, onDiscard }) {
   const [open, setOpen] = useState(false);
@@ -24,6 +24,7 @@ function HeldOrders({ heldOrders, onResume, onDiscard }) {
   return (
     <div className="relative">
       <button
+        data-held-orders-trigger="true"
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1.5 rounded-full border border-amber-400/60 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-500/40 px-2.5 py-1 text-xs font-bold text-amber-800 dark:text-amber-400 shadow-2xs hover:bg-amber-100/80 dark:hover:bg-amber-900/40 transition active:scale-95 cursor-pointer"
       >
@@ -339,9 +340,14 @@ export default function CartPanel({
               {/* Grand Total Row */}
               <div className="flex items-baseline justify-between border-t border-dashed border-slate-200 dark:border-slate-700 pt-2 text-sm font-bold text-[#0F172A] dark:text-white">
                 <span className="text-sm font-bold">សរុបត្រូវបង់ (TOTAL)</span>
-                <span className="text-xl sm:text-2xl font-black text-[#009F6B] dark:text-emerald-400 tracking-tight">
-                  {formatCurrency(total)}
-                </span>
+                <div className="text-right">
+                  <span className="text-xl sm:text-2xl font-black text-[#009F6B] dark:text-emerald-400 tracking-tight block leading-none">
+                    {formatCurrency(total)}
+                  </span>
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block mt-0.5">
+                    {formatKhr(total)}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -381,9 +387,14 @@ export default function CartPanel({
                 <span className="text-sm font-bold">សរុប (TOTAL)</span>
                 <p className="text-[10px] text-[#64748B] dark:text-slate-400 font-normal">({totalItemCount} មុខទំនិញ)</p>
               </div>
-              <span className="text-xl sm:text-2xl font-black text-[#009F6B] dark:text-emerald-400 tracking-tight">
-                {formatCurrency(total)}
-              </span>
+              <div className="text-right">
+                <span className="text-xl sm:text-2xl font-black text-[#009F6B] dark:text-emerald-400 tracking-tight block leading-none">
+                  {formatCurrency(total)}
+                </span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block mt-0.5">
+                  {formatKhr(total)}
+                </span>
+              </div>
             </div>
           </div>
         )}
@@ -407,9 +418,14 @@ export default function CartPanel({
                 )}
               </div>
 
-              <div className="flex items-center gap-2 text-base sm:text-lg font-black">
-                <span>{formatCurrency(total)}</span>
-                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+              <div className="flex flex-col items-end text-right">
+                <div className="flex items-center gap-2 text-base sm:text-lg font-black leading-tight">
+                  <span>{formatCurrency(total)}</span>
+                  <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+                </div>
+                <span className="text-[11px] font-bold text-emerald-100 opacity-90 leading-none">
+                  {formatKhr(total)}
+                </span>
               </div>
             </button>
           </div>

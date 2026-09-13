@@ -126,6 +126,24 @@ const translations = {
     assignCourier: 'Assign Courier',
     assignDriver: 'Assign Driver',
     updateStatus: 'Update Status',
+
+    // Notifications
+    notifications: 'Notifications',
+    allNotifications: 'All Notifications',
+    markAllAsRead: 'Mark all as read',
+    markAsRead: 'Mark as read',
+    noNotifications: 'No notifications',
+    allCaughtUp: "You're all caught up.",
+    paymentSuccessful: 'Payment successful',
+    paymentFailed: 'Payment failed',
+    orderDelivered: 'Order delivered',
+    outForDelivery: 'Out for delivery',
+    orderShipped: 'Order shipped',
+    orderConfirmed: 'Order confirmed',
+    orderCancelled: 'Order cancelled',
+    newOrder: 'New order',
+    realTimeUpdates: 'Real-time store updates',
+    viewAllNotifications: 'View all notifications',
   },
   km: {
     // Navigation & General
@@ -250,6 +268,24 @@ const translations = {
     assignCourier: 'ចាត់ចែងក្រុមហ៊ុនដឹក',
     assignDriver: 'ចាត់ចែងអ្នកដឹក',
     updateStatus: 'កែប្រែស្ថានភាព',
+
+    // Notifications
+    notifications: 'ការជូនដំណឹង',
+    allNotifications: 'ការជូនដំណឹងទាំងអស់',
+    markAllAsRead: 'សម្គាល់ថាបានអានទាំងអស់',
+    markAsRead: 'សម្គាល់ថាបានអាន',
+    noNotifications: 'មិនមានការជូនដំណឹង',
+    allCaughtUp: 'លោកអ្នកបានអានការជូនដំណឹងទាំងអស់រួចរាល់ហើយ',
+    paymentSuccessful: 'ការទូទាត់បានជោគជ័យ',
+    paymentFailed: 'ការទូទាត់មិនបានសម្រេច',
+    orderDelivered: 'ការបញ្ជាទិញបានដឹកជញ្ជូនរួចរាល់',
+    outForDelivery: 'កំពុងដឹកជញ្ជូនទៅកាន់អ្នក',
+    orderShipped: 'ការបញ្ជាទិញបានចេញដំណើរ',
+    orderConfirmed: 'ការបញ្ជាទិញត្រូវបានបញ្ជាក់',
+    orderCancelled: 'ការបញ្ជាទិញត្រូវបានបោះបង់',
+    newOrder: 'ការបញ្ជាទិញថ្មី',
+    realTimeUpdates: 'បច្ចុប្បន្នភាពទាន់ហេតុការណ៍',
+    viewAllNotifications: 'មើលការជូនដំណឹងទាំងអស់',
   },
 };
 
