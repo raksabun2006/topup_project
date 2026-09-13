@@ -3,7 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutGrid, ShoppingBag, Package, Users, BarChart2,
   WalletCards, Tag, Globe, ShoppingCart, ChevronLeft, ChevronRight,
-  Menu, X, Sparkles, LogOut, User, Plus, ExternalLink
+  Menu, X, Sparkles, LogOut, User, Plus, ExternalLink, Truck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSales } from '../../hooks/useSales';
@@ -40,6 +40,7 @@ export default function AdminLayout() {
     ADMIN: [
       { to: '/admin/dashboard', icon: LayoutGrid, label: 'Overview', end: true },
       { to: '/dashboard/sales', icon: ShoppingBag, label: 'Orders & Sales', badge: pendingOrTotalCount ? String(pendingOrTotalCount) : undefined },
+      { to: '/dashboard/deliveries', icon: Truck, label: 'Deliveries' },
       { to: '/dashboard/products', icon: Package, label: 'Products' },
       { to: '/dashboard/customers', icon: Users, label: 'Customers' },
       { to: '/dashboard/discounts', icon: Tag, label: 'Discounts & Promo' },
@@ -49,6 +50,7 @@ export default function AdminLayout() {
     STAFF: [
       { to: '/staff/dashboard', icon: LayoutGrid, label: 'Operations Overview', end: true },
       { to: '/dashboard/sales', icon: ShoppingBag, label: 'Orders & Receipts', badge: pendingOrTotalCount ? String(pendingOrTotalCount) : undefined },
+      { to: '/dashboard/deliveries', icon: Truck, label: 'Deliveries' },
       { to: '/dashboard/products', icon: Package, label: 'Product Catalog' },
     ],
   };
@@ -332,8 +334,16 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
               <span className="text-slate-400 dark:text-slate-500 font-medium">Dashboard</span>
               <span className="text-slate-300 dark:text-slate-600">/</span>
               <span className="text-slate-900 dark:text-white font-extrabold">
-                {pathname.includes('/dashboard/reports')
+                {pathname.includes('/dashboard/reports/delivery')
+                  ? 'Delivery Reports'
+                  : pathname.includes('/dashboard/reports')
                   ? 'Analytics & Reports'
+                  : pathname.includes('/dashboard/deliveries')
+                  ? 'Courier Deliveries'
+                  : pathname.includes('/dashboard/delivery-providers')
+                  ? 'Courier Providers'
+                  : pathname.includes('/dashboard/delivery-zones')
+                  ? 'Delivery Zones'
                   : pathname.includes('/dashboard/sales')
                   ? 'Orders & Sales'
                   : pathname.includes('/dashboard/products')

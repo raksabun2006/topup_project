@@ -39,6 +39,12 @@ import HelpCenter from '../pages/HelpCenter';
 import StaffOrders from '../pages/StaffOrders';
 import Unauthorized from '../pages/Unauthorized';
 import NotFound from '../pages/NotFound';
+import OrderTracking from '../pages/OrderTracking';
+import Deliveries from '../pages/admin/Deliveries';
+import DeliveryDetail from '../pages/admin/DeliveryDetail';
+import DeliveryProviders from '../pages/admin/DeliveryProviders';
+import DeliveryZones from '../pages/admin/DeliveryZones';
+import DeliveryReports from '../pages/admin/DeliveryReports';
 
 function DashboardLayoutWrapper() {
   const { role, isStaff, isAdmin, loading } = useAuth();
@@ -76,6 +82,9 @@ export default function AppRoutes() {
         <Route path="/order-success" element={<OrderSuccess />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/orders/:id" element={<OrderDetail />} />
+        <Route path="/orders/:id/tracking" element={<OrderTracking />} />
+        <Route path="/orders/:orderId/delivery" element={<OrderTracking />} />
+        <Route path="/tracking" element={<OrderTracking />} />
         <Route path="/my-orders" element={<Orders />} />
         <Route path="/account" element={<Account />} />
         <Route path="/account/orders" element={<Orders />} />
@@ -222,6 +231,56 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+        {/* Courier & Delivery Operations */}
+        <Route
+          path="/dashboard/deliveries"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+              <Deliveries />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/deliveries/:id"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+              <DeliveryDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/deliveries/:id"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+              <DeliveryDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/delivery-providers"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <DeliveryProviders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/delivery-zones"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <DeliveryZones />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/reports/delivery"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <DeliveryReports />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       {/* ---------- ៤. ALIASES & 404 FALLBACK ---------- */}
@@ -238,6 +297,10 @@ export default function AppRoutes() {
       <Route path="/loyalty" element={<Navigate to="/account/loyalty" replace />} />
       <Route path="/addresses" element={<Navigate to="/account/addresses" replace />} />
       <Route path="/support" element={<Navigate to="/account/support" replace />} />
+      <Route path="/admin/deliveries" element={<Navigate to="/dashboard/deliveries" replace />} />
+      <Route path="/admin/delivery-providers" element={<Navigate to="/dashboard/delivery-providers" replace />} />
+      <Route path="/admin/delivery-zones" element={<Navigate to="/dashboard/delivery-zones" replace />} />
+      <Route path="/admin/reports/delivery" element={<Navigate to="/dashboard/reports/delivery" replace />} />
 
       {/* 404 Fallback */}
       <Route path="*" element={<NotFound />} />

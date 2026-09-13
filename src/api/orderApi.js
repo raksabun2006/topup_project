@@ -59,12 +59,14 @@ export const orderApi = {
    * Parameters: { deliveryMethod = 'DELIVERY', deliveryAddressId = null, note = '' }
    * Returns: CheckoutResponse { orderId, orderNumber, amount, currency, status, order, payment }
    */
-  checkout: async ({ deliveryMethod = 'DELIVERY', deliveryAddressId = null, note = '' } = {}, config = {}) => {
+  checkout: async ({ deliveryMethod = 'DELIVERY', deliveryAddressId = null, deliveryFee = undefined, couponCode = undefined, note = '' } = {}, config = {}) => {
     const res = await apiClient.post(
       '/api/v1/orders/checkout',
       {
         deliveryMethod,
         deliveryAddressId: deliveryAddressId || null,
+        deliveryFee: deliveryFee !== undefined ? Number(deliveryFee) : undefined,
+        couponCode: couponCode || undefined,
         note: note || '',
       },
       config

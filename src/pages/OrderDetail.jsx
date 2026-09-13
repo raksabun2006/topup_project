@@ -7,12 +7,14 @@ import {
 } from 'lucide-react';
 import { orderApi } from '../api/orderApi';
 import { adminApi } from '../api/adminApi';
+import { deliveryApi } from '../api/deliveryApi';
 import { getCustomerOrders } from '../components/pos/CustomerOrdersModal';
 import { formatCurrency, formatDate } from '../utils/format';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import Receipt from '../components/pos/Receipt';
 import SEO from '../components/SEO';
+import DeliveryStatusBadge from '../components/delivery/DeliveryStatusBadge';
 
 const STATUS_STEPS = [
   { key: 'PENDING_PAYMENT', labelEn: 'Order Placed', labelKm: 'បានបញ្ជាទិញ' },
@@ -38,6 +40,7 @@ export default function OrderDetail() {
   const { isAdmin, isStaff, isManagerOrAdmin } = useAuth();
 
   const [order, setOrder] = useState(null);
+  const [deliveryInfo, setDeliveryInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showReceiptModal, setShowReceiptModal] = useState(false);
@@ -97,6 +100,16 @@ export default function OrderDetail() {
         if (isMounted && !matchLocal) {
           setError('មិនអាចស្វែងរកព័ត៌មានការបញ្ជាទិញនេះបានទេ (Order not found).');
         }
+      }
+
+      // Try fetching associated delivery tracking info
+      try {
+        const del = await deliveryApi.getDeliveryByOrderId(id);
+        if (isMounted && del) {
+          setDeliveryInfo(del);
+        }
+      } catch {
+        // Non-blocking if delivery record is not yet created
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -350,6 +363,53 @@ export default function OrderDetail() {
                 </button>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Real-time Courier Delivery Tracking Card */}
+        {deliveryInfo && (
+          <div className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-sm space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                  <Truck size={20} />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Courier Delivery Tracking
+                  </span>
+                  <p className="text-sm font-black text-slate-900 dark:text-white">
+                    {deliveryInfo.providerName || deliveryInfo.providerCode || 'Delivery Service'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <DeliveryStatusBadge status={deliveryInfo.deliveryStatus || deliveryInfo.status} size="sm" />
+                <Link
+                  to={`/orders/${id}/tracking`}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 transition flex items-center gap-1"
+                >
+                  <span>Track Parcel</span>
+                  <ChevronRight size={13} />
+                </Link>
+              </div>
+            </div>
+
+            {(deliveryInfo.trackingNumber || deliveryInfo.courierOrderNumber) && (
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-4 text-xs font-mono">
+                {deliveryInfo.trackingNumber && (
+                  <span className="text-slate-600 dark:text-slate-300">
+                    Tracking: <strong className="text-slate-900 dark:text-white">{deliveryInfo.trackingNumber}</strong>
+                  </span>
+                )}
+                {deliveryInfo.courierOrderNumber && (
+                  <span className="text-slate-600 dark:text-slate-300">
+                    Waybill: <strong className="text-slate-900 dark:text-white">{deliveryInfo.courierOrderNumber}</strong>
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         )}
 

@@ -8,6 +8,8 @@ import {
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { orderApi } from '../api/orderApi';
+import { deliveryProviderApi } from '../api/deliveryProviderApi';
+import { deliveryZoneApi } from '../api/deliveryZoneApi';
 import { getErrorMessage } from '../api/client';
 import { formatCurrency } from '../utils/format';
 import BakongPaymentModal from '../components/pos/BakongPaymentModal';
@@ -41,6 +43,11 @@ export default function Checkout() {
   const [district, setDistrict] = useState(savedDraft?.district || '');
   const [note, setNote] = useState(savedDraft?.note || '');
 
+  // Dynamic Couriers & Zones
+  const [providers, setProviders] = useState([]);
+  const [selectedProviderCode, setSelectedProviderCode] = useState(savedDraft?.providerCode || 'JNT');
+  const [zones, setZones] = useState([]);
+
   // Saved Addresses State
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -62,6 +69,29 @@ export default function Checkout() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingSale, setPendingSale] = useState(null);
   const [completedOrder, setCompletedOrder] = useState(null);
+
+  // Fetch active providers and delivery zones
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([
+      deliveryProviderApi.getActiveProviders(),
+      deliveryZoneApi.getActiveZones(),
+    ])
+      .then(([provList, zoneList]) => {
+        if (!isMounted) return;
+        if (Array.isArray(provList) && provList.length > 0) {
+          setProviders(provList);
+          if (!provList.some((p) => p.code === selectedProviderCode)) {
+            setSelectedProviderCode(provList[0].code);
+          }
+        }
+        if (Array.isArray(zoneList)) {
+          setZones(zoneList);
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, [selectedProviderCode]);
 
   // Fetch saved addresses if authenticated
   useEffect(() => {
@@ -128,8 +158,18 @@ export default function Checkout() {
     if (addr.district) setDistrict(addr.district);
   };
 
-  // Authoritative estimated display pricing (final amount is returned by backend on checkout)
-  const deliveryFee = deliveryMethod === 'DELIVERY' ? 1.50 : 0.00;
+  // Dynamic Zone & Courier based delivery fee
+  const matchingZone = zones.find((z) => {
+    if (!province) return false;
+    const p = String(province).trim().toLowerCase();
+    const zp = String(z.province || '').trim().toLowerCase();
+    return p === zp || p.includes(zp) || zp.includes(p);
+  });
+
+  const baseZoneFee = matchingZone?.baseFee ?? matchingZone?.fee ?? 1.50;
+  const isFreeDelivery = matchingZone?.freeDeliveryThreshold && subtotal >= matchingZone.freeDeliveryThreshold;
+  const deliveryFee = deliveryMethod === 'DELIVERY' ? (isFreeDelivery ? 0.00 : baseZoneFee) : 0.00;
+  const estimatedDeliveryDays = matchingZone?.estimatedDays || '1–2 days';
   const couponDiscount = appliedCoupon
     ? appliedCoupon.discountAmount || (subtotal * (appliedCoupon.discountPercent || 0)) / 100
     : 0;
@@ -192,12 +232,14 @@ export default function Checkout() {
 
       // 3. Perform Customer E-Commerce Order Checkout: POST /api/v1/orders/checkout
       const destinationText = deliveryMethod === 'DELIVERY'
-        ? `${deliveryAddress.trim()}${district ? `, ${district}` : ''}${province ? `, ${province}` : ''}${note ? ` (Note: ${note.trim()})` : ''}`
+        ? `[Courier: ${selectedProviderCode}] ${deliveryAddress.trim()}${district ? `, ${district}` : ''}${province ? `, ${province}` : ''}${note ? ` (Note: ${note.trim()})` : ''}`
         : `Store Pickup at Mart System${note ? ` (Note: ${note.trim()})` : ''}`;
 
       const checkoutRes = await orderApi.checkout({
         deliveryMethod,
         deliveryAddressId,
+        deliveryFee,
+        couponCode: appliedCoupon?.code,
         note: destinationText,
       });
 
@@ -489,11 +531,11 @@ export default function Checkout() {
                       <span className="font-extrabold text-sm text-slate-900 dark:text-white">សេវាដឹកជញ្ជូន (Delivery)</span>
                     </div>
                     <span className="font-mono font-black text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/60">
-                      $1.50 USD
+                      {formatCurrency(deliveryFee)}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    ដឹកជញ្ជូនដល់ផ្ទះ (Express Doorstep Delivery)
+                    ដឹកជញ្ជូនដល់ផ្ទះ (Express Doorstep Delivery) · {estimatedDeliveryDays}
                   </p>
                 </button>
 
@@ -521,6 +563,77 @@ export default function Checkout() {
                   </p>
                 </button>
               </div>
+
+              {/* Dynamic Courier Provider Selection */}
+              {deliveryMethod === 'DELIVERY' && (
+                <div className="pt-3.5 border-t border-slate-200/60 dark:border-slate-800 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-slate-800 dark:text-slate-200">
+                      ជ្រើសរើសក្រុមហ៊ុនដឹកជញ្ជូន (Choose Courier Provider)
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-400">
+                      {estimatedDeliveryDays}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {(providers.length > 0
+                      ? providers
+                      : [
+                          { code: 'JNT', name: 'J&T Express', supportsTracking: true },
+                          { code: 'VET', name: 'VET Logistics', supportsTracking: true },
+                          { code: 'CAMBODIA_POST', name: 'Cambodia Post', supportsTracking: true },
+                          { code: 'ZTO', name: 'ZTO Express', supportsTracking: true },
+                          { code: 'CUSTOM', name: 'Custom / Own Delivery', supportsTracking: false },
+                        ]
+                    ).map((prov) => {
+                      const isSelected = selectedProviderCode === prov.code;
+                      return (
+                        <button
+                          key={prov.code}
+                          type="button"
+                          onClick={() => setSelectedProviderCode(prov.code)}
+                          className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                            isSelected
+                              ? 'border-emerald-600 dark:border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 ring-2 ring-emerald-600 dark:ring-emerald-500 shadow-xs'
+                              : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-800/60 hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="h-8 w-8 rounded-xl bg-slate-100 dark:bg-slate-700/60 flex items-center justify-center shrink-0">
+                              <Truck size={15} className={isSelected ? 'text-emerald-600' : 'text-slate-500'} />
+                            </div>
+                            <div className="min-w-0 truncate">
+                              <span className="text-xs font-black text-slate-900 dark:text-white block truncate">
+                                {prov.name}
+                              </span>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <span className="text-[10px] text-slate-400 font-mono">
+                                  {prov.code}
+                                </span>
+                                {prov.supportsTracking && (
+                                  <span className="text-[9px] font-bold text-sky-600 bg-sky-50 dark:bg-sky-950/50 px-1 rounded">
+                                    Track
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 block">
+                              {formatCurrency(deliveryFee)}
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              {estimatedDeliveryDays}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 2. Customer & Address Information Card */}
