@@ -547,6 +547,8 @@ export default function BakongPaymentModal({ sale, onPaid, onClose }) {
   const paymentAmount = payment?.amount ?? sale?.total;
   const paymentCurrency = payment?.currency || 'USD';
   const merchantDisplayName = payment?.merchantName || 'Mart System';
+  const qrValue = payment?.qrString || payment?.qr || (typeof payment?.getQr === 'function' ? payment.getQr() : null);
+
   // Broadcast active Bakong KHQR state to Customer-Facing Display
   useEffect(() => {
     if (qrValue && isQrActive) {

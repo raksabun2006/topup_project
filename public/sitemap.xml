@@ -73,19 +73,10 @@
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/Groceries%20%26%20Staples</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
-    <lastmod>2026-09-13</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <loc>https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A" />
     <lastmod>2026-09-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -109,10 +100,19 @@
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A" />
+    <loc>https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88" />
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/Groceries%20%26%20Staples</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/category/Groceries%20%26%20Staples" />
     <lastmod>2026-09-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -199,31 +199,31 @@
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
+    <loc>https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438" />
     <lastmod>2026-09-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9yOpeLR6mdJiIZzolFtxWJPxZHHQ_DRmIkwPaFKBzqg&amp;s</image:loc>
-      <image:title>Malys Angkor Jasmine Rice 5kg</image:title>
-      <image:caption>Premium quality fragrant Phka Rumduol jasmine rice from Cambodia, known for its soft texture and natural pandan-like aroma.</image:caption>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYi4_Sg8Ce3YqLX-oAXBMz6B42yOgIXcb56S3zD-xWPQ&amp;s=10</image:loc>
+      <image:title>Yakult Probiotic Drinking Yoghurt Less Sugar 65g</image:title>
+      <image:caption>ភេសជ្ជៈទឹកដោះគោជូរ Probiotic ស្ករតិច</image:caption>
     </image:image>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34" />
+    <loc>https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb" />
     <lastmod>2026-09-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsybjD4tx5kBPGN7ijPVOH8x1LD98qeMktgszUf55N4A&amp;s</image:loc>
-      <image:title>Dasani Water 1.5L x 6</image:title>
-      <image:caption>ទឹកសុទ្ធ Dasani សម្រាប់ការប្រើប្រាស់ប្រចាំថ្ងៃ</image:caption>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeDEQcT8fXPDG0EOeGK3ntRu6QsIgGy-Wb_1d3ihK60Q&amp;s=10</image:loc>
+      <image:title>Angkormilk Strawberry Yogurt</image:title>
+      <image:caption>ទឹកដោះគោជូរ Angkormilk រសជាតិស្ត្របឺរី</image:caption>
     </image:image>
   </url>
   <url>
@@ -297,31 +297,31 @@
     </image:image>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb" />
+    <loc>https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34" />
     <lastmod>2026-09-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeDEQcT8fXPDG0EOeGK3ntRu6QsIgGy-Wb_1d3ihK60Q&amp;s=10</image:loc>
-      <image:title>Angkormilk Strawberry Yogurt</image:title>
-      <image:caption>ទឹកដោះគោជូរ Angkormilk រសជាតិស្ត្របឺរី</image:caption>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsybjD4tx5kBPGN7ijPVOH8x1LD98qeMktgszUf55N4A&amp;s</image:loc>
+      <image:title>Dasani Water 1.5L x 6</image:title>
+      <image:caption>ទឹកសុទ្ធ Dasani សម្រាប់ការប្រើប្រាស់ប្រចាំថ្ងៃ</image:caption>
     </image:image>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438</loc>
-    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438" />
+    <loc>https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60</loc>
+    <xhtml:link rel="alternate" hreflang="km" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60" />
     <lastmod>2026-09-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYi4_Sg8Ce3YqLX-oAXBMz6B42yOgIXcb56S3zD-xWPQ&amp;s=10</image:loc>
-      <image:title>Yakult Probiotic Drinking Yoghurt Less Sugar 65g</image:title>
-      <image:caption>ភេសជ្ជៈទឹកដោះគោជូរ Probiotic ស្ករតិច</image:caption>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9yOpeLR6mdJiIZzolFtxWJPxZHHQ_DRmIkwPaFKBzqg&amp;s</image:loc>
+      <image:title>Malys Angkor Jasmine Rice 5kg</image:title>
+      <image:caption>Premium quality fragrant Phka Rumduol jasmine rice from Cambodia, known for its soft texture and natural pandan-like aroma.</image:caption>
     </image:image>
   </url>
   <url>
