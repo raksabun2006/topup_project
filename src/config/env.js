@@ -5,6 +5,9 @@
 
 const rawEnv = (typeof import.meta !== 'undefined' && import.meta.env) || (typeof process !== 'undefined' && process.env) || {};
 
+const PRODUCTION_BACKEND_URL = 'https://gametopup-backend-production-3423.up.railway.app';
+const PRODUCTION_WS_URL = 'wss://gametopup-backend-production-3423.up.railway.app/ws';
+
 function resolveApiUrl() {
   const envUrl = (
     rawEnv.VITE_API_URL ||
@@ -13,6 +16,10 @@ function resolveApiUrl() {
   ).trim().replace(/\/+$/, '');
 
   if (envUrl) {
+    // Relative path for same-origin reverse proxy (e.g. /api/v1 or /api)
+    if (envUrl.startsWith('/')) {
+      return envUrl;
+    }
     // In production or when hosted over HTTPS, enforce HTTPS protocol to avoid mixed-content blocks
     if (rawEnv.PROD && envUrl.startsWith('http://') && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
       return envUrl.replace(/^http:\/\//i, 'https://');
@@ -20,9 +27,12 @@ function resolveApiUrl() {
     return envUrl;
   }
 
-  // Production fallback uses secure HTTPS Railway backend
-  if (rawEnv.PROD) {
-    return 'https://gametopup-backend-production-3423.up.railway.app';
+  // In production (Vercel / martsystemkh.software), use same-origin relative '/api/v1' to proxy securely
+  if (
+    rawEnv.PROD ||
+    (typeof window !== 'undefined' && window.location && window.location.protocol === 'https:' && !window.location.hostname.includes('localhost'))
+  ) {
+    return '/api/v1';
   }
 
   return 'http://localhost:8080';
@@ -38,14 +48,14 @@ function resolveWsUrl(backendUrl) {
   }
 
   // Fallback based on backend URL or environment
-  if (rawEnv.PROD) {
-    return 'wss://gametopup-backend-production-3423.up.railway.app/ws';
+  if (rawEnv.PROD || (typeof window !== 'undefined' && window.location && window.location.protocol === 'https:' && !window.location.hostname.includes('localhost'))) {
+    return PRODUCTION_WS_URL;
   }
 
-  if (backendUrl.startsWith('https://')) {
+  if (backendUrl && backendUrl.startsWith('https://')) {
     return backendUrl.replace(/^https:\/\//i, 'wss://') + '/ws';
   }
-  if (backendUrl.startsWith('http://')) {
+  if (backendUrl && backendUrl.startsWith('http://')) {
     return backendUrl.replace(/^http:\/\//i, 'ws://') + '/ws';
   }
 
@@ -53,21 +63,21 @@ function resolveWsUrl(backendUrl) {
 }
 
 const rawApiUrl = resolveApiUrl();
-const rawBackendUrl = rawApiUrl.replace(/\/api\/v1$/, '');
+const rawBackendUrl = rawApiUrl.startsWith('http') ? rawApiUrl.replace(/\/api\/v1$/, '') : '';
 const rawWsUrl = resolveWsUrl(rawBackendUrl);
 
 export const env = {
   // Base URL for API requests (guarantees /api/v1 prefix)
   apiBaseUrl: rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl}/api/v1`,
 
-  // Base URL without /api/v1 prefix
-  backendUrl: rawBackendUrl,
+  // Base URL without /api/v1 prefix (or production backend URL for absolute links)
+  backendUrl: rawBackendUrl || PRODUCTION_BACKEND_URL,
 
   // WebSocket URL for STOMP real-time notification client
   wsUrl: rawWsUrl,
 
   // HTTP/HTTPS endpoint for SockJS fallback
-  sockJsUrl: `${rawBackendUrl}/ws`,
+  sockJsUrl: `${rawBackendUrl || PRODUCTION_BACKEND_URL}/ws`,
 
   // Application Display Name
   appName: rawEnv.VITE_APP_NAME ?? 'Mart System',

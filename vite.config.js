@@ -8,6 +8,15 @@ export default defineConfig({
   define: {
     global: 'window',
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://gametopup-backend-production-3423.up.railway.app',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
   build: {
     sourcemap: false,
   },

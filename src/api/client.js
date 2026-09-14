@@ -11,8 +11,11 @@ export const apiClient = axios.create({
 // Outbound Interceptor: Normalizes URL and attaches JWT token for protected requests
 apiClient.interceptors.request.use(async (config) => {
   try {
-    // Prevent duplicate /api/v1 or /api prefix if URL already includes it
+    // Prevent duplicate /api/v1 or /api prefix, and strip raw backend URL if passed
     if (config.url) {
+      if (config.url.startsWith('https://gametopup-backend-production-3423.up.railway.app')) {
+        config.url = config.url.replace(/^https:\/\/gametopup-backend-production-3423\.up\.railway\.app/, '');
+      }
       if (config.url.startsWith('/api/v1/')) {
         config.url = config.url.replace(/^\/api\/v1/, '');
       } else if (config.url === '/api/v1') {

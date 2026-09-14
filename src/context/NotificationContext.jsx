@@ -98,12 +98,17 @@ export function NotificationProvider({ children }) {
     }
   }, [triggerToast]);
 
+  // Guard against overlapping concurrent fetches
+  const isFetchingRef = useRef(false);
+
   /**
    * Hydrate notifications and unread count from REST
    */
   const fetchRecent = useCallback(async (isManualRefresh = false) => {
     if (!isAuthenticated) return;
+    if (isFetchingRef.current) return;
 
+    isFetchingRef.current = true;
     if (isManualRefresh) setRefreshing(true);
     else if (!isHydratedRef.current) setLoading(true);
 
@@ -152,6 +157,7 @@ export function NotificationProvider({ children }) {
     } catch (err) {
       setLastError(err);
     } finally {
+      isFetchingRef.current = false;
       setLoading(false);
       if (isManualRefresh) setRefreshing(false);
     }
@@ -244,11 +250,10 @@ export function NotificationProvider({ children }) {
     const unbindStatus = notificationWebSocket.onStatusChange((status) => {
       setConnectionStatus(status);
 
-      // Reconnect Synchronization: when transitioning from RECONNECTING/DISCONNECTED to CONNECTED
+      // Reconnect Synchronization: ONLY when re-establishing after an active disconnect/reconnect
       if (
         status === ConnectionStatus.CONNECTED &&
-        (prevConnectionStatusRef.current === ConnectionStatus.RECONNECTING ||
-          prevConnectionStatusRef.current === ConnectionStatus.DISCONNECTED)
+        prevConnectionStatusRef.current === ConnectionStatus.RECONNECTING
       ) {
         // Recover missed events during offline/disconnection
         fetchRecent();
