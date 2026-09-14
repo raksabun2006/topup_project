@@ -74,7 +74,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self' https:; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://gametopup-backend-production-3423.up.railway.app wss://gametopup-backend-production-3423.up.railway.app wss: https://accounts.google.com https:; frame-src 'self' https://accounts.google.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests;"
+          "value": "default-src 'self' https:; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https: wss: data: blob:; frame-src 'self' https://accounts.google.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests;"
         },
         {
           "key": "X-Content-Type-Options",
@@ -111,6 +111,10 @@
     {
       "source": "/api/(.*)",
       "destination": "https://gametopup-backend-production-3423.up.railway.app/api/$1"
+    },
+    {
+      "source": "/ws/(.*)",
+      "destination": "https://gametopup-backend-production-3423.up.railway.app/ws/$1"
     },
     {
       "source": "/((?!assets/|.*\\..*).*)",

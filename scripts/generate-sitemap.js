@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const BASE_URL = 'https://martsystemkh.software';
-const BACKEND_API = 'https://gametopup-backend-production-3423.up.railway.app/api/v1/products';
+const BACKEND_API = `${BASE_URL}/api/v1/products`;
 const OUTPUT_PATH = path.resolve(__dirname, '../public/sitemap.xml');
 
 function slugify(text = '') {

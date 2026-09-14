@@ -70,14 +70,14 @@ export const env = {
   // Base URL for API requests (guarantees /api/v1 prefix)
   apiBaseUrl: rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl}/api/v1`,
 
-  // Base URL without /api/v1 prefix (or production backend URL for absolute links)
-  backendUrl: rawBackendUrl || PRODUCTION_BACKEND_URL,
+  // Base URL without /api/v1 prefix (or empty string for same-origin)
+  backendUrl: rawBackendUrl || '',
 
   // WebSocket URL for STOMP real-time notification client
   wsUrl: rawWsUrl,
 
-  // HTTP/HTTPS endpoint for SockJS fallback
-  sockJsUrl: `${rawBackendUrl || PRODUCTION_BACKEND_URL}/ws`,
+  // HTTP/HTTPS endpoint for SockJS fallback (proxied through same-origin /ws)
+  sockJsUrl: rawBackendUrl ? `${rawBackendUrl}/ws` : '/ws',
 
   // Application Display Name
   appName: rawEnv.VITE_APP_NAME ?? 'Mart System',

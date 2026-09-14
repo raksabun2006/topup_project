@@ -32,7 +32,19 @@ export default function BakongDiagnostics() {
     check();
   }, [check]);
 
-  const entries = result && typeof result === 'object' ? Object.entries(result) : [];
+  const entries = result && typeof result === 'object'
+    ? Object.entries(result).filter(([k, v]) => {
+        const keyLower = String(k).toLowerCase();
+        const valLower = String(v).toLowerCase();
+        return (
+          !valLower.includes('railway') &&
+          !valLower.includes('gametopup') &&
+          !keyLower.includes('url') &&
+          !keyLower.includes('host') &&
+          !keyLower.includes('backend')
+        );
+      })
+    : [];
   const statusEntry = entries.find(([k]) => /status|connected|ok|success|healthy/i.test(k));
   const isHealthy = statusEntry ? truthy(statusEntry[1]) : (result && !error);
 
