@@ -300,6 +300,12 @@ export default function AppRoutes() {
       </Route>
 
       {/* ---------- ៤. ALIASES & 404 FALLBACK ---------- */}
+      <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+      <Route path="/admin/orders" element={<Navigate to="/dashboard/orders" replace />} />
+      <Route path="/admin/customers" element={<Navigate to="/dashboard/customers" replace />} />
+      <Route path="/admin/reports" element={<Navigate to="/dashboard/reports" replace />} />
+      <Route path="/admin/expenses" element={<Navigate to="/dashboard/expenses" replace />} />
+      <Route path="/admin/sales" element={<Navigate to="/dashboard/sales" replace />} />
       <Route path="/reports" element={<Navigate to="/dashboard/reports" replace />} />
       <Route path="/expenses" element={<Navigate to="/dashboard/expenses" replace />} />
       <Route path="/discounts" element={<Navigate to="/dashboard/discounts" replace />} />

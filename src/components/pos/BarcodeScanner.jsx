@@ -71,9 +71,6 @@ export default function BarcodeScanner({
 
     lastScanRef.current = { code, time: now };
 
-    console.log('[CAMERA] detected:', decodedText);
-    console.log('[SCANNER 1] barcode detected (Camera):', code);
-
     // Flash reticle green visually
     setJustScanned(true);
     setTimeout(() => {
@@ -86,7 +83,6 @@ export default function BarcodeScanner({
 
   // Explicit user gesture handler to unlock Web Audio & start camera
   const handleStartScanner = async () => {
-    console.log('[CAMERA] opening');
     setAudioWarning(false);
     const unlocked = await unlockAudioContext();
     if (!unlocked) {
@@ -102,7 +98,6 @@ export default function BarcodeScanner({
 
     setStatus('initializing');
     setErrorMessage('');
-    console.log('[CAMERA] starting camera');
 
     // Safely stop and clear previous scanner instance if any
     if (scannerRef.current) {
@@ -112,7 +107,7 @@ export default function BarcodeScanner({
         }
         scannerRef.current.clear();
       } catch (e) {
-        console.warn('Cleanup error prior to start:', e);
+        // cleanup prior to start
       }
       scannerRef.current = null;
     }
@@ -122,9 +117,8 @@ export default function BarcodeScanner({
       let devices = [];
       try {
         devices = await Html5Qrcode.getCameras();
-        console.log('[CAMERA] cameras:', devices);
       } catch (camErr) {
-        console.warn('Failed to enumerate cameras:', camErr);
+        // enumerate error
       }
 
       if (!isMountedRef.current) {
@@ -198,7 +192,6 @@ export default function BarcodeScanner({
         return;
       }
 
-      console.log('[CAMERA] scanner started');
       setStatus('ready');
 
       // Check torch / flashlight capability

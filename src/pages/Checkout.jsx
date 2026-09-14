@@ -8,6 +8,7 @@ import {
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { orderApi } from '../api/orderApi';
+import { saleApi } from '../api/saleApi';
 import { deliveryProviderApi } from '../api/deliveryProviderApi';
 import { deliveryZoneApi } from '../api/deliveryZoneApi';
 import { getErrorMessage } from '../api/client';
@@ -175,26 +176,40 @@ export default function Checkout() {
     : 0;
   const estimatedTotal = Math.max(0, subtotal - couponDiscount + deliveryFee);
 
-  const handlePlaceOrder = async (e) => {
-    e.preventDefault();
+  const executeOrderSubmission = async (isGuestMode = false) => {
     if (items.length === 0 || submitting) return;
 
-    if (!customerName.trim()) {
-      setError('សូមបញ្ចូលឈ្មោះរបស់អ្នក (Please enter your full name)');
-      return;
-    }
-    if (!customerPhone.trim()) {
-      setError('សូមបញ្ចូលលេខទូរស័ព្ទ (Please enter your phone number)');
-      return;
-    }
-    if (deliveryMethod === 'DELIVERY' && !deliveryAddress.trim()) {
-      setError('សូមបញ្ចូលអាសយដ្ឋានដឹកជញ្ជូន (Please enter your delivery address)');
+    // 1. Quantity validation: limit unreasonable quantities
+    const hasInvalidQty = items.some((item) => {
+      const q = item.quantity;
+      return !Number.isInteger(q) || q <= 0 || q > 999;
+    });
+    if (hasInvalidQty) {
+      setError('ទំនិញមួយចំនួនមានចំនួនមិនត្រឹមត្រូវ (Some cart items have invalid quantities. Max 999 per item)');
       return;
     }
 
-    // If user is not authenticated, prompt sign-in/register modal gracefully
-    if (!isAuthenticated) {
-      setShowAuthModal(true);
+    // 2. Customer name validation
+    const cleanName = customerName.trim();
+    if (!cleanName || cleanName.length < 2) {
+      setError('សូមបញ្ចូលឈ្មោះរបស់អ្នក (Please enter your full name, at least 2 characters)');
+      return;
+    }
+    if (cleanName.length > 100) {
+      setError('ឈ្មោះវែងពេក (Name is too long, max 100 characters)');
+      return;
+    }
+
+    // 3. Phone number validation
+    const cleanPhone = customerPhone.trim().replace(/[\s-]/g, '');
+    if (!/^\+?[0-9]{8,15}$/.test(cleanPhone)) {
+      setError('សូមបញ្ចូលលេខទូរស័ព្ទត្រឹមត្រូវ (Please enter a valid phone number, 8–15 digits)');
+      return;
+    }
+
+    // 4. Delivery address validation
+    if (deliveryMethod === 'DELIVERY' && !deliveryAddress.trim()) {
+      setError('សូមបញ្ចូលអាសយដ្ឋានដឹកជញ្ជូន (Please enter your delivery address)');
       return;
     }
 
@@ -202,84 +217,130 @@ export default function Checkout() {
     setError('');
 
     try {
-      // 1. Synchronize frontend cart items with backend customer cart
-      await orderApi.syncCart(items);
-
-      // 2. Optionally create delivery address record if adding new address
-      let deliveryAddressId = selectedAddressId;
-      if (deliveryMethod === 'DELIVERY') {
-        if (isAddingNewAddress || !deliveryAddressId) {
-          try {
-            const addr = await orderApi.createAddress({
-              receiverName: customerName.trim(),
-              phoneNumber: customerPhone.trim(),
-              address: deliveryAddress.trim(),
-              province: province.trim() || 'Phnom Penh',
-              district: district.trim(),
-              note: note.trim(),
-            });
-            deliveryAddressId = addr?.id || null;
-            if (addr?.id) {
-              setSavedAddresses((prev) => [addr, ...prev]);
-              setSelectedAddressId(addr.id);
-              setIsAddingNewAddress(false);
-            }
-          } catch {
-            // address creation is optional, continue with checkout
-          }
-        }
-      }
-
-      // 3. Perform Customer E-Commerce Order Checkout: POST /api/v1/orders/checkout
       const destinationText = deliveryMethod === 'DELIVERY'
-        ? `[Courier: ${selectedProviderCode}] ${deliveryAddress.trim()}${district ? `, ${district}` : ''}${province ? `, ${province}` : ''}${note ? ` (Note: ${note.trim()})` : ''}`
+        ? `[Courier: ${selectedProviderCode}] ${deliveryAddress.trim()}${district ? `, ${district.trim()}` : ''}${province ? `, ${province.trim()}` : ''}${note ? ` (Note: ${note.trim()})` : ''}`
         : `Store Pickup at Mart System${note ? ` (Note: ${note.trim()})` : ''}`;
 
-      const checkoutRes = await orderApi.checkout({
-        deliveryMethod,
-        deliveryAddressId,
-        deliveryFee,
-        couponCode: appliedCoupon?.code,
-        note: destinationText,
-      });
+      if (isGuestMode || !isAuthenticated) {
+        // GUEST CHECKOUT via saleApi: POST /sales with isGuest flag
+        const payload = {
+          customer: null,
+          discount: couponDiscount || 0,
+          tax: 0,
+          items: items.map((item) => ({
+            productId: item.product?.id || item.productId,
+            quantity: item.quantity,
+            discount: 0,
+          })),
+        };
 
-      const orderId = checkoutRes.orderId || checkoutRes.id || checkoutRes.order?.id;
-      const orderNumber = checkoutRes.orderNumber || checkoutRes.order?.orderNumber || (orderId ? `ORD-${orderId.slice(0, 8).toUpperCase()}` : 'ORD');
-      const invoiceNumber = checkoutRes.payment?.billNumber || checkoutRes.order?.orderNumber || orderNumber;
-      
-      // Authoritative backend total
-      const authoritativeTotal = checkoutRes.amount ?? checkoutRes.order?.amount ?? checkoutRes.finalTotal ?? estimatedTotal;
-      const authoritativeDeliveryFee = checkoutRes.order?.deliveryFee ?? (deliveryMethod === 'DELIVERY' ? 1.50 : 0.00);
-      const authoritativeDiscount = checkoutRes.order?.discount ?? couponDiscount;
-      const authoritativeSubtotal = checkoutRes.order?.subtotal ?? subtotal;
+        const sale = await saleApi.create(payload, { isGuest: true });
+        const saleId = sale?.id || sale?.saleId;
+        const orderNumber = sale?.invoiceNumber || (saleId ? `GUEST-${String(saleId).slice(0, 8).toUpperCase()}` : 'GUEST-ORD');
+        const authoritativeTotal = sale.finalTotal ?? sale.total ?? sale.amount ?? estimatedTotal;
+        const authoritativeDeliveryFee = deliveryMethod === 'DELIVERY' ? 1.50 : 0.00;
 
-      const orderData = {
-        ...checkoutRes,
-        id: orderId,
-        orderId,
-        orderNumber,
-        invoiceNumber,
-        isOrder: true,
-        entityType: 'orders',
-        items,
-        total: authoritativeTotal,
-        subtotal: authoritativeSubtotal,
-        discount: authoritativeDiscount,
-        deliveryFee: authoritativeDeliveryFee,
-        deliveryMethod,
-        customerName: customerName.trim(),
-        customerPhone: customerPhone.trim(),
-        deliveryAddress: destinationText,
-        paymentMethod: 'KHQR',
-        paymentStatus: 'PENDING',
-        status: 'PENDING_PAYMENT',
-      };
+        const orderData = {
+          ...sale,
+          id: saleId,
+          saleId,
+          orderId: saleId,
+          orderNumber,
+          invoiceNumber: sale?.invoiceNumber || orderNumber,
+          isOrder: false,
+          isGuest: true,
+          entityType: 'sales',
+          items,
+          total: authoritativeTotal,
+          subtotal: sale.subtotal ?? subtotal,
+          discount: sale.discount ?? couponDiscount,
+          deliveryFee: authoritativeDeliveryFee,
+          deliveryMethod,
+          customerName: cleanName,
+          customerPhone: cleanPhone,
+          deliveryAddress: destinationText,
+          paymentMethod: 'KHQR',
+          paymentStatus: 'PENDING',
+          status: 'PENDING_PAYMENT',
+        };
 
-      saveCustomerOrder(orderData);
-      setPendingSale(orderData);
+        saveCustomerOrder(orderData);
+        setPendingSale(orderData);
+        setShowAuthModal(false);
+      } else {
+        // AUTHENTICATED CHECKOUT: Synchronize customer cart & create order
+        await orderApi.syncCart(items);
+
+        let deliveryAddressId = selectedAddressId;
+        if (deliveryMethod === 'DELIVERY') {
+          if (isAddingNewAddress || !deliveryAddressId) {
+            try {
+              const addr = await orderApi.createAddress({
+                receiverName: cleanName,
+                phoneNumber: cleanPhone,
+                address: deliveryAddress.trim(),
+                province: province.trim() || 'Phnom Penh',
+                district: district.trim(),
+                note: note.trim(),
+              });
+              deliveryAddressId = addr?.id || null;
+              if (addr?.id) {
+                setSavedAddresses((prev) => [addr, ...prev]);
+                setSelectedAddressId(addr.id);
+                setIsAddingNewAddress(false);
+              }
+            } catch {
+              // address creation is optional, continue with checkout
+            }
+          }
+        }
+
+        const checkoutRes = await orderApi.checkout({
+          deliveryMethod,
+          deliveryAddressId,
+          deliveryFee,
+          couponCode: appliedCoupon?.code,
+          note: destinationText,
+        });
+
+        const orderId = checkoutRes.orderId || checkoutRes.id || checkoutRes.order?.id;
+        const orderNumber = checkoutRes.orderNumber || checkoutRes.order?.orderNumber || (orderId ? `ORD-${orderId.slice(0, 8).toUpperCase()}` : 'ORD');
+        const invoiceNumber = checkoutRes.payment?.billNumber || checkoutRes.order?.orderNumber || orderNumber;
+
+        const authoritativeTotal = checkoutRes.amount ?? checkoutRes.order?.amount ?? checkoutRes.finalTotal ?? estimatedTotal;
+        const authoritativeDeliveryFee = checkoutRes.order?.deliveryFee ?? (deliveryMethod === 'DELIVERY' ? 1.50 : 0.00);
+        const authoritativeDiscount = checkoutRes.order?.discount ?? couponDiscount;
+        const authoritativeSubtotal = checkoutRes.order?.subtotal ?? subtotal;
+
+        const orderData = {
+          ...checkoutRes,
+          id: orderId,
+          orderId,
+          orderNumber,
+          invoiceNumber,
+          isOrder: true,
+          isGuest: false,
+          entityType: 'orders',
+          items,
+          total: authoritativeTotal,
+          subtotal: authoritativeSubtotal,
+          discount: authoritativeDiscount,
+          deliveryFee: authoritativeDeliveryFee,
+          deliveryMethod,
+          customerName: cleanName,
+          customerPhone: cleanPhone,
+          deliveryAddress: destinationText,
+          paymentMethod: 'KHQR',
+          paymentStatus: 'PENDING',
+          status: 'PENDING_PAYMENT',
+        };
+
+        saveCustomerOrder(orderData);
+        setPendingSale(orderData);
+      }
     } catch (err) {
       const status = err.status || err.response?.status;
-      if (status === 401) {
+      if (status === 401 && !isGuestMode) {
         setShowAuthModal(true);
       } else {
         setError(getErrorMessage(err));
@@ -287,6 +348,18 @@ export default function Checkout() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handlePlaceOrder = async (e) => {
+    e?.preventDefault();
+    if (items.length === 0 || submitting) return;
+
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    await executeOrderSubmission(false);
   };
 
   const handlePaymentSuccess = (sale) => {
@@ -983,10 +1056,38 @@ export default function Checkout() {
                 <span>Create Free Customer Account (10s)</span>
               </Link>
 
+              <div className="relative py-1">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-white dark:bg-slate-900 px-2 text-slate-400 font-semibold">or</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => executeOrderSubmission(true)}
+                disabled={submitting}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/80 py-3 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 transition active:scale-95 cursor-pointer disabled:opacity-50"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 size={15} className="animate-spin" />
+                    <span>កំពុងដំណើរការ...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>បន្តជាភ្ញៀវ (Continue as Guest)</span>
+                    <ArrowRight size={14} />
+                  </>
+                )}
+              </button>
+
               <button
                 type="button"
                 onClick={() => setShowAuthModal(false)}
-                className="w-full text-center text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 py-1 transition"
+                className="w-full text-center text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 py-1 transition cursor-pointer"
               >
                 Continue Browsing
               </button>

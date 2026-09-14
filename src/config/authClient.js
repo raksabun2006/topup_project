@@ -25,12 +25,25 @@ function decodeJwt(token) {
 function buildClaimsFromAuth(token, userData = {}) {
   const jwtClaims = decodeJwt(token);
   if (jwtClaims) {
-    const roles = Array.isArray(jwtClaims.realm_access?.roles)
+    // Derive roles strictly from cryptographically signed JWT payload
+    const rawRoles = Array.isArray(jwtClaims.realm_access?.roles)
       ? [...jwtClaims.realm_access.roles]
-      : (jwtClaims.role ? [jwtClaims.role] : [userData.role || 'USER']);
-    if (userData.role && !roles.includes(userData.role)) {
-      roles.push(userData.role);
+      : (Array.isArray(jwtClaims.roles) ? [...jwtClaims.roles] : (jwtClaims.role ? [jwtClaims.role] : []));
+    
+    // Normalize role strings (e.g. ROLE_ADMIN -> ADMIN)
+    const normalizedRoles = rawRoles.map((r) => String(r).toUpperCase().replace(/^ROLE_/, '').trim());
+    
+    // Determine canonical role from JWT claims directly (do NOT trust mutable localStorage)
+    let canonicalRole = 'CUSTOMER';
+    if (normalizedRoles.includes('ADMIN')) {
+      canonicalRole = 'ADMIN';
+    } else if (normalizedRoles.includes('STAFF') || normalizedRoles.includes('MANAGER') || normalizedRoles.includes('CASHIER')) {
+      canonicalRole = 'STAFF';
+    } else if (jwtClaims.role) {
+      const cleanRole = String(jwtClaims.role).toUpperCase().replace(/^ROLE_/, '').trim();
+      canonicalRole = cleanRole === 'ADMIN' ? 'ADMIN' : (cleanRole === 'STAFF' || cleanRole === 'MANAGER' ? 'STAFF' : 'CUSTOMER');
     }
+
     return {
       ...jwtClaims,
       sub: jwtClaims.sub || userData.id || userData.userId,
@@ -41,13 +54,14 @@ function buildClaimsFromAuth(token, userData = {}) {
       name: userData.displayName || userData.name || jwtClaims.name || userData.username,
       displayName: userData.displayName || userData.name || jwtClaims.name || userData.username,
       phoneNumber: userData.phoneNumber || jwtClaims.phoneNumber,
-      role: userData.role || (roles.includes('ADMIN') ? 'ADMIN' : 'USER'),
-      roles,
+      role: canonicalRole,
+      roles: normalizedRoles.length > 0 ? normalizedRoles : [canonicalRole],
       exp: jwtClaims.exp,
     };
   }
 
-  const role = userData.role || 'USER';
+  // Without a valid JWT, always enforce least-privilege 'CUSTOMER'
+  const fallbackRole = 'CUSTOMER';
   return {
     sub: userData.id || userData.userId || 'user',
     id: userData.id || userData.userId,
@@ -57,8 +71,8 @@ function buildClaimsFromAuth(token, userData = {}) {
     displayName: userData.displayName || userData.name || userData.username,
     name: userData.displayName || userData.name || userData.username,
     phoneNumber: userData.phoneNumber,
-    role,
-    roles: [role],
+    role: fallbackRole,
+    roles: [fallbackRole],
     exp: Math.floor((Date.now() + 24 * 3600 * 1000) / 1000),
   };
 }

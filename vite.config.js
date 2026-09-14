@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   base: '/',
   plugins: [tailwindcss(), react()],
   define: {
@@ -11,9 +11,14 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://gametopup-backend-production-3423.up.railway.app',
+        target: process.env.VITE_DEV_BACKEND_URL || 'http://localhost:8080',
         changeOrigin: true,
-        secure: true,
+        secure: false,
+      },
+      '/ws': {
+        target: process.env.VITE_DEV_BACKEND_URL || 'http://localhost:8080',
+        ws: true,
+        changeOrigin: true,
       },
     },
   },
@@ -21,6 +26,6 @@ export default defineConfig({
     sourcemap: false,
   },
   oxc: {
-    drop: ['console', 'debugger'],
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
   },
-})
+}))

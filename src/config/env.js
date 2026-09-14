@@ -5,9 +5,6 @@
 
 const rawEnv = (typeof import.meta !== 'undefined' && import.meta.env) || (typeof process !== 'undefined' && process.env) || {};
 
-const PRODUCTION_BACKEND_URL = 'https://gametopup-backend-production-3423.up.railway.app';
-const PRODUCTION_WS_URL = 'wss://gametopup-backend-production-3423.up.railway.app/ws';
-
 function resolveApiUrl() {
   const envUrl = (
     rawEnv.VITE_API_URL ||
@@ -47,9 +44,12 @@ function resolveWsUrl(backendUrl) {
     return envWs;
   }
 
-  // Fallback based on backend URL or environment
-  if (rawEnv.PROD || (typeof window !== 'undefined' && window.location && window.location.protocol === 'https:' && !window.location.hostname.includes('localhost'))) {
-    return PRODUCTION_WS_URL;
+  // In browser environment, resolve to same-origin WebSocket host
+  if (typeof window !== 'undefined' && window.location) {
+    const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    if (!window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+      return `${wsProto}//${window.location.host}/ws`;
+    }
   }
 
   if (backendUrl && backendUrl.startsWith('https://')) {
