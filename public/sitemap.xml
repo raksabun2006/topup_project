@@ -54,19 +54,19 @@
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/Beverages%20%26%20Drinks</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
     <loc>https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A</loc>
     <lastmod>2026-09-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88</loc>
+    <loc>https://martsystemkh.software/category/Beverages%20%26%20Drinks</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84</loc>
     <lastmod>2026-09-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -78,7 +78,7 @@
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84</loc>
+    <loc>https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88</loc>
     <lastmod>2026-09-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -102,13 +102,13 @@
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/%E1%9E%9F%E1%9F%8A%E1%9E%BB%E1%9E%8F</loc>
+    <loc>https://martsystemkh.software/category/%E1%9E%9F%E1%9E%B6%E1%9E%85%E1%9F%8B%20%E1%9E%93%E1%9E%B7%E1%9E%84%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%80%E1%9E%80</loc>
     <lastmod>2026-09-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/%E1%9E%9F%E1%9E%B6%E1%9E%85%E1%9F%8B%20%E1%9E%93%E1%9E%B7%E1%9E%84%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%80%E1%9E%80</loc>
+    <loc>https://martsystemkh.software/category/%E1%9E%9F%E1%9F%8A%E1%9E%BB%E1%9E%8F</loc>
     <lastmod>2026-09-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -138,6 +138,67 @@
     <priority>0.85</priority>
   </url>
   <url>
+    <loc>https://martsystemkh.software/category/Electronics</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeDEQcT8fXPDG0EOeGK3ntRu6QsIgGy-Wb_1d3ihK60Q&amp;s=10</image:loc>
+      <image:title>Angkormilk Strawberry Yogurt</image:title>
+      <image:caption>ទឹកដោះគោជូរ Angkormilk រសជាតិស្ត្របឺរី</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHguxuWCpApinQFedDrBG-9bAPjyoVeTSUkoS6JqO8vg&amp;s=10</image:loc>
+      <image:title>Coca Cola Can 330ml</image:title>
+      <image:caption>Classic refreshing carbonated soft drink, served chilled.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/farm-fresh-milk-2l--7f711b2b-0875-42b5-acea-b2d73d35b338</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2P0GPRbxXblQqU2cGKWYVqrFSUlcJ_hIPTSZOiMvAAA&amp;s=10</image:loc>
+      <image:title>Farm Fresh Milk 2L</image:title>
+      <image:caption>ទឹកដោះគោ Farm Fresh 2 លីត្រ</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9yOpeLR6mdJiIZzolFtxWJPxZHHQ_DRmIkwPaFKBzqg&amp;s</image:loc>
+      <image:title>Malys Angkor Jasmine Rice 5kg</image:title>
+      <image:caption>Premium quality fragrant Phka Rumduol jasmine rice from Cambodia, known for its soft texture and natural pandan-like aroma.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-500ml-x-24--ffeb2bc9-640b-46aa-82a8-5c80874930c6</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQY4HWBd6269GKwtnfPL476wnbLiS4geRe3R4ZFmIE5w&amp;s=10</image:loc>
+      <image:title>ទឹកបរិសុទ្ធ កម្ពុជា 500ml x 24</image:title>
+      <image:caption>ទឹកបរិសុទ្ធដបតូច សាកសមសម្រាប់យកតាមខ្លួន</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://martsystemkh.software/products/sting-energy-drink--c9470588-9c66-427a-a36c-aafa770ed1ed</loc>
     <lastmod>2026-09-14</lastmod>
     <changefreq>weekly</changefreq>
@@ -160,61 +221,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsybjD4tx5kBPGN7ijPVOH8x1LD98qeMktgszUf55N4A&amp;s</image:loc>
-      <image:title>Dasani Water 1.5L x 6</image:title>
-      <image:caption>ទឹកសុទ្ធ Dasani សម្រាប់ការប្រើប្រាស់ប្រចាំថ្ងៃ</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHguxuWCpApinQFedDrBG-9bAPjyoVeTSUkoS6JqO8vg&amp;s=10</image:loc>
-      <image:title>Coca Cola Can 330ml</image:title>
-      <image:caption>Classic refreshing carbonated soft drink, served chilled.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-500ml-x-24--ffeb2bc9-640b-46aa-82a8-5c80874930c6</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQY4HWBd6269GKwtnfPL476wnbLiS4geRe3R4ZFmIE5w&amp;s=10</image:loc>
-      <image:title>ទឹកបរិសុទ្ធ កម្ពុជា 500ml x 24</image:title>
-      <image:caption>ទឹកបរិសុទ្ធដបតូច សាកសមសម្រាប់យកតាមខ្លួន</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9yOpeLR6mdJiIZzolFtxWJPxZHHQ_DRmIkwPaFKBzqg&amp;s</image:loc>
-      <image:title>Malys Angkor Jasmine Rice 5kg</image:title>
-      <image:caption>Premium quality fragrant Phka Rumduol jasmine rice from Cambodia, known for its soft texture and natural pandan-like aroma.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeDEQcT8fXPDG0EOeGK3ntRu6QsIgGy-Wb_1d3ihK60Q&amp;s=10</image:loc>
-      <image:title>Angkormilk Strawberry Yogurt</image:title>
-      <image:caption>ទឹកដោះគោជូរ Angkormilk រសជាតិស្ត្របឺរី</image:caption>
-    </image:image>
-  </url>
-  <url>
     <loc>https://martsystemkh.software/products/eau-kulen-mineral-water-15l-x-12--ed13cf5d-cfd4-4f16-bcfb-74f01aa1692e</loc>
     <lastmod>2026-09-14</lastmod>
     <changefreq>weekly</changefreq>
@@ -226,14 +232,14 @@
     </image:image>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/farm-fresh-milk-2l--7f711b2b-0875-42b5-acea-b2d73d35b338</loc>
+    <loc>https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34</loc>
     <lastmod>2026-09-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2P0GPRbxXblQqU2cGKWYVqrFSUlcJ_hIPTSZOiMvAAA&amp;s=10</image:loc>
-      <image:title>Farm Fresh Milk 2L</image:title>
-      <image:caption>ទឹកដោះគោ Farm Fresh 2 លីត្រ</image:caption>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsybjD4tx5kBPGN7ijPVOH8x1LD98qeMktgszUf55N4A&amp;s</image:loc>
+      <image:title>Dasani Water 1.5L x 6</image:title>
+      <image:caption>ទឹកសុទ្ធ Dasani សម្រាប់ការប្រើប្រាស់ប្រចាំថ្ងៃ</image:caption>
     </image:image>
   </url>
   <url>
@@ -275,20 +281,9 @@
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
-      <image:loc>https://upload.wikimedia.org/wikipedia/commons/4/4f/Tortilla_chips_2.jpg</image:loc>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVtPpaUdQEduGDqk87EKoCVpvH50W23zROkFeSxz1cIw&amp;s</image:loc>
       <image:title>Tos Tos Roasted Corn Tortilla Chips 145g</image:title>
       <image:caption>Chips ពោតអាំង Tos Tos</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/products/battambang-chicken-egg-size-3-30pcs--4ccf7240-147c-4200-bba6-8633fdbd72a5</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtGHXACwvdSe9_eemqfyjGprR8nrRNPWUgTBS6jpFd_A&amp;s</image:loc>
-      <image:title>Battambang Chicken Egg Size 3 - 30pcs</image:title>
-      <image:caption>ពងមាន់ Battambang ចំនួន 30 គ្រាប់</image:caption>
     </image:image>
   </url>
   <url>
@@ -300,6 +295,17 @@
       <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4Bz27Ue7KVwl74gABb0YtVbF00qJTU3qsTrHsPYAOjw&amp;s=10</image:loc>
       <image:title>Hoy Hoy Beef Meatball 500g</image:title>
       <image:caption>ប្រហិតសាច់គោ Hoy Hoy 500g</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/battambang-chicken-egg-size-3-30pcs--4ccf7240-147c-4200-bba6-8633fdbd72a5</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtGHXACwvdSe9_eemqfyjGprR8nrRNPWUgTBS6jpFd_A&amp;s</image:loc>
+      <image:title>Battambang Chicken Egg Size 3 - 30pcs</image:title>
+      <image:caption>ពងមាន់ Battambang ចំនួន 30 គ្រាប់</image:caption>
     </image:image>
   </url>
   <url>
@@ -347,14 +353,14 @@
     </image:image>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/asus-vivobook-15--7d37987d-e659-4d7c-a24c-1681dad4aa75</loc>
+    <loc>https://martsystemkh.software/products/anker-20w-usb-c-charger--92fe8251-cb8b-4657-a841-8cd84c3a4008</loc>
     <lastmod>2026-09-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>ASUS VivoBook 15</image:title>
-      <image:caption>15.6-inch everyday laptop suitable for work and study.</image:caption>
+      <image:loc>https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Anker 20W USB-C Charger</image:title>
+      <image:caption>Compact fast USB-C wall charger compatible with modern devices.</image:caption>
     </image:image>
   </url>
 </urlset>

@@ -16,6 +16,8 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import LanguageSwitcher from '../ui/LanguageSwitcher';
 import { KHR_RATE } from '../../utils/format';
 
 export default function PosHeader({
@@ -27,6 +29,7 @@ export default function PosHeader({
   customerDisplayConnected = false,
 }) {
   const { user, isAdmin } = useAuth();
+  const { isKhmer } = useLanguage();
   const [time, setTime] = useState(new Date());
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showDisplayMenu, setShowDisplayMenu] = useState(false);
@@ -162,10 +165,10 @@ export default function PosHeader({
                 ? 'border-emerald-500 bg-emerald-500 text-white shadow-emerald-500/20'
                 : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
             }`}
-            title="គ្រប់គ្រងអេក្រង់បង្ហាញអតិថិជន (Customer-Facing Display)"
+            title={isKhmer ? 'គ្រប់គ្រងអេក្រង់បង្ហាញអតិថិជន (Customer Display)' : 'Customer-Facing Display Control'}
           >
             <Monitor size={15} className={customerDisplayConnected ? 'animate-pulse' : ''} />
-            <span className="hidden sm:inline">អេក្រង់អតិថិជន</span>
+            <span className="hidden sm:inline">{isKhmer ? 'អេក្រង់អតិថិជន' : 'Customer Display'}</span>
             <ChevronDown size={12} className="opacity-70" />
           </button>
 
@@ -175,10 +178,10 @@ export default function PosHeader({
               <div className="absolute right-0 z-40 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-2xl animate-scale-in">
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
                   <p className="text-xs font-extrabold text-slate-900 dark:text-white">
-                    អេក្រង់អតិថិជន (Customer Display)
+                    {isKhmer ? 'អេក្រង់អតិថិជន (Customer Display)' : 'Customer Display'}
                   </p>
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    បង្ហាញទំនិញ តម្លៃ និង Bakong QR ជូនអតិថិជន
+                    {isKhmer ? 'បង្ហាញទំនិញ តម្លៃ និង Bakong QR ជូនអតិថិជន' : 'Show items, totals, and Bakong QR to customers'}
                   </p>
                 </div>
 
@@ -190,9 +193,9 @@ export default function PosHeader({
                   >
                     <ExternalLink size={14} className="text-emerald-600 shrink-0" />
                     <div>
-                      <span>បើកអេក្រង់ទី ២ (Popout Window)</span>
+                      <span>{isKhmer ? 'បើកអេក្រង់ទី ២ (Popout Window)' : 'Open Secondary Display Window'}</span>
                       <span className="block text-[10px] font-normal text-slate-400">
-                        សម្រាប់ដាក់លើ Monitor ទី២ ឬ Tablet អតិថិជន
+                        {isKhmer ? 'សម្រាប់ដាក់លើ Monitor ទី២ ឬ Tablet អតិថិជន' : 'For 2nd monitor or customer-facing tablet'}
                       </span>
                     </div>
                   </button>
@@ -207,9 +210,9 @@ export default function PosHeader({
                   >
                     <Eye size={14} className="text-blue-500 shrink-0" />
                     <div>
-                      <span>មើលសាកល្បងលើអេក្រង់នេះ (Preview)</span>
+                      <span>{isKhmer ? 'មើលសាកល្បងលើអេក្រង់នេះ (Preview)' : 'Preview On This Screen'}</span>
                       <span className="block text-[10px] font-normal text-slate-400">
-                        បើកផ្ទាំងតូចដើម្បីពិនិត្យអ្វីដែលអតិថិជនឃើញ
+                        {isKhmer ? 'បើកផ្ទាំងតូចដើម្បីពិនិត្យអ្វីដែលអតិថិជនឃើញ' : 'Floating preview of customer display'}
                       </span>
                     </div>
                   </button>
@@ -225,10 +228,10 @@ export default function PosHeader({
             type="button"
             onClick={onFocusSearch}
             className="hidden sm:flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
-            title="ស្វែងរកទំនិញ / ស្កេនបាកូដ (F2)"
+            title={isKhmer ? 'ស្វែងរកទំនិញ / ស្កេនបាកូដ (F2)' : 'Scan Barcode / Search Item (F2)'}
           >
             <Barcode size={14} className="text-emerald-600" />
-            <span>ស្កេន (F2)</span>
+            <span>{isKhmer ? 'ស្កេន (F2)' : 'Scan (F2)'}</span>
           </button>
         )}
 
@@ -238,10 +241,10 @@ export default function PosHeader({
             type="button"
             onClick={onOpenHeld}
             className="relative flex items-center gap-1 rounded-xl border border-amber-400/80 bg-amber-50 dark:bg-amber-950/50 px-2.5 py-1.5 text-xs font-bold text-amber-800 dark:text-amber-300 hover:bg-amber-100 transition cursor-pointer"
-            title="ការលក់ដែលផ្អាកទុក (F6)"
+            title={isKhmer ? 'ការលក់ដែលផ្អាកទុក (F6)' : 'Held Orders (F6)'}
           >
             <History size={14} className="text-amber-600" />
-            <span>រង់ចាំ</span>
+            <span>{isKhmer ? 'រង់ចាំ' : 'Held'}</span>
             <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-black text-white">
               {heldCount}
             </span>
@@ -254,19 +257,24 @@ export default function PosHeader({
             type="button"
             onClick={onOpenHistory}
             className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
-            title="ប្រវត្តិវិក្កយបត្រ (Sales History)"
+            title={isKhmer ? 'ប្រវត្តិវិក្កយបត្រ (Sales History)' : 'Sales History (F7)'}
           >
             <ReceiptText size={14} className="text-slate-500" />
-            <span className="hidden md:inline">វិក្កយបត្រ</span>
+            <span className="hidden md:inline">{isKhmer ? 'វិក្កយបត្រ' : 'History'}</span>
           </button>
         )}
+
+        {/* Language Switcher in POS */}
+        <div className="shrink-0">
+          <LanguageSwitcher variant="button" />
+        </div>
 
         {/* Fullscreen Toggle (F11) */}
         <button
           type="button"
           onClick={toggleFullscreen}
           className="hidden sm:flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
-          title={isFullscreen ? 'ចេញពីពេញអេក្រង់' : 'ពេញអេក្រង់ (Fullscreen)'}
+          title={isFullscreen ? (isKhmer ? 'ចេញពីពេញអេក្រង់' : 'Exit Fullscreen') : (isKhmer ? 'ពេញអេក្រង់' : 'Fullscreen')}
         >
           {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
         </button>
@@ -275,10 +283,10 @@ export default function PosHeader({
         <Link
           to={isAdmin ? '/dashboard' : '/shop'}
           className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer"
-          title="ត្រឡប់ទៅផ្ទាំងដើម / ហាង"
+          title={isKhmer ? 'ត្រឡប់ទៅផ្ទាំងដើម / ហាង' : 'Return to Dashboard / Store'}
         >
           <LogOut size={14} />
-          <span className="hidden lg:inline">{isAdmin ? 'Dashboard' : 'Store'}</span>
+          <span className="hidden lg:inline">{isAdmin ? (isKhmer ? 'ផ្ទាំងគ្រប់គ្រង' : 'Dashboard') : (isKhmer ? 'ហាងទំនិញ' : 'Store')}</span>
         </Link>
       </div>
     </header>

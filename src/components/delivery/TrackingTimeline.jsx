@@ -3,6 +3,56 @@ import DeliveryStatusBadge, { STATUS_CONFIG } from './DeliveryStatusBadge';
 import { formatDate } from '../../utils/format';
 import { useLanguage } from '../../context/LanguageContext';
 
+export function formatEventDescription(desc, isKhmer) {
+  if (!desc || typeof desc !== 'string') return desc;
+  if (!isKhmer) return desc;
+
+  // "Delivery status changed to IN_TRANSIT"
+  const statusMatch = desc.match(/^Delivery status changed to\s+([A-Z_]+)/i);
+  if (statusMatch) {
+    const rawSt = statusMatch[1].toUpperCase();
+    const config = STATUS_CONFIG[rawSt];
+    const khmerStatus = config?.labelKm || rawSt;
+    return `ស្ថានភាពដឹកជញ្ជូនត្រូវបានប្តូរទៅជា «${khmerStatus}»`;
+  }
+
+  // "Tracking updated: DRV91118759"
+  const trackingMatch = desc.match(/^Tracking updated:\s*(.*)/i);
+  if (trackingMatch) {
+    return `បានធ្វើបច្ចុប្បន្នភាពលេខតាមដាន: ${trackingMatch[1]}`;
+  }
+
+  // "Order placed and delivery created"
+  if (desc.toLowerCase().includes('order placed and delivery created')) {
+    return 'ការបញ្ជាទិញត្រូវបានបង្កើត និងរៀបចំការដឹកជញ្ជូន';
+  }
+
+  // "Delivery created"
+  if (desc.toLowerCase().includes('delivery created')) {
+    return 'ការដឹកជញ្ជូនត្រូវបានបង្កើតឡើង';
+  }
+
+  // "Courier assigned: ..."
+  const courierMatch = desc.match(/^Courier assigned:\s*(.*)/i);
+  if (courierMatch) {
+    return `បានចាត់ចែងក្រុមហ៊ុនដឹកជញ្ជូន: ${courierMatch[1]}`;
+  }
+
+  // "Driver assigned: ..."
+  const driverMatch = desc.match(/^Driver assigned:\s*(.*)/i);
+  if (driverMatch) {
+    return `បានចាត់ចែងអ្នកដឹកជញ្ជូន: ${driverMatch[1]}`;
+  }
+
+  // "Delivery cancelled: ..."
+  const cancelMatch = desc.match(/^Delivery cancelled:\s*(.*)/i);
+  if (cancelMatch) {
+    return `ការដឹកជញ្ជូនត្រូវបានបោះបង់: ${cancelMatch[1]}`;
+  }
+
+  return desc;
+}
+
 export default function TrackingTimeline({
   events = [],
   currentStatus,
@@ -86,7 +136,7 @@ export default function TrackingTimeline({
               {/* Remarks / Description */}
               {event.description && (
                 <p className="text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
-                  {event.description}
+                  {formatEventDescription(event.description, isKhmer)}
                 </p>
               )}
 

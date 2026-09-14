@@ -134,12 +134,12 @@ export default function DeliveryDetail() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                Delivery #{delivery.id.slice(0, 8).toUpperCase()}
+                {isKhmer ? 'ការដឹកជញ្ជូន' : 'Delivery'} #{delivery.id.slice(0, 8).toUpperCase()}
               </h1>
               <DeliveryStatusBadge status={delivery.deliveryStatus || delivery.status} size="sm" />
             </div>
             <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">
-              Created {formatDate(delivery.createdAt, 'full')}
+              {isKhmer ? 'កាលបរិច្ឆេទបង្កើត:' : 'Created'} {formatDate(delivery.createdAt, 'full')}
             </p>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function DeliveryDetail() {
               {isKhmer ? 'ក្រុមហ៊ុនដឹកជញ្ជូន' : 'Courier Provider'}
             </span>
             <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-              {delivery.providerCode || 'CUSTOM'}
+              {delivery.providerCode || (isKhmer ? 'ផ្ទាល់ខ្លួន' : 'CUSTOM')}
             </span>
           </div>
 
@@ -218,10 +218,12 @@ export default function DeliveryDetail() {
             </div>
             <div>
               <p className="text-sm font-black text-slate-900 dark:text-white">
-                {delivery.providerName || delivery.carrier || 'Internal Delivery'}
+                {delivery.providerName || delivery.carrier || (isKhmer ? 'ការដឹកជញ្ជូនផ្ទៃក្នុង' : 'Internal Delivery')}
               </p>
               <p className="text-[11px] text-slate-400">
-                {delivery.syncRetryCount > 0 ? `Sync Retries: ${delivery.syncRetryCount}` : 'Fully Synchronized'}
+                {delivery.syncRetryCount > 0
+                  ? (isKhmer ? `ការព្យាយាមតភ្ជាប់: ${delivery.syncRetryCount}` : `Sync Retries: ${delivery.syncRetryCount}`)
+                  : (isKhmer ? 'ធ្វើសមកាលកម្មពេញលេញ' : 'Fully Synchronized')}
               </p>
             </div>
           </div>
@@ -229,7 +231,7 @@ export default function DeliveryDetail() {
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
             {/* Tracking Number */}
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">{isKhmer ? 'លេខ Tracking' : 'Tracking #'}:</span>
+              <span className="text-slate-400">{isKhmer ? 'លេខតាមដាន (Tracking)' : 'Tracking #'}:</span>
               <div className="flex items-center gap-1.5">
                 <span className="font-mono font-bold text-slate-900 dark:text-white">
                   {delivery.trackingNumber || '—'}
@@ -252,7 +254,7 @@ export default function DeliveryDetail() {
 
             {/* Waybill */}
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">{isKhmer ? 'លេខ Waybill' : 'Waybill #'}:</span>
+              <span className="text-slate-400">{isKhmer ? 'លេខវិក្កយបត្រ (Waybill)' : 'Waybill #'}:</span>
               <div className="flex items-center gap-1.5">
                 <span className="font-mono font-bold text-slate-900 dark:text-white">
                   {delivery.courierOrderNumber || '—'}
@@ -287,11 +289,11 @@ export default function DeliveryDetail() {
             </div>
             <div>
               <p className="text-sm font-black text-slate-900 dark:text-white">
-                {delivery.recipientName || 'Walk-in Customer'}
+                {delivery.recipientName || (isKhmer ? 'អតិថិជនមកទិញផ្ទាល់' : 'Walk-in Customer')}
               </p>
               <p className="text-xs text-slate-500 font-semibold flex items-center gap-1 mt-0.5">
                 <Phone size={12} />
-                <span>{delivery.recipientPhone || 'No Phone Provided'}</span>
+                <span>{delivery.recipientPhone || (isKhmer ? 'មិនមានលេខទូរស័ព្ទ' : 'No Phone Provided')}</span>
               </p>
             </div>
           </div>
@@ -299,7 +301,7 @@ export default function DeliveryDetail() {
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
             <p className="text-xs text-slate-600 dark:text-slate-300 font-medium flex items-start gap-1.5 leading-relaxed">
               <MapPin size={13} className="text-slate-400 shrink-0 mt-0.5" />
-              <span>{delivery.deliveryAddressSnapshot || 'Standard In-Store Pickup'}</span>
+              <span>{delivery.deliveryAddressSnapshot || (isKhmer ? 'ការទទួលទំនិញនៅហាងផ្ទាល់' : 'Standard In-Store Pickup')}</span>
             </p>
           </div>
         </div>
@@ -316,7 +318,7 @@ export default function DeliveryDetail() {
                 onClick={() => setActiveModal('DRIVER')}
                 className="text-[11px] font-bold text-emerald-600 hover:underline"
               >
-                {delivery.carrier ? 'Change' : 'Assign'}
+                {delivery.carrier ? (isKhmer ? 'ផ្លាស់ប្តូរ' : 'Change') : (isKhmer ? 'ចាត់ចែង' : 'Assign')}
               </button>
             )}
           </div>
@@ -327,18 +329,18 @@ export default function DeliveryDetail() {
             </div>
             <div>
               <p className="text-sm font-black text-slate-900 dark:text-white">
-                {delivery.carrier || 'Not assigned yet'}
+                {delivery.carrier || (isKhmer ? 'មិនទាន់បានចាត់ចែង' : 'Not assigned yet')}
               </p>
               <p className="text-[11px] text-slate-400 mt-0.5">
                 {delivery.estimatedDeliveryDate
-                  ? `Est: ${formatDate(delivery.estimatedDeliveryDate, 'short')}`
-                  : 'Awaiting dispatch confirmation'}
+                  ? (isKhmer ? `ការប៉ាន់ស្មាន: ${formatDate(delivery.estimatedDeliveryDate, 'short')}` : `Est: ${formatDate(delivery.estimatedDeliveryDate, 'short')}`)
+                  : (isKhmer ? 'រង់ចាំការបញ្ជាក់ការបញ្ជូន' : 'Awaiting dispatch confirmation')}
               </p>
             </div>
           </div>
 
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-slate-500">
-            <span>Shipping Fee Collected:</span>
+            <span>{isKhmer ? 'ថ្លៃដឹកជញ្ជូនដែលបានគិត:' : 'Shipping Fee Collected:'}</span>
             <span className="text-slate-900 dark:text-white font-extrabold">
               {formatCurrency(delivery.deliveryFee || 0)}
             </span>
@@ -357,30 +359,30 @@ export default function DeliveryDetail() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-              <span className="text-[10px] text-slate-400 font-bold block">Weight</span>
+              <span className="text-[10px] text-slate-400 font-bold block">{isKhmer ? 'ទម្ងន់' : 'Weight'}</span>
               <span className="text-sm font-black text-slate-900 dark:text-white">
                 {delivery.weight ? `${delivery.weight} kg` : '1.0 kg'}
               </span>
             </div>
 
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-              <span className="text-[10px] text-slate-400 font-bold block">Dimensions</span>
+              <span className="text-[10px] text-slate-400 font-bold block">{isKhmer ? 'ទំហំកញ្ចប់' : 'Dimensions'}</span>
               <span className="text-sm font-black text-slate-900 dark:text-white truncate">
                 {delivery.length && delivery.width && delivery.height
                   ? `${delivery.length}×${delivery.width}×${delivery.height} cm`
-                  : 'Standard'}
+                  : (isKhmer ? 'ស្តង់ដារ' : 'Standard')}
               </span>
             </div>
 
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-              <span className="text-[10px] text-slate-400 font-bold block">Packages</span>
+              <span className="text-[10px] text-slate-400 font-bold block">{isKhmer ? 'ចំនួនកញ្ចប់' : 'Packages'}</span>
               <span className="text-sm font-black text-slate-900 dark:text-white">
-                {delivery.packageCount || 1}
+                {delivery.packageCount || 1} {isKhmer ? 'កញ្ចប់' : ''}
               </span>
             </div>
 
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-              <span className="text-[10px] text-slate-400 font-bold block">Declared Value</span>
+              <span className="text-[10px] text-slate-400 font-bold block">{isKhmer ? 'តម្លៃទំនិញប្រកាស' : 'Declared Value'}</span>
               <span className="text-sm font-black text-slate-900 dark:text-white">
                 {formatCurrency(delivery.declaredValue || 0)}
               </span>
@@ -389,7 +391,7 @@ export default function DeliveryDetail() {
 
           {delivery.deliveryNote && (
             <div className="pt-2 text-xs text-slate-600 dark:text-slate-300">
-              <span className="font-bold text-slate-400">Note: </span>
+              <span className="font-bold text-slate-400">{isKhmer ? 'ចំណាំ: ' : 'Note: '}</span>
               <span>{delivery.deliveryNote}</span>
             </div>
           )}
@@ -407,7 +409,7 @@ export default function DeliveryDetail() {
                 to={`/orders/${delivery.orderId}`}
                 className="text-xs font-bold text-emerald-600 hover:underline flex items-center gap-1"
               >
-                <span>View Order</span>
+                <span>{isKhmer ? 'មើលការបញ្ជាទិញ' : 'View Order'}</span>
                 <ExternalLink size={12} />
               </Link>
             )}
@@ -415,28 +417,28 @@ export default function DeliveryDetail() {
 
           <div className="space-y-2 pt-2 text-xs">
             <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-              <span className="text-slate-400">Invoice / Order #:</span>
+              <span className="text-slate-400">{isKhmer ? 'លេខវិក្កយបត្រ / បញ្ជាទិញ:' : 'Invoice / Order #:'}</span>
               <span className="font-mono font-bold text-slate-900 dark:text-white">
                 {delivery.orderNumber ? `#${delivery.orderNumber}` : '—'}
               </span>
             </div>
 
             <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-              <span className="text-slate-400">Customer Name:</span>
+              <span className="text-slate-400">{isKhmer ? 'ឈ្មោះអតិថិជន:' : 'Customer Name:'}</span>
               <span className="font-bold text-slate-900 dark:text-white">
-                {delivery.recipientName || 'Walk-in'}
+                {delivery.recipientName || (isKhmer ? 'ទិញផ្ទាល់' : 'Walk-in')}
               </span>
             </div>
 
             <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-              <span className="text-slate-400">Destination Province:</span>
+              <span className="text-slate-400">{isKhmer ? 'ខេត្ត/ក្រុងគោលដៅ:' : 'Destination Province:'}</span>
               <span className="font-bold text-slate-900 dark:text-white">
                 {delivery.province || 'Phnom Penh'}
               </span>
             </div>
 
             <div className="flex items-center justify-between py-1">
-              <span className="text-slate-400">Delivery Status:</span>
+              <span className="text-slate-400">{isKhmer ? 'ស្ថានភាពដឹកជញ្ជូន:' : 'Delivery Status:'}</span>
               <DeliveryStatusBadge status={delivery.deliveryStatus || delivery.status} size="xs" />
             </div>
           </div>
@@ -463,7 +465,7 @@ export default function DeliveryDetail() {
               className="text-xs font-bold text-emerald-600 hover:underline flex items-center gap-1 cursor-pointer"
             >
               <RotateCw size={13} />
-              <span>Sync with Courier</span>
+              <span>{isKhmer ? 'ធ្វើសមកាលកម្មជាមួយក្រុមហ៊ុនដឹក' : 'Sync with Courier'}</span>
             </button>
           )}
         </div>

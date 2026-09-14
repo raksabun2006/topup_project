@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Loader2, AlertCircle, ArrowLeft, Printer, XCircle, RotateCcw, Receipt as ReceiptIcon } from 'lucide-react';
 import { useSale } from '../hooks/useSales';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { saleApi } from '../api/saleApi';
 import { getErrorMessage } from '../api/client';
 import Receipt from '../components/pos/Receipt';
@@ -12,6 +13,7 @@ import SEO from '../components/SEO';
 export default function SaleDetail() {
   const { id } = useParams();
   const { isAdmin } = useAuth();
+  const { isKhmer } = useLanguage();
   const { sale, loading, error, setSale } = useSale(id);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
@@ -19,7 +21,8 @@ export default function SaleDetail() {
   const [refundError, setRefundError] = useState('');
 
   const handleCancel = async () => {
-    if (!window.confirm('តើអ្នកពិតជាចង់បោះបង់ការលក់នេះមែនទេ?')) return;
+    const confirmMsg = isKhmer ? 'តើអ្នកពិតជាចង់បោះបង់ការលក់នេះមែនទេ?' : 'Are you sure you want to cancel this sale?';
+    if (!window.confirm(confirmMsg)) return;
     setCancelling(true);
     setCancelError('');
     try {
@@ -34,7 +37,8 @@ export default function SaleDetail() {
   // Sale ដែលបានបង់ប្រាក់រួច (paymentStatus: PAID) - cancel() បដិសេធជាមួយ
   // 400 ដូច្នេះត្រូវប្រើ refund() ជំនួសវិញ (ADMIN role ប៉ុណ្ណោះ)។
   const handleRefund = async () => {
-    const reason = window.prompt('មូលហេតុសងប្រាក់វិញ (មិនចាំបាច់):') ?? undefined;
+    const promptMsg = isKhmer ? 'មូលហេតុសងប្រាក់វិញ (មិនចាំបាច់):' : 'Reason for refund (optional):';
+    const reason = window.prompt(promptMsg) ?? undefined;
     if (reason === undefined) return;
     setRefunding(true);
     setRefundError('');
@@ -51,7 +55,9 @@ export default function SaleDetail() {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3">
         <Loader2 size={36} className="animate-spin text-emerald-600" />
-        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">កំពុងទាញយកព័ត៌មានវិក្កយបត្រ...</p>
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+          {isKhmer ? 'កំពុងទាញយកព័ត៌មានវិក្កយបត្រ...' : 'Loading invoice details...'}
+        </p>
       </div>
     );
   }
@@ -60,14 +66,18 @@ export default function SaleDetail() {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center animate-fade-in">
         <AlertCircle size={44} className="mx-auto mb-3 text-rose-600 dark:text-rose-400" />
-        <h3 className="text-base font-bold text-slate-900 dark:text-white">រកមិនឃើញការលក់នេះទេ</h3>
-        <p className="mt-1 mb-6 text-xs text-rose-600 dark:text-rose-400">{error || 'វិក្កយបត្រនេះប្រហែលជាត្រូវបានលុប ឬមិនមានក្នុងប្រព័ន្ធ'}</p>
+        <h3 className="text-base font-bold text-slate-900 dark:text-white">
+          {isKhmer ? 'រកមិនឃើញការលក់នេះទេ' : 'Sale not found'}
+        </h3>
+        <p className="mt-1 mb-6 text-xs text-rose-600 dark:text-rose-400">
+          {error || (isKhmer ? 'វិក្កយបត្រនេះប្រហែលជាត្រូវបានលុប ឬមិនមានក្នុងប្រព័ន្ធ' : 'This invoice might have been deleted or does not exist in the system')}
+        </p>
         <Link
           to="/dashboard/sales"
           className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-emerald-600/30 transition hover:bg-emerald-500"
         >
           <ArrowLeft size={14} />
-          ត្រឡប់ទៅប្រវត្តិការលក់
+          <span>{isKhmer ? 'ត្រឡប់ទៅប្រវត្តិការលក់' : 'Back to Sales'}</span>
         </Link>
       </div>
     );
@@ -76,7 +86,7 @@ export default function SaleDetail() {
   return (
     <div className="mx-auto max-w-3xl space-y-5 animate-fade-in">
       <SEO
-        title={sale?.invoiceNumber ? `វិក្កយបត្រ ${sale.invoiceNumber} | Mart System` : 'ព័ត៌មានលម្អិតការលក់ | Mart System'}
+        title={sale?.invoiceNumber ? `${isKhmer ? 'វិក្កយបត្រ' : 'Invoice'} ${sale.invoiceNumber} | Mart System` : `${isKhmer ? 'ព័ត៌មានលម្អិតការលក់' : 'Sale Details'} | Mart System`}
         robots="noindex, nofollow"
       />
 
@@ -86,7 +96,7 @@ export default function SaleDetail() {
           className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-2xs transition hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-emerald-600"
         >
           <ArrowLeft size={14} />
-          <span>ត្រឡប់ទៅប្រវត្តិការលក់</span>
+          <span>{isKhmer ? 'ត្រឡប់ទៅប្រវត្តិការលក់' : 'Back to Sales'}</span>
         </Link>
       </div>
 
@@ -111,10 +121,10 @@ export default function SaleDetail() {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition hover:border-emerald-500 hover:text-emerald-600 active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition hover:border-emerald-500 hover:text-emerald-600 active:scale-95 cursor-pointer"
             >
               <Printer size={15} />
-              <span>បោះពុម្ព</span>
+              <span>{isKhmer ? 'បោះពុម្ព' : 'Print'}</span>
             </button>
 
             {sale.paymentStatus === 'PAID' && sale.status === 'COMPLETED' ? (
@@ -122,20 +132,20 @@ export default function SaleDetail() {
                 <button
                   onClick={handleRefund}
                   disabled={refunding}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/40 bg-rose-50 dark:bg-rose-950/30 px-3.5 py-2 text-xs font-bold text-rose-700 dark:text-rose-400 shadow-2xs transition hover:bg-rose-100 dark:hover:bg-rose-900/40 disabled:opacity-50 active:scale-95"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/40 bg-rose-50 dark:bg-rose-950/30 px-3.5 py-2 text-xs font-bold text-rose-700 dark:text-rose-400 shadow-2xs transition hover:bg-rose-100 dark:hover:bg-rose-900/40 disabled:opacity-50 active:scale-95 cursor-pointer"
                 >
                   {refunding ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
-                  <span>សងប្រាក់វិញ</span>
+                  <span>{isKhmer ? 'សងប្រាក់វិញ' : 'Refund'}</span>
                 </button>
               )
             ) : (sale.status === 'PENDING' || sale.status === 'COMPLETED') ? (
               <button
                 onClick={handleCancel}
                 disabled={cancelling}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/40 bg-rose-50 dark:bg-rose-950/30 px-3.5 py-2 text-xs font-bold text-rose-700 dark:text-rose-400 shadow-2xs transition hover:bg-rose-100 dark:hover:bg-rose-900/40 disabled:opacity-50 active:scale-95"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/40 bg-rose-50 dark:bg-rose-950/30 px-3.5 py-2 text-xs font-bold text-rose-700 dark:text-rose-400 shadow-2xs transition hover:bg-rose-100 dark:hover:bg-rose-900/40 disabled:opacity-50 active:scale-95 cursor-pointer"
               >
                 {cancelling ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
-                <span>បោះបង់ការលក់</span>
+                <span>{isKhmer ? 'បោះបង់ការលក់' : 'Cancel Sale'}</span>
               </button>
             ) : null}
           </div>

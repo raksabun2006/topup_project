@@ -357,14 +357,14 @@ export default function Deliveries() {
             <table className="w-full text-left text-xs">
               <thead className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/50 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 <tr>
-                  <th className="px-4 py-3.5">Order & Customer</th>
-                  <th className="px-4 py-3.5">Provider & Waybill</th>
-                  <th className="px-4 py-3.5">Tracking Number</th>
-                  <th className="px-4 py-3.5">Delivery Status</th>
-                  <th className="px-4 py-3.5">Driver / Carrier</th>
-                  <th className="px-4 py-3.5">Shipping Fee</th>
-                  <th className="px-4 py-3.5">Created</th>
-                  <th className="px-4 py-3.5 text-right">Actions</th>
+                  <th className="px-4 py-3.5">{isKhmer ? 'ការបញ្ជាទិញ & អតិថិជន' : 'Order & Customer'}</th>
+                  <th className="px-4 py-3.5">{isKhmer ? 'ក្រុមហ៊ុនដឹក & វិក្កយបត្រ' : 'Provider & Waybill'}</th>
+                  <th className="px-4 py-3.5">{isKhmer ? 'លេខតាមដានកញ្ចប់' : 'Tracking Number'}</th>
+                  <th className="px-4 py-3.5">{isKhmer ? 'ស្ថានភាពដឹកជញ្ជូន' : 'Delivery Status'}</th>
+                  <th className="px-4 py-3.5">{isKhmer ? 'អ្នកដឹក / ក្រុមហ៊ុន' : 'Driver / Carrier'}</th>
+                  <th className="px-4 py-3.5">{isKhmer ? 'ថ្លៃដឹកជញ្ជូន' : 'Shipping Fee'}</th>
+                  <th className="px-4 py-3.5">{isKhmer ? 'កាលបរិច្ឆេទ' : 'Created'}</th>
+                  <th className="px-4 py-3.5 text-right">{isKhmer ? 'សកម្មភាព' : 'Actions'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">

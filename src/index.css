@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Siemreap&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,300..700;1,300..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Siemreap&display=swap');
 @import "tailwindcss";
 
 /* Manual class-based dark mode variant for Tailwind CSS v4 */
@@ -46,11 +46,11 @@
   --color-pos-warning: #F59E0B;
   --color-pos-error: #EF4444;
   --color-pos-info: #0EA5E9;
-  --font-sans: 'Plus Jakarta Sans', 'Siemreap', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Kantumruy Pro', 'Siemreap', ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', 'Siemreap', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Kantumruy Pro', 'Siemreap', ui-sans-serif, system-ui, sans-serif;
   background-color: var(--color-ink-950);
   color: #0F172A;
   transition: background-color 0.2s ease, color 0.2s ease;

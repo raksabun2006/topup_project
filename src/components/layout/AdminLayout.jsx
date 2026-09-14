@@ -7,18 +7,21 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSales } from '../../hooks/useSales';
+import { useLanguage } from '../../context/LanguageContext';
 import { adminApi } from '../../api/adminApi';
 import { getCustomerOrders } from '../pos/CustomerOrdersModal';
 import ThemeToggle from '../ui/ThemeToggle';
+import LanguageSwitcher from '../ui/LanguageSwitcher';
 import UserAvatar from '../ui/UserAvatar';
 import NotificationDropdown from '../ui/NotificationDropdown';
 import { env } from '../../config/env';
 
 export default function AdminLayout() {
   const { user, logout, isAdmin, isManagerOrAdmin, displayRole } = useAuth();
+  const { isKhmer } = useLanguage();
   const { sales } = useSales();
-  const [onlineOrdersCount, setOnlineOrdersCount] = useState(0);
   const { pathname } = useLocation();
+  const [onlineOrdersCount, setOnlineOrdersCount] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -38,20 +41,20 @@ export default function AdminLayout() {
   // Role-based navigation maps
   const roleNavigation = {
     ADMIN: [
-      { to: '/admin/dashboard', icon: LayoutGrid, label: 'Overview', end: true },
-      { to: '/dashboard/sales', icon: ShoppingBag, label: 'Orders & Sales', badge: pendingOrTotalCount ? String(pendingOrTotalCount) : undefined },
-      { to: '/dashboard/deliveries', icon: Truck, label: 'Deliveries' },
-      { to: '/dashboard/products', icon: Package, label: 'Products' },
-      { to: '/dashboard/customers', icon: Users, label: 'Customers' },
-      { to: '/dashboard/discounts', icon: Tag, label: 'Discounts & Promo' },
-      { to: '/dashboard/reports', icon: BarChart2, label: 'Analytics' },
-      { to: '/dashboard/expenses', icon: WalletCards, label: 'Store Expenses' },
+      { to: '/admin/dashboard', icon: LayoutGrid, label: isKhmer ? 'ទិដ្ឋភាពទូទៅ' : 'Overview', end: true },
+      { to: '/dashboard/sales', icon: ShoppingBag, label: isKhmer ? 'ការបញ្ជាទិញ & ការលក់' : 'Orders & Sales', badge: pendingOrTotalCount ? String(pendingOrTotalCount) : undefined },
+      { to: '/dashboard/deliveries', icon: Truck, label: isKhmer ? 'ការដឹកជញ្ជូន' : 'Deliveries' },
+      { to: '/dashboard/products', icon: Package, label: isKhmer ? 'ទំនិញ' : 'Products' },
+      { to: '/dashboard/customers', icon: Users, label: isKhmer ? 'អតិថិជន' : 'Customers' },
+      { to: '/dashboard/discounts', icon: Tag, label: isKhmer ? 'ការបញ្ចុះតម្លៃ & ប្រូម៉ូសិន' : 'Discounts & Promo' },
+      { to: '/dashboard/reports', icon: BarChart2, label: isKhmer ? 'ស្ថិតិ & របាយការណ៍' : 'Analytics' },
+      { to: '/dashboard/expenses', icon: WalletCards, label: isKhmer ? 'ចំណាយក្នុងហាង' : 'Store Expenses' },
     ],
     STAFF: [
-      { to: '/staff/dashboard', icon: LayoutGrid, label: 'Operations Overview', end: true },
-      { to: '/dashboard/sales', icon: ShoppingBag, label: 'Orders & Receipts', badge: pendingOrTotalCount ? String(pendingOrTotalCount) : undefined },
-      { to: '/dashboard/deliveries', icon: Truck, label: 'Deliveries' },
-      { to: '/dashboard/products', icon: Package, label: 'Product Catalog' },
+      { to: '/staff/dashboard', icon: LayoutGrid, label: isKhmer ? 'ទិដ្ឋភាពទូទៅនៃប្រតិបត្តិការ' : 'Operations Overview', end: true },
+      { to: '/dashboard/sales', icon: ShoppingBag, label: isKhmer ? 'ការបញ្ជាទិញ & វិក្កយបត្រ' : 'Orders & Receipts', badge: pendingOrTotalCount ? String(pendingOrTotalCount) : undefined },
+      { to: '/dashboard/deliveries', icon: Truck, label: isKhmer ? 'ការដឹកជញ្ជូន' : 'Deliveries' },
+      { to: '/dashboard/products', icon: Package, label: isKhmer ? 'កាតាឡុកទំនិញ' : 'Product Catalog' },
     ],
   };
 
@@ -108,8 +111,8 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
   const mainMenuItems = isAdmin ? roleNavigation.ADMIN : roleNavigation.STAFF;
 
   const salesChannels = [
-    { to: '/shop', icon: Globe, label: 'Online store', external: false },
-    { to: '/pos', icon: ShoppingCart, label: 'Point of sale', external: false },
+    { to: '/shop', icon: Globe, label: isKhmer ? 'ហាងអនឡាញ' : 'Online store', external: false },
+    { to: '/pos', icon: ShoppingCart, label: isKhmer ? 'កន្លែងគិតលុយ (POS)' : 'Point of sale', external: false },
   ];
 
   const appIntegrations = [
@@ -151,7 +154,7 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
                   {env.appName || 'Saledash'}
                 </span>
                 <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                  Admin Panel
+                  {isKhmer ? 'ផ្ទាំងគ្រប់គ្រង Admin' : 'Admin Panel'}
                 </span>
               </div>
             )}
@@ -162,7 +165,7 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
             type="button"
             onClick={() => setCollapsed(!collapsed)}
             className="hidden lg:flex absolute -right-3.5 top-6 h-7 w-7 items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white shadow-sm transition hover:scale-105 cursor-pointer z-10"
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={collapsed ? (isKhmer ? 'ពង្រីកម៉ឺនុយ' : 'Expand sidebar') : (isKhmer ? 'បង្រួមម៉ឺនុយ' : 'Collapse sidebar')}
           >
             {collapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
           </button>
@@ -182,7 +185,7 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
           <div className="space-y-1">
             {!collapsed && (
               <p className="px-3 pb-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500">
-                Main Menu
+                {isKhmer ? 'ម៉ឺនុយមេ' : 'Main Menu'}
               </p>
             )}
             {mainMenuItems.map(({ to, icon: Icon, label, end, badge }) => (
@@ -217,7 +220,7 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
           <div className="space-y-1">
             {!collapsed && (
               <p className="px-3 pb-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500">
-                Sales Channel
+                {isKhmer ? 'បណ្តាញលក់' : 'Sales Channel'}
               </p>
             )}
             {salesChannels.map(({ to, icon: Icon, label }) => (
@@ -246,7 +249,7 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
           {!collapsed && (
             <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
               <p className="px-3 pb-1 text-[11px] font-bold text-slate-400 dark:text-slate-500">
-                Apps
+                {isKhmer ? 'កម្មវិធីភ្ជាប់' : 'Apps'}
               </p>
               {appIntegrations.map((app) => {
                 const IconComponent = app.icon;
@@ -272,7 +275,7 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
                 className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
               >
                 <Plus size={14} />
-                <span>Add apps</span>
+                <span>{isKhmer ? 'បន្ថែមកម្មវិធី' : 'Add apps'}</span>
               </button>
             </div>
           )}
@@ -290,10 +293,10 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
                   : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
               } ${collapsed ? 'justify-center px-1' : ''}`
             }
-            title="Profile"
+            title={isKhmer ? 'ប្រវត្តិរូប & គណនី' : 'Profile'}
           >
             <User size={16} className="text-slate-400 shrink-0" />
-            {!collapsed && <span className="truncate">Profile & Account</span>}
+            {!collapsed && <span className="truncate">{isKhmer ? 'ប្រវត្តិរូប & គណនី' : 'Profile & Account'}</span>}
           </NavLink>
           <button
             type="button"
@@ -301,10 +304,10 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
             className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition cursor-pointer ${
               collapsed ? 'justify-center px-1' : ''
             }`}
-            title="Sign Out"
+            title={isKhmer ? 'ចាកចេញ' : 'Sign Out'}
           >
             <LogOut size={16} className="shrink-0" />
-            {!collapsed && <span>Sign Out</span>}
+            {!collapsed && <span>{isKhmer ? 'ចាកចេញ' : 'Sign Out'}</span>}
           </button>
         </div>
       </aside>
@@ -331,63 +334,70 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
 
             {/* Desktop Current Page Indicator */}
             <div className="hidden lg:flex items-center gap-2 text-xs font-bold">
-              <span className="text-slate-400 dark:text-slate-500 font-medium">Dashboard</span>
+              <span className="text-slate-400 dark:text-slate-500 font-medium">
+                {isKhmer ? 'ផ្ទាំងគ្រប់គ្រង' : 'Dashboard'}
+              </span>
               <span className="text-slate-300 dark:text-slate-600">/</span>
               <span className="text-slate-900 dark:text-white font-extrabold">
                 {pathname.includes('/dashboard/reports/delivery')
-                  ? 'Delivery Reports'
+                  ? (isKhmer ? 'របាយការណ៍ដឹកជញ្ជូន' : 'Delivery Reports')
                   : pathname.includes('/dashboard/reports')
-                  ? 'Analytics & Reports'
+                  ? (isKhmer ? 'ស្ថិតិ & របាយការណ៍' : 'Analytics & Reports')
                   : pathname.includes('/dashboard/deliveries')
-                  ? 'Courier Deliveries'
+                  ? (isKhmer ? 'ការដឹកជញ្ជូនទំនិញ' : 'Courier Deliveries')
                   : pathname.includes('/dashboard/delivery-providers')
-                  ? 'Courier Providers'
+                  ? (isKhmer ? 'ក្រុមហ៊ុនដឹកជញ្ជូន' : 'Courier Providers')
                   : pathname.includes('/dashboard/delivery-zones')
-                  ? 'Delivery Zones'
+                  ? (isKhmer ? 'តំបន់ដឹកជញ្ជូន' : 'Delivery Zones')
                   : pathname.includes('/dashboard/sales')
-                  ? 'Orders & Sales'
+                  ? (isKhmer ? 'ការបញ្ជាទិញ & ការលក់' : 'Orders & Sales')
                   : pathname.includes('/dashboard/products')
-                  ? 'Product Catalog'
+                  ? (isKhmer ? 'កាតាឡុកទំនិញ' : 'Product Catalog')
                   : pathname.includes('/dashboard/customers')
-                  ? 'Customers'
+                  ? (isKhmer ? 'អតិថិជន' : 'Customers')
                   : pathname.includes('/dashboard/expenses')
-                  ? 'Store Expenses'
+                  ? (isKhmer ? 'ចំណាយក្នុងហាង' : 'Store Expenses')
                   : pathname.includes('/dashboard/discounts')
-                  ? 'Discounts & Promo'
+                  ? (isKhmer ? 'ការបញ្ចុះតម្លៃ & ប្រូម៉ូសិន' : 'Discounts & Promo')
                   : pathname.includes('/dashboard/profile')
-                  ? 'Profile & Settings'
+                  ? (isKhmer ? 'ប្រវត្តិរូប & ការកំណត់' : 'Profile & Settings')
                   : pathname.includes('/staff/dashboard')
-                  ? 'Staff Operations'
-                  : 'Overview'}
+                  ? (isKhmer ? 'ប្រតិបត្តិការបុគ្គលិក' : 'Staff Operations')
+                  : (isKhmer ? 'ទិដ្ឋភាពទូទៅ' : 'Overview')}
               </span>
               <span className="ml-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live System
+                {isKhmer ? 'ប្រព័ន្ធដំណើរការផ្ទាល់' : 'Live System'}
               </span>
             </div>
           </div>
 
-          {/* Right Side: Quick Action Links + ThemeToggle + Notification Bell + User Profile */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Right Side: Quick Action Links + LanguageSwitcher + ThemeToggle + Notification Bell + User Profile */}
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {/* Desktop POS Quick Link */}
             <Link
               to="/pos"
               className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition active:scale-95"
-              title="Open Point of Sale"
+              title={isKhmer ? 'បើកកន្លែងគិតលុយ (POS)' : 'Open Point of Sale'}
             >
               <ShoppingCart size={14} className="text-emerald-600 dark:text-emerald-400" />
-              <span>POS Screen</span>
+              <span>{isKhmer ? 'អេក្រង់ POS' : 'POS Screen'}</span>
             </Link>
 
             {/* Desktop Online Store Quick Link */}
             <Link
               to="/shop"
               className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition active:scale-95"
-              title="View Public Storefront"
+              title={isKhmer ? 'ចូលទៅកាន់ហាងអនឡាញ' : 'View Public Storefront'}
             >
               <Globe size={14} className="text-slate-500 dark:text-slate-400" />
-              <span>Online Store</span>
+              <span>{isKhmer ? 'ហាងអនឡាញ' : 'Online Store'}</span>
             </Link>
+
+            {/* Language Switcher (Smooth Khmer / English Switching) */}
+            <div className="shrink-0">
+              <LanguageSwitcher variant="button" />
+            </div>
 
             {/* Theme Toggle (Dark / Light) */}
             <div className="shrink-0">
@@ -403,15 +413,15 @@ function TelegramIcon({ className = 'h-5 w-5' }) {
             <Link
               to="/dashboard/profile"
               className="flex items-center gap-2 rounded-xl sm:rounded-full border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 p-1 sm:pr-3 hover:border-slate-300 dark:hover:border-slate-600 transition shrink-0"
-              title="View Profile & Settings"
+              title={isKhmer ? 'មើលប្រវត្តិរូប & ការកំណត់' : 'View Profile & Settings'}
             >
               <UserAvatar user={user} className="h-7 w-7 text-xs" />
               <div className="hidden sm:block text-left min-w-0">
                 <p className="text-xs font-black text-slate-900 dark:text-white leading-none truncate max-w-[100px]">
-                  {user?.name || user?.username || 'Admin'}
+                  {user?.name || user?.username || (isKhmer ? 'អ្នកគ្រប់គ្រង' : 'Admin')}
                 </p>
                 <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mt-0.5">
-                  {displayRole || (isAdmin ? 'Admin' : 'Staff')}
+                  {displayRole || (isAdmin ? (isKhmer ? 'Admin' : 'Admin') : (isKhmer ? 'Staff' : 'Staff'))}
                 </p>
               </div>
             </Link>
