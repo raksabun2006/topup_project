@@ -144,6 +144,40 @@ const translations = {
     newOrder: 'New order',
     realTimeUpdates: 'Real-time store updates',
     viewAllNotifications: 'View all notifications',
+
+    // Authentication & Password Reset
+    'auth.forgotPassword': 'Forgot your password?',
+    'auth.resetPassword': 'Reset Password',
+    'auth.email': 'Email Address',
+    'auth.newPassword': 'New Password',
+    'auth.confirmPassword': 'Confirm New Password',
+    'auth.passwordMismatch': 'Passwords do not match.',
+    'auth.invalidResetLink': 'This password reset link is invalid.',
+    'auth.expiredResetLink': 'This password reset link has expired. Please request a new one.',
+    'auth.alreadyUsedToken': 'This password reset link has already been used.',
+    'auth.passwordResetSuccess': 'Password reset successful',
+    'auth.checkYourInbox': 'Check your inbox',
+    'auth.backToLogin': 'Back to Login',
+    'auth.requestNewLink': 'Request a new reset link',
+    'auth.tryAnotherEmail': 'Try Another Email',
+    'auth.forgotPasswordDesc': "Enter your email address and we'll send you a link to reset your password.",
+    'auth.resetPasswordDesc': 'Please enter and confirm your new password.',
+    'auth.emailConfirmationNote': 'If an account exists with this email address, you will receive a password reset link shortly.',
+    'auth.emailInstructions': "We've sent password reset instructions to your email address.",
+    'auth.linkExpirationNote': "The reset link may expire after 30 minutes. Please check your spam or junk folder if you don't see the email.",
+    'auth.resetSuccessDesc': 'Your password has been updated successfully. You can now sign in with your new password.',
+    'auth.networkError': 'Unable to connect to the server. Please check your internet connection and try again.',
+    'auth.sendResetLink': 'Send Reset Link',
+    'auth.sendingLink': 'Sending Link...',
+    'auth.resettingPassword': 'Resetting Password...',
+    'auth.weak': 'Weak',
+    'auth.fair': 'Fair',
+    'auth.good': 'Good',
+    'auth.strong': 'Strong',
+    'auth.atLeast8Chars': 'At least 8 characters',
+    'auth.passwordsMatchSuccess': 'Passwords match',
+    'auth.redirectingIn': 'Redirecting to login in',
+    'auth.seconds': 's',
   },
   km: {
     // Navigation & General
@@ -286,6 +320,40 @@ const translations = {
     newOrder: 'ការបញ្ជាទិញថ្មី',
     realTimeUpdates: 'បច្ចុប្បន្នភាពទាន់ហេតុការណ៍',
     viewAllNotifications: 'មើលការជូនដំណឹងទាំងអស់',
+
+    // Authentication & Password Reset
+    'auth.forgotPassword': 'ភ្លេចពាក្យសម្ងាត់?',
+    'auth.resetPassword': 'កំណត់ពាក្យសម្ងាត់ថ្មី',
+    'auth.email': 'អាសយដ្ឋានអ៊ីមែល',
+    'auth.newPassword': 'ពាក្យសម្ងាត់ថ្មី',
+    'auth.confirmPassword': 'បញ្ជាក់ពាក្យសម្ងាត់ថ្មី',
+    'auth.passwordMismatch': 'ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ។',
+    'auth.invalidResetLink': 'តំណកំណត់ពាក្យសម្ងាត់នេះមិនត្រឹមត្រូវទេ។',
+    'auth.expiredResetLink': 'តំណកំណត់ពាក្យសម្ងាត់នេះបានផុតកំណត់។ សូមស្នើសុំតំណថ្មី។',
+    'auth.alreadyUsedToken': 'តំណកំណត់ពាក្យសម្ងាត់នេះត្រូវបានប្រើរួចហើយ។',
+    'auth.passwordResetSuccess': 'ការកំណត់ពាក្យសម្ងាត់ថ្មីបានជោគជ័យ',
+    'auth.checkYourInbox': 'ពិនិត្យមើលប្រអប់សំបុត្ររបស់អ្នក',
+    'auth.backToLogin': 'ត្រឡប់ទៅទំព័រចូល',
+    'auth.requestNewLink': 'ស្នើសុំតំណកំណត់ពាក្យសម្ងាត់ថ្មី',
+    'auth.tryAnotherEmail': 'សាកល្បងអ៊ីមែលផ្សេងទៀត',
+    'auth.forgotPasswordDesc': 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែលរបស់អ្នក ដើម្បីទទួលបានតំណសម្រាប់កំណត់ពាក្យសម្ងាត់ថ្មី។',
+    'auth.resetPasswordDesc': 'សូមបញ្ចូល និងបញ្ជាក់ពាក្យសម្ងាត់ថ្មីរបស់អ្នក។',
+    'auth.emailConfirmationNote': 'ប្រសិនបើមានគណនីដែលប្រើអ៊ីមែលនេះ អ្នកនឹងទទួលបានតំណសម្រាប់កំណត់ពាក្យសម្ងាត់ថ្មីក្នុងពេលឆាប់ៗនេះ។',
+    'auth.emailInstructions': 'យើងបានផ្ញើការណែនាំអំពីការកំណត់ពាក្យសម្ងាត់ថ្មីទៅកាន់អ៊ីមែលរបស់អ្នក។',
+    'auth.linkExpirationNote': 'តំណកំណត់ពាក្យសម្ងាត់អាចនឹងផុតកំណត់បន្ទាប់ពី 30 នាទី។ សូមពិនិត្យមើលប្រអប់ Spam ឬ Junk របស់អ្នក ប្រសិនបើអ្នកមិនឃើញអ៊ីមែល។',
+    'auth.resetSuccessDesc': 'ពាក្យសម្ងាត់របស់អ្នកត្រូវបានផ្លាស់ប្តូរដោយជោគជ័យ។ ឥឡូវនេះ អ្នកអាចចូលប្រើគណនីរបស់អ្នកដោយប្រើពាក្យសម្ងាត់ថ្មី។',
+    'auth.networkError': 'មិនអាចភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេបានទេ។ សូមពិនិត្យការតភ្ជាប់អ៊ីនធឺណិតរបស់អ្នក ហើយព្យាយាមម្តងទៀត។',
+    'auth.sendResetLink': 'ផ្ញើតំណកំណត់ពាក្យសម្ងាត់',
+    'auth.sendingLink': 'កំពុងផ្ញើតំណ...',
+    'auth.resettingPassword': 'កំពុងកំណត់ពាក្យសម្ងាត់...',
+    'auth.weak': 'ខ្សោយ',
+    'auth.fair': 'មធ្យម',
+    'auth.good': 'ល្អ',
+    'auth.strong': 'រឹងមាំ',
+    'auth.atLeast8Chars': 'យ៉ាងតិច 8 តួអក្សរ',
+    'auth.passwordsMatchSuccess': 'ពាក្យសម្ងាត់ត្រូវគ្នា',
+    'auth.redirectingIn': 'នឹងបញ្ជូនទៅកាន់ទំព័រចូលក្នុងរយៈពេល',
+    'auth.seconds': 'វិនាទី',
   },
 };
 
@@ -330,6 +398,47 @@ export function LanguageProvider({ children }) {
       if (dict && typeof dict[key] !== 'undefined') {
         return dict[key];
       }
+      // Support dot-notation (e.g. auth.forgotPassword)
+      if (key && key.includes('.')) {
+        const parts = key.split('.');
+        let current = dict;
+        for (const part of parts) {
+          if (current && typeof current === 'object' && part in current) {
+            current = current[part];
+          } else {
+            current = undefined;
+            break;
+          }
+        }
+        if (typeof current !== 'undefined') {
+          return current;
+        }
+
+        // Fallback to English translation for the same key if in Khmer
+        if (language !== 'en' && translations.en) {
+          if (typeof translations.en[key] !== 'undefined') {
+            return translations.en[key];
+          }
+          let enCurrent = translations.en;
+          for (const part of parts) {
+            if (enCurrent && typeof enCurrent === 'object' && part in enCurrent) {
+              enCurrent = enCurrent[part];
+            } else {
+              enCurrent = undefined;
+              break;
+            }
+          }
+          if (typeof enCurrent !== 'undefined') {
+            return enCurrent;
+          }
+        }
+      }
+
+      // Fallback to English dictionary
+      if (language !== 'en' && translations.en && typeof translations.en[key] !== 'undefined') {
+        return translations.en[key];
+      }
+
       return fallback || key;
     },
     [language]

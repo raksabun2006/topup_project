@@ -175,3 +175,31 @@ export function safeDeepClone(source) {
 
   return cleanObj;
 }
+
+/**
+ * 8. Email Address Masking for Security Confirmation
+ * Safely masks username portion while keeping the domain intact, e.g. j***e@example.com
+ */
+export function maskEmail(email) {
+  if (!email || typeof email !== 'string') return '';
+  const trimmed = email.trim();
+  const atIndex = trimmed.indexOf('@');
+  if (atIndex === -1) {
+    if (trimmed.length <= 3) return '***';
+    return `${trimmed[0]}***${trimmed[trimmed.length - 1]}`;
+  }
+
+  const username = trimmed.slice(0, atIndex);
+  const domain = trimmed.slice(atIndex + 1);
+
+  let maskedUser;
+  if (username.length <= 2) {
+    maskedUser = `${username[0]}***`;
+  } else if (username.length === 3) {
+    maskedUser = `${username[0]}*${username[2]}`;
+  } else {
+    maskedUser = `${username[0]}***${username[username.length - 1]}`;
+  }
+
+  return `${maskedUser}@${domain}`;
+}

@@ -1,28 +1,62 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import {
-  Loader2, AlertCircle, CheckCircle, CheckCircle2, Eye, EyeOff, Lock,
-  ShoppingBag, ArrowLeft, KeyRound, AlertTriangle, Check, X, Send, Mail
+  Loader2, AlertCircle, CheckCircle2, Eye, EyeOff, Lock,
+  ShoppingBag, ArrowLeft, KeyRound, AlertTriangle, Check, X
 } from 'lucide-react';
 import { authApi } from '../api/authApi';
-import { getErrorMessage } from '../api/client';
 import { env } from '../config/env';
+import { useLanguage } from '../context/LanguageContext';
 import SEO from '../components/SEO';
 import ThemeToggle from '../components/ui/ThemeToggle';
+import LanguageSwitcher from '../components/ui/LanguageSwitcher';
 
-function calculatePasswordStrength(password) {
-  if (!password) return { score: 0, label: 'Empty', color: 'bg-slate-200 dark:bg-slate-700' };
+function calculatePasswordStrength(password, isKhmer) {
+  if (!password) {
+    return {
+      score: 0,
+      label: '',
+      color: 'bg-slate-200 dark:bg-slate-700',
+      textColor: 'text-slate-400',
+    };
+  }
 
   let score = 0;
-  if (password.length >= 6) score += 1;
-  if (password.length >= 10) score += 1;
+  if (password.length >= 8) score += 1;
   if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score += 1;
   if (/[0-9]/.test(password)) score += 1;
   if (/[^A-Za-z0-9]/.test(password)) score += 1;
 
-  if (score <= 2) return { score: 1, label: 'Weak', color: 'bg-rose-500', textColor: 'text-rose-500' };
-  if (score <= 3) return { score: 2, label: 'Fair', color: 'bg-amber-500', textColor: 'text-amber-500' };
-  return { score: 3, label: 'Strong', color: 'bg-emerald-500', textColor: 'text-emerald-500' };
+  if (score <= 1) {
+    return {
+      score: 1,
+      label: isKhmer ? 'ខ្សោយ' : 'Weak',
+      color: 'bg-rose-500',
+      textColor: 'text-rose-500',
+    };
+  }
+  if (score === 2) {
+    return {
+      score: 2,
+      label: isKhmer ? 'មធ្យម' : 'Fair',
+      color: 'bg-amber-500',
+      textColor: 'text-amber-500',
+    };
+  }
+  if (score === 3) {
+    return {
+      score: 3,
+      label: isKhmer ? 'ល្អ' : 'Good',
+      color: 'bg-sky-500',
+      textColor: 'text-sky-500',
+    };
+  }
+  return {
+    score: 4,
+    label: isKhmer ? 'រឹងមាំ' : 'Strong',
+    color: 'bg-emerald-500',
+    textColor: 'text-emerald-500',
+  };
 }
 
 function StorefrontIllustration() {
@@ -59,23 +93,14 @@ function StorefrontIllustration() {
 }
 
 export default function ResetPassword() {
+  const { t, isKhmer } = useLanguage();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // Read raw token securely from URL query param
-  const urlToken = useMemo(() => {
-    return (
-      searchParams.get('token') ||
-      searchParams.get('resetToken') ||
-      searchParams.get('token_hash') ||
-      searchParams.get('code') ||
-      searchParams.get('key') ||
-      searchParams.get('t') ||
-      ''
-    );
-  }, [searchParams]);
+  // Read raw reset token safely from URL parameter ?token=<token>
+  const rawToken = searchParams.get('token') || searchParams.get('resetToken') || searchParams.get('code') || '';
+  const token = typeof rawToken === 'string' ? rawToken.trim() : '';
 
-  const [manualToken, setManualToken] = useState(urlToken);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -83,73 +108,101 @@ export default function ResetPassword() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [tokenInvalid, setTokenInvalid] = useState(false);
+  const [tokenErrorType, setTokenErrorType] = useState(null); // 'invalid' | 'expired' | 'used' | null
+  const [countdown, setCountdown] = useState(5);
 
-  const activeToken = (manualToken || urlToken || '').trim();
+  const strength = useMemo(() => calculatePasswordStrength(password, isKhmer), [password, isKhmer]);
+  const hasMinLength = password.length >= 8;
+  const passwordsMatch = Boolean(password && confirmPassword && password === confirmPassword);
+  const isFormValid = Boolean(password && confirmPassword && hasMinLength && passwordsMatch);
 
-  const strength = useMemo(() => calculatePasswordStrength(password), [password]);
-  const hasMinLength = password.length >= 6;
-  const passwordsMatch = password && confirmPassword && password === confirmPassword;
+  // Automatic 5-second redirect after successful password reset
+  useEffect(() => {
+    let timer;
+    if (success) {
+      if (countdown > 0) {
+        timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+      } else {
+        navigate('/login', { replace: true });
+      }
+    }
+    return () => clearTimeout(timer);
+  }, [success, countdown, navigate]);
 
   const handleSubmit = async (e) => {
     e?.preventDefault();
     if (submitting || success) return;
 
-    if (!activeToken) {
-      setError('Please enter your password reset token or verification code.');
+    if (!token) {
+      setError(t('auth.invalidResetLink', 'This password reset link is invalid.'));
       return;
     }
 
     if (!password) {
-      setError('Please enter a new password.');
+      setError(isKhmer ? 'សូមបញ្ចូលពាក្យសម្ងាត់ថ្មីរបស់អ្នក។' : 'Please enter your new password.');
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    if (password.length < 8) {
+      setError(isKhmer ? 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច 8 តួអក្សរ។' : 'Password must be at least 8 characters long.');
       return;
     }
 
     if (!confirmPassword) {
-      setError('Please confirm your new password.');
+      setError(isKhmer ? 'សូមបញ្ជាក់ពាក្យសម្ងាត់ថ្មីរបស់អ្នក។' : 'Please confirm your new password.');
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('auth.passwordMismatch', 'Passwords do not match.'));
       return;
     }
 
     setSubmitting(true);
     setError('');
+    setTokenErrorType(null);
 
     try {
       await authApi.resetPassword({
-        token: activeToken,
+        token,
         newPassword: password,
       });
 
-      // Clear password from component state and mark successful
+      // Clear sensitive password inputs from memory
       setPassword('');
       setConfirmPassword('');
       setSuccess(true);
+      setCountdown(5);
     } catch (err) {
-      const status = err.status || err.response?.status;
-      const msg = err.response?.data?.message || err.message || '';
+      const status = err?.status || err?.response?.status;
+      const data = err?.response?.data;
+      const backendMsg = (typeof data === 'string' ? data : (data?.message || data?.error || '')).toLowerCase();
 
-      if (
+      // Check for network error
+      if (!err.response) {
+        setError(t('auth.networkError', 'Unable to connect to the server. Please check your internet connection and try again.'));
+        return;
+      }
+
+      // Identify token-specific error states
+      if (backendMsg.includes('expired') || backendMsg.includes('token expired')) {
+        setTokenErrorType('expired');
+        setError(t('auth.expiredResetLink', 'This password reset link has expired. Please request a new one.'));
+      } else if (backendMsg.includes('already used') || backendMsg.includes('used') || backendMsg.includes('consumed')) {
+        setTokenErrorType('used');
+        setError(t('auth.alreadyUsedToken', 'This password reset link has already been used.'));
+      } else if (
         status === 400 ||
         status === 404 ||
-        msg.toLowerCase().includes('expired') ||
-        msg.toLowerCase().includes('invalid') ||
-        msg.toLowerCase().includes('used')
+        backendMsg.includes('invalid') ||
+        backendMsg.includes('token not found')
       ) {
-        setTokenInvalid(true);
-        setError('This password reset link or code is invalid or has expired. Please request a new link or contact support.');
+        setTokenErrorType('invalid');
+        setError(t('auth.invalidResetLink', 'This password reset link is invalid.'));
       } else if (status >= 500) {
-        setError('Server error occurred. Please try again later.');
+        setError(isKhmer ? 'ម៉ាស៊ីនមេកំពុងរវល់។ សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ។' : 'Server error occurred. Please try again later.');
       } else {
-        setError(getErrorMessage(err) || 'Failed to reset password. Please try again.');
+        setError(isKhmer ? 'មិនអាចកំណត់ពាក្យសម្ងាត់ថ្មីបានទេ។ សូមព្យាយាមម្តងទៀត។' : 'Failed to reset password. Please try again.');
       }
     } finally {
       setSubmitting(false);
@@ -158,7 +211,11 @@ export default function ResetPassword() {
 
   return (
     <div className="relative min-h-screen w-full bg-white dark:bg-slate-950 font-sans flex flex-col justify-between overflow-x-hidden">
-      <SEO title="Reset Password | Mart System" canonical="/reset-password" robots="noindex, nofollow" />
+      <SEO
+        title={`${t('auth.resetPassword', 'Reset Password')} | ${env.appName || 'Mart System'}`}
+        canonical="/reset-password"
+        robots="noindex, nofollow"
+      />
 
       {/* Main Full-Screen Grid */}
       <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-12">
@@ -183,26 +240,26 @@ export default function ResetPassword() {
 
             <div className="mt-6 space-y-4">
               <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                Account Security
+                {isKhmer ? 'សុវត្ថិភាពគណនី' : 'Account Security'}
               </h3>
               <ul className="space-y-3 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400">
                 <li className="flex items-center gap-3">
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 shrink-0">
                     <CheckCircle2 size={15} />
                   </div>
-                  <span>High-strength password encryption</span>
+                  <span>{isKhmer ? 'ការការពារពាក្យសម្ងាត់តាមរយៈស្តង់ដារ BCrypt' : 'High-strength BCrypt encryption'}</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 shrink-0">
                     <CheckCircle2 size={15} />
                   </div>
-                  <span>Instant account access recovery</span>
+                  <span>{isKhmer ? 'ចូលប្រើប្រាស់គណនីរបស់អ្នកវិញភ្លាមៗ' : 'Instant account access recovery'}</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 shrink-0">
                     <CheckCircle2 size={15} />
                   </div>
-                  <span>Single-use token safety verification</span>
+                  <span>{isKhmer ? 'កូដសុវត្ថិភាពប្រើប្រាស់បានតែម្តងគត់' : 'Single-use token safety protection'}</span>
                 </li>
               </ul>
             </div>
@@ -235,42 +292,79 @@ export default function ResetPassword() {
                 className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-2xs hover:scale-105"
               >
                 <ArrowLeft size={13} />
-                <span>Back to Login</span>
+                <span>{t('auth.backToLogin', 'Back to Login')}</span>
               </Link>
-              <ThemeToggle variant="navbar" />
+              <LanguageSwitcher />
+              <ThemeToggle />
             </div>
           </div>
 
           {/* Center Content Container */}
           <div className="my-auto py-8 sm:py-10 max-w-md w-full mx-auto">
-            {/* State 1: Reset Success */}
+            {/* Case 1: Password Reset Complete (PART 8) */}
             {success ? (
               <div className="text-center space-y-4 py-4 animate-scale-in">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 mx-auto border border-emerald-100 dark:border-emerald-900/40 shadow-xs">
-                  <CheckCircle size={32} />
+                  <CheckCircle2 size={34} />
                 </div>
 
                 <div className="space-y-2">
                   <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                    Password Reset Complete
+                    {t('auth.passwordResetSuccess', 'Password reset successful')}
                   </h1>
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
-                    Your password has been successfully updated. You can now log in to your account.
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                    {t('auth.resetSuccessDesc', 'Your password has been updated successfully. You can now sign in with your new password.')}
                   </p>
+                  <div className="inline-block px-3 py-1.5 rounded-full bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-900/50 text-sky-700 dark:text-sky-300 text-xs font-semibold">
+                    {t('auth.redirectingIn', 'Redirecting to login in')} {countdown}{t('auth.seconds', 's')}...
+                  </div>
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-3">
                   <button
                     type="button"
                     onClick={() => navigate('/login', { replace: true })}
-                    className="w-full rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white py-3.5 sm:py-4 text-sm font-bold shadow-md transition active:scale-98 cursor-pointer"
+                    className="w-full rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white py-3.5 sm:py-4 text-sm font-bold shadow-md transition active:scale-98 cursor-pointer flex items-center justify-center gap-2"
                   >
-                    Go to Login
+                    <span>{isKhmer ? 'ចូលគណនីឥឡូវនេះ' : 'Sign In'}</span>
                   </button>
                 </div>
               </div>
+            ) : !token ? (
+              /* Case 2: Missing Token State (PART 4) */
+              <div className="text-center space-y-4 py-4 animate-scale-in">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 mx-auto border border-rose-100 dark:border-rose-900/40 shadow-xs">
+                  <AlertTriangle size={32} />
+                </div>
+
+                <div className="space-y-2">
+                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                    {t('auth.invalidResetLink', 'Invalid password reset link')}
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                    {isKhmer
+                      ? 'តំណកំណត់ពាក្យសម្ងាត់នេះខ្វះកូដសម្ងាត់ ឬមិនត្រឹមត្រូវ។ សូមស្នើសុំតំណថ្មីម្តងទៀត។'
+                      : 'This password reset link is missing a security token or has become corrupted. Please request a fresh reset link.'}
+                  </p>
+                </div>
+
+                <div className="pt-3 space-y-2.5">
+                  <Link
+                    to="/forgot-password"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white py-3.5 text-sm font-bold shadow-md transition active:scale-98"
+                  >
+                    <span>{t('auth.requestNewLink', 'Request a new reset link')}</span>
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-3 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+                  >
+                    <span>{t('auth.backToLogin', 'Back to Login')}</span>
+                  </Link>
+                </div>
+              </div>
             ) : (
-              /* State 3: Reset Password Form */
+              /* Case 3: New Password Form (PART 5 & PART 6) */
               <div>
                 <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 mx-auto mb-4 border border-sky-100 dark:border-sky-900/40 shadow-xs">
                   <KeyRound size={22} />
@@ -278,10 +372,10 @@ export default function ResetPassword() {
 
                 <div className="text-center space-y-1 mb-6">
                   <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                    Reset Password
+                    {t('auth.resetPassword', 'Reset Password')}
                   </h1>
-                  <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 font-medium">
-                    {urlToken ? 'Please enter and confirm your new password.' : 'Enter your reset code or token and choose a new password.'}
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    {t('auth.resetPasswordDesc', 'Please enter and confirm your new password.')}
                   </p>
                 </div>
 
@@ -292,128 +386,121 @@ export default function ResetPassword() {
                   </div>
                 )}
 
-                {tokenInvalid && (
-                  <div className="mb-5 p-3.5 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/70 dark:bg-amber-950/20 text-xs space-y-2">
+                {/* Token Error Quick Action (Expired, Used, Invalid) */}
+                {tokenErrorType && (
+                  <div className="mb-5 p-3.5 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/80 dark:bg-amber-950/20 text-xs space-y-2">
                     <div className="font-semibold text-amber-900 dark:text-amber-200">
-                      Need direct help from administrator?
+                      {isKhmer ? 'ត្រូវការតំណកំណត់ពាក្យសម្ងាត់ថ្មី?' : 'Need a new password reset link?'}
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <a
-                        href="https://t.me/raksa_bun?text=Hello%20Admin%2C%20I%20need%20assistance%20with%20my%20password%20reset%20on%20Mart%20System."
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#229ED9] hover:bg-[#1e8cc0] text-white font-bold transition shadow-2xs"
-                      >
-                        <Send size={13} />
-                        <span>Telegram Support</span>
-                      </a>
-                      <Link
-                        to="/forgot-password"
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-2xs"
-                      >
-                        <span>Request New Link</span>
-                      </Link>
-                    </div>
+                    <Link
+                      to="/forgot-password"
+                      className="inline-flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold transition shadow-xs"
+                    >
+                      <span>{t('auth.requestNewLink', 'Request a new reset link')}</span>
+                    </Link>
                   </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-                  {/* Reset Token Input (shown if no url token or user wants to edit) */}
-                  {!urlToken && (
+                  {/* New Password Field */}
+                  <div>
+                    <label htmlFor="reset-new-password" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      {t('auth.newPassword', 'New Password')}
+                    </label>
                     <div className="relative">
-                      <KeyRound size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <Lock size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                       <input
-                        id="reset-token-input"
+                        id="reset-new-password"
                         required
-                        type="text"
+                        autoFocus
+                        type={showPassword ? 'text' : 'password'}
                         disabled={submitting}
-                        value={manualToken}
+                        value={password}
                         onChange={(e) => {
-                          setManualToken(e.target.value);
+                          setPassword(e.target.value);
                           if (error) setError('');
                         }}
-                        placeholder="Paste Reset Token / Code"
-                        aria-label="Reset Token or Code"
-                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-3 sm:py-3.5 pl-11 pr-4 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs disabled:opacity-60"
+                        placeholder={isKhmer ? 'បញ្ចូលពាក្យសម្ងាត់ថ្មី (យ៉ាងតិច 8 តួអក្សរ)' : 'New password (min. 8 characters)'}
+                        aria-label={t('auth.newPassword', 'New Password')}
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-3 sm:py-3.5 pl-11 pr-11 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs disabled:opacity-60"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-lg p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition focus:outline-none cursor-pointer"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
-                  )}
-                  {/* New Password */}
-                  <div className="relative">
-                    <Lock size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      id="reset-password-input"
-                      required
-                      autoFocus
-                      type={showPassword ? 'text' : 'password'}
-                      disabled={submitting}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="New Password (min. 6 characters)"
-                      aria-label="New Password"
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-3 sm:py-3.5 pl-11 pr-11 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs disabled:opacity-60"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-lg p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition focus:outline-none cursor-pointer"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
                   </div>
 
                   {/* Password Strength Indicator */}
                   {password && (
-                    <div className="space-y-1.5 px-1">
+                    <div className="space-y-1.5 px-1 animate-fade-in">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-400">Strength:</span>
+                        <span className="text-slate-400 font-medium">
+                          {isKhmer ? 'កម្រិតសុវត្ថិភាព:' : 'Strength:'}
+                        </span>
                         <span className={`font-bold ${strength.textColor}`}>{strength.label}</span>
                       </div>
                       <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex gap-1">
-                        <div className={`h-full flex-1 rounded-full transition-all ${strength.score >= 1 ? strength.color : 'bg-slate-200 dark:bg-slate-700'}`} />
-                        <div className={`h-full flex-1 rounded-full transition-all ${strength.score >= 2 ? strength.color : 'bg-slate-200 dark:bg-slate-700'}`} />
-                        <div className={`h-full flex-1 rounded-full transition-all ${strength.score >= 3 ? strength.color : 'bg-slate-200 dark:bg-slate-700'}`} />
+                        <div className={`h-full flex-1 rounded-full transition-all duration-300 ${strength.score >= 1 ? strength.color : 'bg-slate-200 dark:bg-slate-700'}`} />
+                        <div className={`h-full flex-1 rounded-full transition-all duration-300 ${strength.score >= 2 ? strength.color : 'bg-slate-200 dark:bg-slate-700'}`} />
+                        <div className={`h-full flex-1 rounded-full transition-all duration-300 ${strength.score >= 3 ? strength.color : 'bg-slate-200 dark:bg-slate-700'}`} />
+                        <div className={`h-full flex-1 rounded-full transition-all duration-300 ${strength.score >= 4 ? strength.color : 'bg-slate-200 dark:bg-slate-700'}`} />
                       </div>
                     </div>
                   )}
 
-                  {/* Confirm Password */}
-                  <div className="relative">
-                    <Lock size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      id="reset-confirm-password-input"
-                      required
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      disabled={submitting}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Confirm New Password"
-                      aria-label="Confirm New Password"
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-3 sm:py-3.5 pl-11 pr-11 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs disabled:opacity-60"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-lg p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition focus:outline-none cursor-pointer"
-                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                      tabIndex={-1}
-                    >
-                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
+                  {/* Confirm Password Field */}
+                  <div>
+                    <label htmlFor="reset-confirm-password" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      {t('auth.confirmPassword', 'Confirm New Password')}
+                    </label>
+                    <div className="relative">
+                      <Lock size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        id="reset-confirm-password"
+                        required
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        disabled={submitting}
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          if (error) setError('');
+                        }}
+                        placeholder={isKhmer ? 'បញ្ចូលបញ្ជាក់ពាក្យសម្ងាត់ថ្មី' : 'Confirm new password'}
+                        aria-label={t('auth.confirmPassword', 'Confirm New Password')}
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FBFDFF] dark:bg-slate-800/70 py-3 sm:py-3.5 pl-11 pr-11 text-base sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-800 transition shadow-2xs disabled:opacity-60"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-lg p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition focus:outline-none cursor-pointer"
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                        tabIndex={-1}
+                      >
+                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Requirement & Match Status */}
+                  {/* Real-Time Criteria Feedback */}
                   <div className="space-y-1.5 text-xs px-1">
                     <div className={`flex items-center gap-2 ${hasMinLength ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-slate-400'}`}>
                       <div className={`h-1.5 w-1.5 rounded-full ${hasMinLength ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
-                      <span>At least 6 characters</span>
+                      <span>{t('auth.atLeast8Chars', 'At least 8 characters')}</span>
                     </div>
                     {confirmPassword && (
                       <div className={`flex items-center gap-1.5 ${passwordsMatch ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-rose-500 font-semibold'}`}>
                         {passwordsMatch ? <Check size={14} /> : <X size={14} />}
-                        <span>{passwordsMatch ? 'Passwords match' : 'Passwords do not match'}</span>
+                        <span>
+                          {passwordsMatch
+                            ? t('auth.passwordsMatchSuccess', 'Passwords match')
+                            : t('auth.passwordMismatch', 'Passwords do not match.')}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -422,16 +509,16 @@ export default function ResetPassword() {
                   <button
                     id="reset-password-submit-button"
                     type="submit"
-                    disabled={submitting || (confirmPassword && !passwordsMatch)}
-                    className="w-full rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white py-3.5 sm:py-4 text-sm font-bold shadow-md transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2 mt-2"
+                    disabled={submitting || !isFormValid}
+                    className="w-full rounded-xl bg-[#164E87] hover:bg-[#123E6C] text-white py-3.5 sm:py-4 text-sm font-bold shadow-md transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 mt-2"
                   >
                     {submitting ? (
                       <>
                         <Loader2 size={18} className="animate-spin" />
-                        <span>Resetting...</span>
+                        <span>{t('auth.resettingPassword', 'Resetting Password...')}</span>
                       </>
                     ) : (
-                      <span>Reset Password</span>
+                      <span>{t('auth.resetPassword', 'Reset Password')}</span>
                     )}
                   </button>
                 </form>
@@ -446,7 +533,7 @@ export default function ResetPassword() {
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
             >
               <ArrowLeft size={13} />
-              <span>Back to Mart Storefront</span>
+              <span>{isKhmer ? 'ត្រឡប់ទៅកាន់ហាងទំនិញ Mart' : 'Back to Mart Storefront'}</span>
             </Link>
           </div>
         </div>
@@ -454,3 +541,4 @@ export default function ResetPassword() {
     </div>
   );
 }
+

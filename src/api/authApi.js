@@ -49,31 +49,36 @@ export const authApi = {
   /**
    * POST /api/v1/auth/forgot-password
    * Requests a password reset link to be sent via backend email
+   * Backend intentionally returns generic success response to prevent email enumeration
    */
-  forgotPassword: async ({ email }) => {
-    const cleanEmail = (email || '').trim().toLowerCase();
+  forgotPassword: async (input) => {
+    const rawEmail = typeof input === 'string' ? input : input?.email;
+    const cleanEmail = (rawEmail || '').trim().toLowerCase();
     const res = await apiClient.post('/auth/forgot-password', {
       email: cleanEmail,
-      username: cleanEmail,
-      usernameOrEmail: cleanEmail,
     });
     return res.data?.data ?? res.data;
   },
 
   /**
    * POST /api/v1/auth/reset-password
-   * Resets password using valid token and new password
+   * Resets password using valid single-use token and new password
    */
-  resetPassword: async ({ token, newPassword, password }) => {
-    const finalPassword = newPassword || password;
+  resetPassword: async (param1, param2) => {
+    let token = '';
+    let newPassword = '';
+    if (typeof param1 === 'object' && param1 !== null) {
+      token = param1.token || param1.resetToken || param1.code || '';
+      newPassword = param1.newPassword || param1.password || '';
+    } else {
+      token = param1 || '';
+      newPassword = param2 || '';
+    }
     const cleanToken = (token || '').trim();
+    const finalPassword = newPassword || '';
     const res = await apiClient.post('/auth/reset-password', {
       token: cleanToken,
-      resetToken: cleanToken,
-      code: cleanToken,
       newPassword: finalPassword,
-      password: finalPassword,
-      confirmPassword: finalPassword,
     });
     return res.data?.data ?? res.data;
   },
