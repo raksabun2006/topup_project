@@ -458,6 +458,7 @@ export default function Shop() {
     }
   };
 
+  const isFiltered = Boolean(search || selectedCategory || minPrice || maxPrice || inStockOnly || filterType !== 'ALL' || sortBy !== 'DEFAULT');
   const hasFacetFilters = Boolean(search || minPrice || maxPrice || inStockOnly || filterType !== 'ALL' || sortBy !== 'DEFAULT');
   const baseSiteUrl = (env.siteUrl || 'https://martsystemkh.software').replace(/\/+$/, '');
   const dynamicTitle = selectedCategory

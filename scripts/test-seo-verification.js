@@ -204,6 +204,7 @@ const shopPath = path.join(ROOT_DIR, 'src', 'pages', 'Shop.jsx');
 const shopContent = fs.readFileSync(shopPath, 'utf-8');
 assert(shopContent.includes('getCategoryUrl'), 'Shop.jsx uses clean getCategoryUrl canonicals');
 assert(shopContent.includes("hasFacetFilters ? 'noindex, follow' : 'index, follow'"), 'Shop.jsx avoids indexing facet/search bloat with noindex, follow');
+assert(shopContent.includes('const isFiltered ='), 'Shop.jsx defines isFiltered state for UI reset buttons');
 
 const appRoutesPath = path.join(ROOT_DIR, 'src', 'routes', 'AppRoutes.jsx');
 const appRoutesContent = fs.readFileSync(appRoutesPath, 'utf-8');
