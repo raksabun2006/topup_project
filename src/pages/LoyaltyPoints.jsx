@@ -44,6 +44,8 @@ export default function LoyaltyPoints() {
         title="Loyalty Points & Rewards | Mart System"
         description="Earn points on every purchase and redeem discount vouchers."
         canonical="/account/loyalty"
+        noindex={true}
+        robots="noindex, nofollow"
       />
 
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-10 space-y-8">

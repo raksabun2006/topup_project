@@ -87,6 +87,7 @@ export default function Profile() {
     <div className="mx-auto max-w-2xl px-3 sm:px-6 py-6 sm:py-10 space-y-6 font-sans">
       <SEO
         title="ព័ត៌មានផ្ទាល់ខ្លួន (Profile) | Mart System"
+        noindex={true}
         robots="noindex, nofollow"
       />
       <div>

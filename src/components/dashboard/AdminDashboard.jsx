@@ -533,7 +533,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto animate-fade-in font-sans pb-12">
-      <SEO title="Admin Overview | Saledash" robots="noindex, nofollow" />
+      <SEO title="Admin Overview | Mart System" noindex={true} robots="noindex, nofollow" />
 
       {/* ------- 1. Top Header Bar (Greeting + Live Date + Quick Actions) ------- */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">

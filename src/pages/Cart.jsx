@@ -140,7 +140,7 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <div className="min-h-[75vh] flex flex-col items-center justify-center bg-white dark:bg-slate-950 px-4 py-16 text-center space-y-4 font-sans">
-        <SEO title="Your Shopping Cart | Mart System" canonical="/cart" />
+        <SEO title="Your Shopping Cart | Mart System" canonical="/cart" noindex={true} robots="noindex, nofollow" />
         <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 text-slate-400">
           <ShoppingBag size={38} />
         </div>
@@ -165,7 +165,7 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 pb-28 sm:pb-20 font-sans">
-      <SEO title="Shopping Cart | Mart System" canonical="/cart" />
+      <SEO title="Shopping Cart | Mart System" canonical="/cart" noindex={true} robots="noindex, nofollow" />
 
       <div className="mx-auto max-w-6xl px-3 sm:px-6 py-4 sm:py-8 space-y-6">
         {/* Step Indicator */}

@@ -143,7 +143,7 @@ export default function OrderDetail() {
   if (loading && !order) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center bg-white dark:bg-slate-950 px-4">
-        <SEO title="Loading Order... | Mart System" />
+        <SEO title="Loading Order... | Mart System" noindex={true} robots="noindex, nofollow" />
         <RefreshCw size={32} className="animate-spin text-emerald-600 mb-3" />
         <p className="text-xs font-bold text-slate-500">កំពុងទាញយកព័ត៌មានការបញ្ជាទិញ... (Loading Order Details)</p>
       </div>
@@ -153,7 +153,7 @@ export default function OrderDetail() {
   if (error || !order) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center bg-white dark:bg-slate-950 px-4 text-center space-y-4 font-sans">
-        <SEO title="Order Not Found | Mart System" />
+        <SEO title="404 Order Not Found | Mart System" noindex={true} robots="noindex, nofollow" />
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600">
           <AlertCircle size={32} />
         </div>
@@ -239,6 +239,8 @@ export default function OrderDetail() {
         title={`Order ${orderNumber} | Mart System`}
         description={`Track order status and view receipt for ${orderNumber}.`}
         canonical={`/orders/${id}`}
+        noindex={true}
+        robots="noindex, nofollow"
       />
 
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-10 space-y-6">

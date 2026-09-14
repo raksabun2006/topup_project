@@ -14,6 +14,7 @@ import SEO from '../components/SEO';
 import { env } from '../config/env';
 import { getCategoryIcon, AllCategoriesIcon, getCategoryTheme } from '../utils/categoryIcons';
 import { useActiveDiscounts } from '../hooks/useDiscounts';
+import { getProductUrl, getCategoryUrl } from '../utils/seoSlug';
 
 const SORT_OPTIONS = [
   { value: 'DEFAULT', label: 'Recommended' },
@@ -457,7 +458,7 @@ export default function Shop() {
     }
   };
 
-  const isFiltered = Boolean(search || selectedCategory || inStockOnly || filterType !== 'ALL' || sortBy !== 'DEFAULT');
+  const hasFacetFilters = Boolean(search || minPrice || maxPrice || inStockOnly || filterType !== 'ALL' || sortBy !== 'DEFAULT');
   const baseSiteUrl = (env.siteUrl || 'https://martsystemkh.software').replace(/\/+$/, '');
   const dynamicTitle = selectedCategory
     ? `${selectedCategory} - Buy Online | Mart System Cambodia`
@@ -472,7 +473,7 @@ export default function Shop() {
       : 'Browse all grocery essentials, beverages, snacks, fresh food and home items in Mart System. Filter by category, enjoy $1.50 express delivery, and pay with Bakong KHQR.';
 
   const dynamicCanonical = selectedCategory
-    ? `/shop?category=${encodeURIComponent(selectedCategory)}`
+    ? getCategoryUrl(selectedCategory)
     : '/shop';
 
   const dynamicJsonLd = {
@@ -487,7 +488,7 @@ export default function Shop() {
       "itemListElement": filteredProducts.slice(0, 12).map((item, index) => ({
         "@type": "ListItem",
         "position": index + 1,
-        "url": `${baseSiteUrl}/product/${item.id}`,
+        "url": `${baseSiteUrl}${getProductUrl(item)}`,
         "name": item.name,
         "image": item.imageUrl || `${baseSiteUrl}/mart.jpg`
       }))
@@ -506,11 +507,11 @@ export default function Shop() {
         }
         canonical={dynamicCanonical}
         ogImage="/mart.jpg"
-        robots={search ? 'noindex, follow' : 'index, follow'}
+        robots={hasFacetFilters ? 'noindex, follow' : 'index, follow'}
         breadcrumbs={[
           { name: 'Home', url: '/' },
           { name: 'Shop', url: '/shop' },
-          ...(selectedCategory ? [{ name: selectedCategory, url: `/shop?category=${encodeURIComponent(selectedCategory)}` }] : []),
+          ...(selectedCategory ? [{ name: selectedCategory, url: getCategoryUrl(selectedCategory) }] : []),
         ]}
         jsonLd={dynamicJsonLd}
       />

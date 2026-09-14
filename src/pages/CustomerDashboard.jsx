@@ -82,7 +82,7 @@ export default function CustomerDashboard() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pb-20 font-sans">
-      <SEO title="Customer Dashboard | Mart System" canonical="/customer/dashboard" />
+      <SEO title="Customer Dashboard | Mart System" canonical="/customer/dashboard" noindex={true} robots="noindex, nofollow" />
 
       <div className="mx-auto max-w-5xl px-3 sm:px-6 py-6 sm:py-10 space-y-6">
         

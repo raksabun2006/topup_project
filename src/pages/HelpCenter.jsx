@@ -101,12 +101,24 @@ export default function HelpCenter() {
     return { ...cat, faqs: matching };
   }).filter((cat) => cat.faqs.length > 0);
 
+  const faqSchema = FAQ_CATEGORIES.flatMap((cat) =>
+    cat.faqs.map((f) => ({
+      q: f.qEn,
+      a: `${f.aEn} (${f.aKm})`,
+    }))
+  );
+
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 pb-20 font-sans">
       <SEO
-        title="Help Center & FAQs | Mart System"
-        description="Find answers to ordering, Bakong KHQR payments, and delivery questions."
+        title="Help Center & FAQs | Mart System Cambodia"
+        description="Find answers to ordering, express delivery in Phnom Penh, and Bakong KHQR instant payment questions at Mart System."
         canonical="/help"
+        breadcrumbs={[
+          { name: 'Home', url: '/' },
+          { name: 'Help Center', url: '/help' },
+        ]}
+        faq={faqSchema}
       />
 
       {/* Hero Search Banner */}

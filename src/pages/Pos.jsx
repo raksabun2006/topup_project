@@ -332,9 +332,10 @@ export default function Pos() {
     pageDescription = 'មើលបញ្ជីទំនិញទាំងអស់នៅក្នុង Mart System រួមមានតម្លៃ ស្តុក និងប្រភេទផ្សេងៗ។';
     pageCanonical = '/products';
   } else if (isPosPage) {
-    pageTitle = 'Mart System | Online Shopping POS';
+    pageTitle = 'Mart System | In-Store POS';
     pageDescription = 'ជ្រើសរើសទំនិញ និងទូទាត់ប្រាក់តាម Bakong KHQR យ៉ាងរហ័ស។';
     pageCanonical = '/pos';
+    pageRobots = 'noindex, nofollow';
   } else if (isCheckoutFlow) {
     pageTitle = 'ការទូទាត់ប្រាក់ (Checkout) | Mart System';
     pageCanonical = pathname;
@@ -360,12 +361,11 @@ export default function Pos() {
       } lg:pb-0`}
     >
       <SEO
-        title={pageTitle}
-        description={pageDescription}
-        keywords={pageKeywords}
-        canonical={pageCanonical}
-        robots={pageRobots}
-        jsonLd={homepageSchema}
+        title="Mart System | In-Store POS"
+        description="In-Store POS Terminal"
+        canonical="/pos"
+        noindex={true}
+        robots="noindex, nofollow"
       />
 
       {/* Staff POS Register Header */}

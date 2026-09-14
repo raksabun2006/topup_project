@@ -8,7 +8,8 @@
     "build": "node scripts/generate-sitemap.js && vite build",
     "generate:sitemap": "node scripts/generate-sitemap.js",
     "lint": "oxlint",
-    "test": "node scripts/test-notification-system.js",
+    "test": "node scripts/test-seo-verification.js",
+    "test:seo": "node scripts/test-seo-verification.js",
     "test:notifications": "node scripts/test-notification-system.js",
     "preview": "vite preview"
   },

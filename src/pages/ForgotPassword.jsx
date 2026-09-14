@@ -130,6 +130,7 @@ export default function ForgotPassword() {
       <SEO
         title={`${t('auth.forgotPassword', 'Forgot your password?')} | ${env.appName || 'Mart System'}`}
         canonical="/forgot-password"
+        noindex={true}
         robots="noindex, nofollow"
       />
 

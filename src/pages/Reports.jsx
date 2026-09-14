@@ -508,7 +508,7 @@ export default function Reports() {
 
   return (
     <>
-      <SEO title="របាយការណ៍ហិរញ្ញវត្ថុ (Financial Reports) | Mart System" robots="noindex, nofollow" />
+      <SEO title="របាយការណ៍ហិរញ្ញវត្ថុ (Financial Reports) | Mart System" noindex={true} robots="noindex, nofollow" />
 
       <div className="flex-1 overflow-y-auto bg-[#F7F9FA] dark:bg-slate-950 p-3.5 sm:p-5 lg:p-6 space-y-5">
         {/* Tab Switcher & Actions Bar */}

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Layers, ArrowRight, Package, Sparkles } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
 import { getCategoryIcon } from '../utils/categoryIcons';
+import { getCategoryUrl } from '../utils/seoSlug';
 import SEO from '../components/SEO';
 
 export default function Categories() {
@@ -60,7 +61,7 @@ export default function Categories() {
               return (
                 <Link
                   key={catId}
-                  to={`/shop?category=${encodeURIComponent(catName)}`}
+                  to={getCategoryUrl(catName)}
                   className="group relative flex flex-col items-center justify-center gap-4 rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-6 sm:p-8 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
                 >
                   <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs group-hover:scale-110 transition-transform">

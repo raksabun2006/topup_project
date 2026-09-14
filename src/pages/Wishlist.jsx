@@ -58,7 +58,7 @@ export default function Wishlist() {
   if (wishlistIds.length === 0) {
     return (
       <div className="min-h-[75vh] flex flex-col items-center justify-center bg-white dark:bg-slate-950 px-4 py-16 text-center space-y-4">
-        <SEO title="My Wishlist | Mart System" canonical="/wishlist" />
+        <SEO title="My Wishlist | Mart System" canonical="/wishlist" noindex={true} robots="noindex, nofollow" />
         <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[#F7F7F8] dark:bg-slate-900 text-slate-400">
           <Heart size={38} className="text-slate-300 dark:text-slate-600" />
         </div>
@@ -83,7 +83,7 @@ export default function Wishlist() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 pb-28 sm:pb-20 font-sans">
-      <SEO title="My Wishlist | Mart System" canonical="/wishlist" />
+      <SEO title="My Wishlist | Mart System" canonical="/wishlist" noindex={true} robots="noindex, nofollow" />
 
       <div className="mx-auto max-w-6xl px-3 sm:px-6 py-6 sm:py-10 space-y-6">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">

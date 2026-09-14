@@ -214,6 +214,7 @@ export default function ResetPassword() {
       <SEO
         title={`${t('auth.resetPassword', 'Reset Password')} | ${env.appName || 'Mart System'}`}
         canonical="/reset-password"
+        noindex={true}
         robots="noindex, nofollow"
       />
 

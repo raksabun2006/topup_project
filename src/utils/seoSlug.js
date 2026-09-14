@@ -94,10 +94,11 @@ export function getProductUrl(product) {
 }
 
 /**
- * Generates category URL path.
- * Example: "/shop?category=Beverages%20%26%20Drinks"
+ * Generates preferred clean canonical category URL path.
+ * Example: "/category/Beverages%20%26%20Drinks"
  */
 export function getCategoryUrl(categoryName) {
   if (!categoryName) return '/shop';
-  return `/shop?category=${encodeURIComponent(categoryName)}`;
+  return `/category/${encodeURIComponent(categoryName)}`;
 }
+

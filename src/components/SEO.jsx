@@ -29,6 +29,7 @@ export default function SEO({
   twitterDescription,
   twitterImage,
   robots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+  noindex = false,
   productData = null, // { price, currency, availability, sku, brand, category }
   breadcrumbs = null, // Array of { name: string, url: string }
   faq = null, // Array of { q: string, a: string }
@@ -37,14 +38,33 @@ export default function SEO({
 }) {
   const baseSiteUrl = (env.siteUrl || 'https://martsystemkh.software').replace(/\/+$/, '');
 
-  // Compute clean canonical URL
-  let cleanCanonical = canonical;
-  if (!cleanCanonical) {
-    cleanCanonical = `${baseSiteUrl}/`;
-  } else if (cleanCanonical.startsWith('/')) {
-    cleanCanonical = `${baseSiteUrl}${cleanCanonical === '/' ? '/' : cleanCanonical.replace(/\/+$/, '')}`;
-  } else if (cleanCanonical.startsWith('http')) {
-    cleanCanonical = cleanCanonical.replace(/https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i, baseSiteUrl);
+  const isNoIndex = Boolean(noindex || robots.includes('noindex'));
+  const effectiveRobots = isNoIndex
+    ? 'noindex, nofollow'
+    : robots;
+
+  // Compute clean canonical URL (only for indexable pages)
+  let cleanCanonical = '';
+  if (!isNoIndex) {
+    if (!canonical) {
+      cleanCanonical = `${baseSiteUrl}/`;
+    } else if (canonical.startsWith('/')) {
+      cleanCanonical = `${baseSiteUrl}${canonical === '/' ? '/' : canonical.replace(/\/+$/, '')}`;
+    } else if (canonical.startsWith('http')) {
+      cleanCanonical = canonical.replace(/https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i, baseSiteUrl);
+    } else {
+      cleanCanonical = `${baseSiteUrl}/${canonical.replace(/\/+$/, '')}`;
+    }
+
+    // Strip any query strings and hash parameters from canonical URL
+    try {
+      const parsedUrl = new URL(cleanCanonical, baseSiteUrl);
+      parsedUrl.search = '';
+      parsedUrl.hash = '';
+      cleanCanonical = parsedUrl.toString();
+    } catch {
+      // Keep cleanCanonical as is
+    }
   }
 
   const effectiveOgTitle = ogTitle || title;
@@ -54,7 +74,7 @@ export default function SEO({
       ? ogImage
       : `${baseSiteUrl}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`
     : `${baseSiteUrl}/mart.jpg`;
-  const effectiveOgUrl = ogUrl || cleanCanonical;
+  const effectiveOgUrl = ogUrl || (cleanCanonical || `${baseSiteUrl}/`);
 
   const effectiveTwitterTitle = twitterTitle || effectiveOgTitle;
   const effectiveTwitterDescription = twitterDescription || effectiveOgDescription;
@@ -92,18 +112,29 @@ export default function SEO({
     setMetaTag('name', 'description', description);
     setMetaTag('name', 'keywords', keywords);
     setMetaTag('name', 'author', author);
-    setMetaTag('name', 'robots', robots);
-    setMetaTag('name', 'googlebot', robots);
-    setMetaTag('name', 'bingbot', robots);
+    setMetaTag('name', 'robots', effectiveRobots);
+    setMetaTag('name', 'googlebot', effectiveRobots);
+    setMetaTag('name', 'bingbot', effectiveRobots);
 
-    // 3. Canonical Link
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
+    // Google Search Console Site Verification Meta
+    if (env.googleSiteVerification) {
+      setMetaTag('name', 'google-site-verification', env.googleSiteVerification);
     }
-    canonicalLink.setAttribute('href', cleanCanonical);
+
+    // 3. Canonical Link (Never render canonical on noindex/404 pages to prevent soft 404s)
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (isNoIndex) {
+      if (canonicalLink) {
+        canonicalLink.remove();
+      }
+    } else if (cleanCanonical) {
+      if (!canonicalLink) {
+        canonicalLink = document.createElement('link');
+        canonicalLink.setAttribute('rel', 'canonical');
+        document.head.appendChild(canonicalLink);
+      }
+      canonicalLink.setAttribute('href', cleanCanonical);
+    }
 
     // 4. Open Graph Meta Tags
     setMetaTag('property', 'og:type', ogType);
@@ -280,7 +311,8 @@ export default function SEO({
     effectiveTwitterTitle,
     effectiveTwitterDescription,
     effectiveTwitterImage,
-    robots,
+    effectiveRobots,
+    isNoIndex,
     productData,
     breadcrumbs,
     faq,

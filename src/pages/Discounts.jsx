@@ -189,7 +189,7 @@ export default function Discounts() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
-      <SEO title="Promotions & Discounts Management | Admin" canonical="/dashboard/discounts" />
+      <SEO title="Promotions & Discounts Management | Admin" canonical="/dashboard/discounts" noindex={true} robots="noindex, nofollow" />
 
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-xs">

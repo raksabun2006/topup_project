@@ -215,7 +215,7 @@ export default function Register() {
   if (done) {
     return (
       <div className="relative min-h-screen flex items-center justify-center bg-[#F1F5F9] dark:bg-slate-950 p-4 font-sans">
-        <SEO title="Registration Successful | Mart System" canonical="/register" robots="noindex, nofollow" />
+        <SEO title="Registration Successful | Mart System" canonical="/register" noindex={true} robots="noindex, nofollow" />
         <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-8 shadow-2xl text-center space-y-4 animate-scale-in">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shadow-xs">
             <CheckCircle size={36} />
@@ -240,7 +240,7 @@ export default function Register() {
 
   return (
     <div className="relative min-h-screen w-full bg-white dark:bg-slate-950 font-sans flex flex-col justify-between overflow-x-hidden">
-      <SEO title="Create Account | Mart System" canonical="/register" robots="noindex, nofollow" />
+      <SEO title="Create Account | Mart System" canonical="/register" noindex={true} robots="noindex, nofollow" />
 
       {/* Main Split Grid Container */}
       <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-12">

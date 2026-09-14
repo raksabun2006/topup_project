@@ -186,6 +186,8 @@ export default function NotificationsPage() {
       <SEO
         title={isKhmer ? 'ការជូនដំណឹង | Mart System' : 'Notifications | Mart System'}
         description="Stay updated with order tracking, payments, deliveries and store announcements."
+        noindex={true}
+        robots="noindex, nofollow"
       />
 
       <div className="mx-auto max-w-4xl px-4 sm:px-6">

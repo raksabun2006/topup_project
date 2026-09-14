@@ -1,5 +1,6 @@
 # https://www.robotstxt.org/robotstxt.html
-# Mart System — Official Robots & Crawler Policy
+# Mart System — Production Robots & Search Crawler Policy
+# Production Domain: https://martsystemkh.software
 
 User-agent: Googlebot
 User-agent: Googlebot-Image
@@ -15,9 +16,12 @@ User-agent: LinkedInBot
 User-agent: TelegramBot
 User-agent: WhatsApp
 User-agent: *
+
+# 1. Allow Public Commercial & Informational Content
 Allow: /
 Allow: /shop
 Allow: /categories
+Allow: /categories/*
 Allow: /category/*
 Allow: /products
 Allow: /products/*
@@ -28,15 +32,28 @@ Allow: /developer
 Allow: /guide
 Allow: /user-guide
 Allow: /help
+
+# 2. Allow Assets & Essential Rendering Resources
+Allow: /assets/
 Allow: /mart.jpg
 Allow: /favicon.svg
 Allow: /og-image.png
 Allow: /developer.jpg
 Allow: /site.webmanifest
-Allow: /assets/*.js
-Allow: /assets/*.css
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.svg$
+Allow: /*.webp$
 
-# Disallow authenticated, admin, cart and transactional paths
+# 3. Disallow Internal Search & Filter Parameters (Prevent Crawl Waste & Thin Content)
+Disallow: /*?*search=
+Disallow: /*?*sort=
+Disallow: /*?*minPrice=
+Disallow: /*?*maxPrice=
+
+# 4. Disallow Private, Authenticated, Cart and Administrative Paths
 Disallow: /admin
 Disallow: /admin/
 Disallow: /dashboard
@@ -48,10 +65,16 @@ Disallow: /customers/
 Disallow: /profile
 Disallow: /profile/
 Disallow: /account
+Disallow: /account/
 Disallow: /orders
+Disallow: /orders/
 Disallow: /my-orders
+Disallow: /tracking
+Disallow: /wishlist
+Disallow: /notifications
 Disallow: /customer/dashboard
 Disallow: /staff/dashboard
+Disallow: /staff/orders
 Disallow: /pos
 Disallow: /pos/
 Disallow: /login
@@ -67,6 +90,7 @@ Disallow: /payment
 Disallow: /payment/
 Disallow: /api/
 
-# Canonical Host & XML Sitemap
+# 5. Canonical Host & XML Sitemap
 Host: https://martsystemkh.software
 Sitemap: https://martsystemkh.software/sitemap.xml
+

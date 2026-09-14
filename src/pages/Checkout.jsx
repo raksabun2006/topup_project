@@ -414,7 +414,7 @@ export default function Checkout() {
 
     return (
       <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 py-8 px-4 sm:px-6 font-sans">
-        <SEO title="Order Confirmed | Mart System" canonical="/checkout" />
+        <SEO title="Order Confirmed | Mart System" canonical="/checkout" noindex={true} robots="noindex, nofollow" />
         <div className="max-w-2xl mx-auto space-y-6 animate-scale-in">
           {/* Success Banner */}
           <div className="rounded-3xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900/50 p-6 sm:p-8 text-center space-y-4 shadow-xl">
@@ -469,7 +469,7 @@ export default function Checkout() {
   if (items.length === 0) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center bg-white dark:bg-slate-950 px-4 py-16 text-center space-y-4">
-        <SEO title="Checkout | Mart System" canonical="/checkout" />
+        <SEO title="Checkout | Mart System" canonical="/checkout" noindex={true} robots="noindex, nofollow" />
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#F7F7F8] dark:bg-slate-900 text-slate-400 mb-2">
           <ShoppingBag size={32} />
         </div>
@@ -488,7 +488,7 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 pb-20">
-      <SEO title="Checkout | Mart System" canonical="/checkout" />
+      <SEO title="Checkout | Mart System" canonical="/checkout" noindex={true} robots="noindex, nofollow" />
 
       <div className="mx-auto max-w-6xl px-3 sm:px-6 py-4 sm:py-8 space-y-5">
         {/* Navigation Breadcrumb & Step Progress Indicator */}

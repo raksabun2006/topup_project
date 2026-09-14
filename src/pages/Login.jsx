@@ -173,7 +173,7 @@ export default function Login() {
 
   return (
     <div className="relative min-h-screen w-full bg-white dark:bg-slate-950 font-sans flex flex-col justify-between overflow-x-hidden">
-      <SEO title="Login to Mart System | Official Portal" canonical="/login" robots="noindex, nofollow" />
+      <SEO title="Login to Mart System | Official Portal" canonical="/login" noindex={true} robots="noindex, nofollow" />
 
       {/* Main Split Grid Container */}
       <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-12">

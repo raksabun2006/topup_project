@@ -92,4 +92,7 @@ export const env = {
 
   // Google OAuth 2.0 Client ID for customer sign-in (Public)
   googleClientId: rawEnv.VITE_GOOGLE_CLIENT_ID || '',
+
+  // Google Search Console Site Verification Token (from GSC HTML tag method)
+  googleSiteVerification: rawEnv.VITE_GOOGLE_SITE_VERIFICATION || '',
 };

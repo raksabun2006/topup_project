@@ -21,7 +21,7 @@ export default function OrderSuccess() {
   if (!order) {
     return (
       <div className="min-h-[75vh] flex flex-col items-center justify-center bg-white dark:bg-slate-950 px-4 py-16 text-center space-y-4 font-sans">
-        <SEO title="Order Confirmation | Mart System" canonical="/order-success" />
+        <SEO title="Order Confirmation | Mart System" canonical="/order-success" noindex={true} robots="noindex, nofollow" />
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400">
           <ShoppingBag size={32} />
         </div>
@@ -88,7 +88,7 @@ export default function OrderSuccess() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 py-8 px-4 sm:px-6 font-sans">
-      <SEO title={`Order ${orderNumber} Confirmed | Mart System`} canonical="/order-success" />
+      <SEO title={`Order ${orderNumber} Confirmed | Mart System`} canonical="/order-success" noindex={true} robots="noindex, nofollow" />
 
       <div className="max-w-2xl mx-auto space-y-6 animate-scale-in">
         {/* Success Card */}

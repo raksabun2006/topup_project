@@ -109,7 +109,7 @@ export default function StaffDashboard() {
 
   return (
     <div className="space-y-5 animate-fade-in font-sans">
-      <SEO title="Staff Operational Dashboard | Mart System" robots="noindex, nofollow" />
+      <SEO title="Staff Operational Dashboard | Mart System" noindex={true} robots="noindex, nofollow" />
 
       {/* Top Header & Quick Launch */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-100 dark:border-slate-800">

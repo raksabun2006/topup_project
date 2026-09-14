@@ -10,7 +10,7 @@ export default function Unauthorized() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4 sm:p-6 bg-[#F8FAFC] dark:bg-slate-950 font-sans">
-      <SEO title="403 Access Denied | Mart System" robots="noindex, nofollow" />
+      <SEO title="403 Access Denied | Mart System" noindex={true} robots="noindex, nofollow" />
 
       <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 text-center space-y-5 shadow-xl animate-scale-in">
         {/* Shield Icon Badge */}

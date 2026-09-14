@@ -115,8 +115,13 @@ export default function ProductDetail() {
   const available = Math.max(0, stock - inCartQty);
   const wishlisted = isInWishlist(product?.id);
 
-  const pseudoRating = ((Math.abs(Number(product?.id || 1) * 17) % 5) * 0.1 + 4.6).toFixed(1);
-  const pseudoReviewsCount = (Math.abs(Number(product?.id || 1) * 31) % 800) + 120 + customerReviewsList.length;
+  const hasRealReviews = customerReviewsList.length > 0;
+  const realRating = hasRealReviews
+    ? (
+        customerReviewsList.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / customerReviewsList.length
+      ).toFixed(1)
+    : null;
+  const realReviewsCount = customerReviewsList.length;
 
   const handleAddToCart = () => {
     if (outOfStock || !product) return;
@@ -198,8 +203,9 @@ export default function ProductDetail() {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-4">
         <SEO
-          title="Product Not Found | Mart System Cambodia"
+          title="404 Product Not Found | Mart System Cambodia"
           description="The product you are looking for does not exist or has been removed from Mart System."
+          noindex={true}
           robots="noindex, nofollow"
         />
         <AlertCircle size={44} className="mx-auto text-rose-500" />
@@ -234,7 +240,7 @@ export default function ProductDetail() {
   const breadcrumbs = [
     { name: 'Home', url: '/' },
     { name: 'Shop', url: '/shop' },
-    ...(product.category ? [{ name: product.category, url: `/shop?category=${encodeURIComponent(product.category)}` }] : []),
+    ...(product.category ? [{ name: product.category, url: `/category/${encodeURIComponent(product.category)}` }] : []),
     { name: product.name, url: canonicalPath },
   ];
 
@@ -325,7 +331,7 @@ export default function ProductDetail() {
           {product.category && (
             <>
               <ChevronRight size={12} />
-              <Link to={`/shop?category=${encodeURIComponent(product.category)}`} className="hover:text-black dark:hover:text-white transition">
+              <Link to={`/category/${encodeURIComponent(product.category)}`} className="hover:text-black dark:hover:text-white transition">
                 {product.category}
               </Link>
             </>
@@ -395,14 +401,20 @@ export default function ProductDetail() {
                 {product.name}
               </h1>
 
-              {/* Rating & Reviews */}
+              {/* Authentic Rating & Reviews */}
               <div className="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
-                <div className="flex items-center gap-1">
-                  <Star size={14} className="fill-amber-400 text-amber-400" />
-                  <span className="font-extrabold text-slate-800 dark:text-slate-200">{pseudoRating}</span>
-                </div>
-                <span>•</span>
-                <span>{pseudoReviewsCount} Reviews</span>
+                {hasRealReviews ? (
+                  <>
+                    <div className="flex items-center gap-1">
+                      <Star size={14} className="fill-amber-400 text-amber-400" />
+                      <span className="font-extrabold text-slate-800 dark:text-slate-200">{realRating}</span>
+                    </div>
+                    <span>•</span>
+                    <span>{realReviewsCount} {realReviewsCount === 1 ? 'Review' : 'Reviews'}</span>
+                  </>
+                ) : (
+                  <span className="text-slate-400 font-medium">No customer reviews yet</span>
+                )}
                 {product.sku && (
                   <>
                     <span>•</span>
@@ -588,7 +600,7 @@ export default function ProductDetail() {
             >
               <span>Reviews</span>
               <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold">
-                {pseudoReviewsCount}
+                {realReviewsCount}
               </span>
             </button>
           </div>
@@ -649,15 +661,19 @@ export default function ProductDetail() {
               {/* Rating Summary & Distribution */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 rounded-3xl bg-[#F8FAFC] dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 items-center">
                 <div className="md:col-span-4 text-center md:text-left space-y-1">
-                  <span className="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white">{pseudoRating}</span>
+                  <span className="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white">
+                    {hasRealReviews ? realRating : '0.0'}
+                  </span>
                   <div className="flex items-center justify-center md:justify-start gap-1 text-amber-400">
-                    <Star size={16} className="fill-amber-400" />
-                    <Star size={16} className="fill-amber-400" />
-                    <Star size={16} className="fill-amber-400" />
-                    <Star size={16} className="fill-amber-400" />
-                    <Star size={16} className="fill-amber-400" />
+                    <Star size={16} className={hasRealReviews ? 'fill-amber-400' : 'text-slate-300'} />
+                    <Star size={16} className={hasRealReviews && Number(realRating) >= 2 ? 'fill-amber-400' : 'text-slate-300'} />
+                    <Star size={16} className={hasRealReviews && Number(realRating) >= 3 ? 'fill-amber-400' : 'text-slate-300'} />
+                    <Star size={16} className={hasRealReviews && Number(realRating) >= 4 ? 'fill-amber-400' : 'text-slate-300'} />
+                    <Star size={16} className={hasRealReviews && Number(realRating) >= 5 ? 'fill-amber-400' : 'text-slate-300'} />
                   </div>
-                  <p className="text-xs text-slate-400 font-medium">Based on {pseudoReviewsCount} ratings</p>
+                  <p className="text-xs text-slate-400 font-medium">
+                    {hasRealReviews ? `Based on ${realReviewsCount} verified ratings` : 'No customer ratings yet'}
+                  </p>
                 </div>
 
                 {/* Rating Distribution Bars */}

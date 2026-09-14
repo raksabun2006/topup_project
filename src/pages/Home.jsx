@@ -302,6 +302,11 @@ export default function Home() {
                     <img
                       src={activeHeroSlide.imageUrl}
                       alt={activeHeroSlide.productName}
+                      width="400"
+                      height="300"
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="async"
                       className="h-full w-full object-contain transition-transform duration-500 hover:scale-105"
                       onError={(e) => { e.target.src = '/mart.jpg'; }}
                     />

@@ -8,6 +8,7 @@ export default function NotFound() {
       <SEO
         title="404 Page Not Found (រកមិនឃើញទំព័រ) | Mart System Cambodia"
         description="The page you are looking for does not exist or has been moved. Explore our grocery catalog and products at Mart System."
+        noindex={true}
         robots="noindex, nofollow"
       />
       <div className="space-y-4 max-w-md mx-auto">

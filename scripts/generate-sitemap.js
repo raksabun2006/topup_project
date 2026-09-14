@@ -11,7 +11,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const BASE_URL = 'https://martsystemkh.software';
-const BACKEND_API = `${BASE_URL}/api/v1/products`;
+const PRIMARY_API = `${BASE_URL}/api/v1/products`;
+const FALLBACK_API = 'https://gametopup-backend-production-3423.up.railway.app/api/v1/products';
 const OUTPUT_PATH = path.resolve(__dirname, '../public/sitemap.xml');
 
 function slugify(text = '') {
@@ -44,35 +45,53 @@ function escapeXml(str = '') {
     .replace(/'/g, '&apos;');
 }
 
+async function fetchFromUrl(url) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 7000);
+  const res = await fetch(url, { signal: controller.signal });
+  clearTimeout(timeoutId);
+
+  if (!res.ok) {
+    throw new Error(`HTTP status ${res.status}`);
+  }
+  const data = await res.json();
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.content)) return data.content;
+  if (data && Array.isArray(data.data)) return data.data;
+  return [];
+}
+
 async function fetchProducts() {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
-    const res = await fetch(BACKEND_API, { signal: controller.signal });
-    clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      console.warn(`[sitemap] Backend API returned status ${res.status}`);
-      return [];
-    }
-    const data = await res.json();
-    if (Array.isArray(data)) return data;
-    if (data && Array.isArray(data.content)) return data.content;
-    if (data && Array.isArray(data.data)) return data.data;
-    return [];
+    const products = await fetchFromUrl(PRIMARY_API);
+    if (products.length > 0) return products;
   } catch (err) {
-    console.warn('[sitemap] Failed to fetch products from backend API (offline or timeout):', err.message);
-    return [];
+    console.warn(`[sitemap] Primary API (${PRIMARY_API}) failed: ${err.message}. Trying direct backend...`);
   }
+
+  try {
+    const products = await fetchFromUrl(FALLBACK_API);
+    if (products.length > 0) return products;
+  } catch (err) {
+    console.warn(`[sitemap] Fallback API (${FALLBACK_API}) failed: ${err.message}`);
+  }
+
+  return [];
 }
 
 async function generateSitemap() {
   console.log('[sitemap] Generating SEO sitemap.xml...');
   const today = new Date().toISOString().split('T')[0];
-  const products = await fetchProducts();
-  console.log(`[sitemap] Discovered ${products.length} products for dynamic sitemap indexing.`);
+  let products = await fetchProducts();
 
-  // Core static pages
+  // Filter out any inactive or deleted products
+  products = products.filter(
+    (p) => p && (p.id || p.productId) && !p.deleted && !p.isDeleted && p.active !== false
+  );
+
+  console.log(`[sitemap] Discovered ${products.length} active products for dynamic sitemap indexing.`);
+
+  // Core static pages (200 OK, Canonical, Indexable)
   const staticPages = [
     {
       loc: `${BASE_URL}/`,
@@ -121,7 +140,7 @@ async function generateSitemap() {
     },
   ];
 
-  // Discover categories from products
+  // Discover categories from active products
   const categorySet = new Set();
   products.forEach((p) => {
     if (p.category && typeof p.category === 'string') {
@@ -154,19 +173,24 @@ async function generateSitemap() {
     return item;
   });
 
+  // If backend was unreachable and returned 0 products, preserve existing public/sitemap.xml if available
+  if (products.length === 0 && fs.existsSync(OUTPUT_PATH)) {
+    const existingContent = fs.readFileSync(OUTPUT_PATH, 'utf-8');
+    if (existingContent.includes('/products/')) {
+      console.warn('[sitemap] Backend unavailable; preserved existing production sitemap.xml containing product entries.');
+      return;
+    }
+  }
+
   const allUrls = [...staticPages, ...categoryPages, ...productPages];
 
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
   xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n`;
-  xml += `        xmlns:xhtml="http://www.w3.org/1999/xhtml"\n`;
   xml += `        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n\n`;
 
   for (const page of allUrls) {
     xml += `  <url>\n`;
     xml += `    <loc>${escapeXml(page.loc)}</loc>\n`;
-    xml += `    <xhtml:link rel="alternate" hreflang="km" href="${escapeXml(page.loc)}" />\n`;
-    xml += `    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(page.loc)}" />\n`;
-    xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(page.loc)}" />\n`;
     xml += `    <lastmod>${page.lastmod || today}</lastmod>\n`;
     xml += `    <changefreq>${page.changefreq || 'weekly'}</changefreq>\n`;
     xml += `    <priority>${page.priority || '0.7'}</priority>\n`;
@@ -189,7 +213,7 @@ async function generateSitemap() {
   xml += `</urlset>\n`;
 
   fs.writeFileSync(OUTPUT_PATH, xml, 'utf-8');
-  console.log(`[sitemap] Successfully wrote ${allUrls.length} URLs to ${OUTPUT_PATH}`);
+  console.log(`[sitemap] Successfully wrote ${allUrls.length} indexable URLs to ${OUTPUT_PATH}`);
 }
 
 generateSitemap();

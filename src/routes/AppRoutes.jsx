@@ -75,6 +75,7 @@ export default function AppRoutes() {
         <Route path="/products" element={<Shop />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/category/:categoryName" element={<Shop />} />
+        <Route path="/categories/:categoryName" element={<Shop />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/products/:slug" element={<ProductDetail />} />
         <Route path="/shop/product/:slug" element={<ProductDetail />} />

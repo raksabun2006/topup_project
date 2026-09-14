@@ -170,6 +170,8 @@ export default function CustomerSupport() {
         title="Customer Support & Tickets | Mart System"
         description="Submit tickets, get help with orders, or chat with Mart support."
         canonical="/account/support"
+        noindex={true}
+        robots="noindex, nofollow"
       />
 
       <div className="mx-auto max-w-5xl px-4 sm:px-6 py-6 sm:py-10 space-y-6">

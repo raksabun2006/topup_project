@@ -135,6 +135,8 @@ export default function AddressManagement() {
         title="Delivery Addresses | Mart System"
         description="Manage your saved shipping and delivery addresses."
         canonical="/account/addresses"
+        noindex={true}
+        robots="noindex, nofollow"
       />
 
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-10 space-y-6">

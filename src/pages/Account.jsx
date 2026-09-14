@@ -67,7 +67,7 @@ export default function Account() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-[75vh] flex flex-col items-center justify-center bg-[#F8FAFC] dark:bg-slate-950 px-4 py-16 text-center space-y-4">
-        <SEO title="My Account | Mart System" canonical="/account" />
+        <SEO title="My Account | Mart System" canonical="/account" noindex={true} robots="noindex, nofollow" />
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white dark:bg-slate-900 shadow-md text-slate-400 mb-2 border border-slate-200/80 dark:border-slate-800">
           <User size={30} />
         </div>
@@ -181,7 +181,7 @@ export default function Account() {
 
   return (
     <div className={`${isDashboardRoute ? 'space-y-6' : 'min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pb-20'} font-sans`}>
-      <SEO title="My Account & Store Hub | Mart System" canonical={isDashboardRoute ? '/dashboard/profile' : '/account'} />
+      <SEO title="My Account & Store Hub | Mart System" canonical={isDashboardRoute ? '/dashboard/profile' : '/account'} noindex={true} robots="noindex, nofollow" />
 
       <div className={isDashboardRoute ? 'space-y-6' : 'mx-auto max-w-5xl px-3 sm:px-6 py-6 sm:py-10 space-y-6'}>
         
