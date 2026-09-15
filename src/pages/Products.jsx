@@ -3,7 +3,7 @@ import {
   Plus, Edit2, Trash2, Loader2, AlertCircle, RefreshCw,
   Package, ChevronLeft, ChevronRight, Tags, Search, X,
   LayoutGrid, List, AlertTriangle,
-  Boxes, Layers, Tag, Sparkles, Check, FileSpreadsheet
+  Boxes, Layers, Tag, FileSpreadsheet
 } from 'lucide-react';
 import { adminProductApi } from '../api/adminProductApi';
 import { getErrorMessage } from '../api/client';
@@ -48,8 +48,6 @@ export default function Products() {
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
-  const [seedingProducts, setSeedingProducts] = useState(false);
-  const [seedSuccess, setSeedSuccess] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [exportingExcel, setExportingExcel] = useState(false);
 
@@ -84,26 +82,6 @@ export default function Products() {
     const list = pageData.content ?? pageData.data?.content ?? [];
     return list.length > 0 ? list : DEFAULT_PRODUCTS;
   }, [pageData]);
-
-  const handleSeedProducts = async () => {
-    setSeedingProducts(true);
-    try {
-      for (const p of DEFAULT_PRODUCTS) {
-        try {
-          await adminProductApi.create(p);
-        } catch {
-          // ignore existing
-        }
-      }
-      setSeedSuccess(true);
-      setTimeout(() => setSeedSuccess(false), 3000);
-      load();
-    } catch {
-      // ignore
-    } finally {
-      setSeedingProducts(false);
-    }
-  };
 
   const totalPages = pageData?.totalPages ?? pageData?.data?.totalPages ?? 0;
   const totalElements = pageData?.totalElements ?? pageData?.data?.totalElements ?? rawProducts.length;
@@ -306,30 +284,6 @@ export default function Products() {
 
       {/* Quick Actions Bar */}
       <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-2.5">
-        <button
-          onClick={handleSeedProducts}
-          disabled={seedingProducts}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 shadow-2xs transition hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 active:scale-95 cursor-pointer disabled:opacity-50"
-          title="Import 20 Sample Products into Catalog"
-        >
-          {seedingProducts ? (
-            <>
-              <Loader2 size={16} className="animate-spin text-emerald-600" />
-              <span>Importing 20 Products...</span>
-            </>
-          ) : seedSuccess ? (
-            <>
-              <Check size={16} className="text-emerald-600" />
-              <span>Imported 20 Products!</span>
-            </>
-          ) : (
-            <>
-              <Sparkles size={16} className="text-emerald-600 dark:text-emerald-400" />
-              <span>Import 20 Products</span>
-            </>
-          )}
-        </button>
-
         <button
           onClick={handleExportExcel}
           disabled={exportingExcel || (totalElements === 0 && filteredProducts.length === 0)}

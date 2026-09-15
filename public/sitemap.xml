@@ -4,7 +4,7 @@
 
   <url>
     <loc>https://martsystemkh.software/</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -15,7 +15,7 @@
   </url>
   <url>
     <loc>https://martsystemkh.software/shop</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
     <image:image>
@@ -26,13 +26,13 @@
   </url>
   <url>
     <loc>https://martsystemkh.software/categories</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://martsystemkh.software/about</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -43,131 +43,85 @@
   </url>
   <url>
     <loc>https://martsystemkh.software/help</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
     <loc>https://martsystemkh.software/guide</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A</loc>
-    <lastmod>2026-09-14</lastmod>
+    <loc>https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84</loc>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://martsystemkh.software/category/Beverages%20%26%20Drinks</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/category/Groceries%20%26%20Staples</loc>
-    <lastmod>2026-09-14</lastmod>
+    <loc>https://martsystemkh.software/category/%E1%9E%91%E1%9E%B9%E1%9E%80%E1%9E%8A%E1%9F%84%E1%9F%87%E1%9E%82%E1%9F%84%E1%9E%87%E1%9E%BC%E1%9E%9A</loc>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://martsystemkh.software/category/%E1%9E%97%E1%9F%81%E1%9E%9F%E1%9E%87%E1%9F%92%E1%9E%87%E1%9F%88</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/category/Groceries%20%26%20Staples</loc>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://martsystemkh.software/category/%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%80%E1%9E%80</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://martsystemkh.software/category/%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%9F%E1%9E%98%E1%9F%92%E1%9E%9A%E1%9E%93%E1%9F%8B</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://martsystemkh.software/category/%E1%9E%90%E1%9F%82%E1%9E%9A%E1%9E%80%E1%9F%92%E1%9E%9F%E1%9E%B6%E1%9E%95%E1%9F%92%E1%9E%91%E1%9E%B6%E1%9E%9B%E1%9F%8B%E1%9E%81%E1%9F%92%E1%9E%9B%E1%9E%BD%E1%9E%93</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://martsystemkh.software/category/%E1%9E%9F%E1%9E%B6%E1%9E%85%E1%9F%8B%20%E1%9E%93%E1%9E%B7%E1%9E%84%E1%9E%A2%E1%9E%B6%E1%9E%A0%E1%9E%B6%E1%9E%9A%E1%9E%80%E1%9E%80</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://martsystemkh.software/category/%E1%9E%9F%E1%9F%8A%E1%9E%BB%E1%9E%8F</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://martsystemkh.software/category/Mobile%20Phones</loc>
-    <lastmod>2026-09-14</lastmod>
+    <loc>https://martsystemkh.software/category/%E1%9E%9F%E1%9E%98%E1%9F%92%E1%9E%9B%E1%9F%80%E1%9E%80%E1%9E%94%E1%9F%86%E1%9E%96%E1%9E%B6%E1%9E%80%E1%9F%8B</loc>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/category/Computers%20%26%20Laptops</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/category/Shoes</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/category/%E1%9E%9F%E1%9E%98%E1%9F%92%E1%9E%97%E1%9E%B6%E1%9E%9A%E1%9F%88%E1%9E%94%E1%9F%92%E1%9E%9A%E1%9E%BE%E1%9E%94%E1%9F%92%E1%9E%9A%E1%9E%B6%E1%9E%9F%E1%9F%8B%E1%9E%80%E1%9F%92%E1%9E%93%E1%9E%BB%E1%9E%84%E1%9E%95%E1%9F%92%E1%9E%91%E1%9F%87</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/category/Electronics</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeDEQcT8fXPDG0EOeGK3ntRu6QsIgGy-Wb_1d3ihK60Q&amp;s=10</image:loc>
-      <image:title>Angkormilk Strawberry Yogurt</image:title>
-      <image:caption>ទឹកដោះគោជូរ Angkormilk រសជាតិស្ត្របឺរី</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHguxuWCpApinQFedDrBG-9bAPjyoVeTSUkoS6JqO8vg&amp;s=10</image:loc>
-      <image:title>Coca Cola Can 330ml</image:title>
-      <image:caption>Classic refreshing carbonated soft drink, served chilled.</image:caption>
-    </image:image>
   </url>
   <url>
     <loc>https://martsystemkh.software/products/farm-fresh-milk-2l--7f711b2b-0875-42b5-acea-b2d73d35b338</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -177,19 +131,30 @@
     </image:image>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60</loc>
-    <lastmod>2026-09-14</lastmod>
+    <loc>https://martsystemkh.software/products/coca-cola-can-330ml--263df9d1-64a8-47a4-bb1c-c271f1eb2249</loc>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9yOpeLR6mdJiIZzolFtxWJPxZHHQ_DRmIkwPaFKBzqg&amp;s</image:loc>
-      <image:title>Malys Angkor Jasmine Rice 5kg</image:title>
-      <image:caption>Premium quality fragrant Phka Rumduol jasmine rice from Cambodia, known for its soft texture and natural pandan-like aroma.</image:caption>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHguxuWCpApinQFedDrBG-9bAPjyoVeTSUkoS6JqO8vg&amp;s=10</image:loc>
+      <image:title>Coca Cola Can 330ml</image:title>
+      <image:caption>Classic refreshing carbonated soft drink, served chilled.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/angkormilk-strawberry-yogurt--b64e7590-3b00-4a2e-a88f-b9c1073ef3fb</loc>
+    <lastmod>2026-09-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeDEQcT8fXPDG0EOeGK3ntRu6QsIgGy-Wb_1d3ihK60Q&amp;s=10</image:loc>
+      <image:title>Angkormilk Strawberry Yogurt</image:title>
+      <image:caption>ទឹកដោះគោជូរ Angkormilk រសជាតិស្ត្របឺរី</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://martsystemkh.software/products/ទឹកបរិសុទ្ធ-កម្ពុជា-500ml-x-24--ffeb2bc9-640b-46aa-82a8-5c80874930c6</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -199,8 +164,30 @@
     </image:image>
   </url>
   <url>
+    <loc>https://martsystemkh.software/products/malys-angkor-jasmine-rice-5kg--5594888e-7705-4e9a-9f1b-3764108f0e60</loc>
+    <lastmod>2026-09-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9yOpeLR6mdJiIZzolFtxWJPxZHHQ_DRmIkwPaFKBzqg&amp;s</image:loc>
+      <image:title>Malys Angkor Jasmine Rice 5kg</image:title>
+      <image:caption>Premium quality fragrant Phka Rumduol jasmine rice from Cambodia, known for its soft texture and natural pandan-like aroma.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://martsystemkh.software/products/eau-kulen-mineral-water-15l-x-12--ed13cf5d-cfd4-4f16-bcfb-74f01aa1692e</loc>
+    <lastmod>2026-09-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpQTsbuJEmr1uSouEH_NRZc5t6Jj4WnraNZYtIIN5KgA&amp;s=10</image:loc>
+      <image:title>Eau Kulen Mineral Water 1.5L x 12</image:title>
+      <image:caption>ទឹករ៉ែធម្មជាតិ Eau Kulen</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://martsystemkh.software/products/sting-energy-drink--c9470588-9c66-427a-a36c-aafa770ed1ed</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -211,7 +198,7 @@
   </url>
   <url>
     <loc>https://martsystemkh.software/products/yakult-probiotic-drinking-yoghurt-less-sugar-65g--c493a995-7613-4d26-875f-330d9e351438</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -221,19 +208,8 @@
     </image:image>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/eau-kulen-mineral-water-15l-x-12--ed13cf5d-cfd4-4f16-bcfb-74f01aa1692e</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpQTsbuJEmr1uSouEH_NRZc5t6Jj4WnraNZYtIIN5KgA&amp;s=10</image:loc>
-      <image:title>Eau Kulen Mineral Water 1.5L x 12</image:title>
-      <image:caption>ទឹករ៉ែធម្មជាតិ Eau Kulen</image:caption>
-    </image:image>
-  </url>
-  <url>
     <loc>https://martsystemkh.software/products/dasani-water-15l-x-6--65d8ab05-bb03-4bc4-87ed-1feb42ba7f34</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -244,7 +220,7 @@
   </url>
   <url>
     <loc>https://martsystemkh.software/products/richmama-cheese-fish-ball-250g--d395b2a7-a504-41a0-b7ed-8f03e4ab4b40</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -254,8 +230,19 @@
     </image:image>
   </url>
   <url>
+    <loc>https://martsystemkh.software/products/ហ្វាន់តា-រសជាតិទឹកក្រូច-330ml--ee62fd85-5a84-48ab-85c1-7b1bd74e4e1c</loc>
+    <lastmod>2026-09-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXhcximMf6bavv2YxL7ntSob7BITGLRn9SccCmSB-mQQ&amp;s=10</image:loc>
+      <image:title>ហ្វាន់តា រសជាតិទឹកក្រូច 330ml</image:title>
+      <image:caption>ភេសជ្ជៈ Fanta រសជាតិទឹកក្រូច កំប៉ុង 330ml</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://martsystemkh.software/products/want-want-seaweed-rice-cracker-102g--1a50b493-a8f2-4fbf-a970-f1fcf1036de6</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -266,7 +253,7 @@
   </url>
   <url>
     <loc>https://martsystemkh.software/products/dettol-anti-bacterial-body-wash-950g--483b5b2a-1360-49a1-af48-bcd859c75b40</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -277,7 +264,7 @@
   </url>
   <url>
     <loc>https://martsystemkh.software/products/tos-tos-roasted-corn-tortilla-chips-145g--1f6908fd-a4ce-4518-b676-0447b4a382c7</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -287,8 +274,19 @@
     </image:image>
   </url>
   <url>
+    <loc>https://martsystemkh.software/products/កូកា-កូឡា-zero-sugar-330ml--5927420c-d2b9-4fcb-b79e-09d6b214b218</loc>
+    <lastmod>2026-09-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp_AgTnh-qXfdi87Mi7WH2gp_U_iKKmVbBehPOyyoSUg&amp;s=10</image:loc>
+      <image:title>កូកា-កូឡា Zero Sugar 330ml</image:title>
+      <image:caption>ភេសជ្ជៈ Coca-Cola Zero Sugar កំប៉ុង 330ml</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://martsystemkh.software/products/hoy-hoy-beef-meatball-500g--837c2748-4ab9-4f55-a3b9-f67d25dc5637</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -299,7 +297,7 @@
   </url>
   <url>
     <loc>https://martsystemkh.software/products/battambang-chicken-egg-size-3-30pcs--4ccf7240-147c-4200-bba6-8633fdbd72a5</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -309,58 +307,36 @@
     </image:image>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/xiaomi-redmi-note-13-pro--4c20b290-0e6e-488a-b579-7f1d568b0a00</loc>
-    <lastmod>2026-09-14</lastmod>
+    <loc>https://martsystemkh.software/products/ប៉ិបស៊ី-330ml--6d1f0f6e-38f7-459b-bdf4-92fddc977910</loc>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Xiaomi Redmi Note 13 Pro</image:title>
-      <image:caption>Mid-range smartphone with high-resolution camera and AMOLED display.</image:caption>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_H9v5KRPQYsfkdfG6HgHsS5d1JVGPJ_gxoU850GQyLQ&amp;s=10</image:loc>
+      <image:title>ប៉ិបស៊ី 330ml</image:title>
+      <image:caption>ភេសជ្ជៈ Pepsi កំប៉ុង 330ml</image:caption>
     </image:image>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/logitech-mx-master-3s-mouse--16759dc6-65e0-4d2f-8ff4-e96a16b8abae</loc>
-    <lastmod>2026-09-14</lastmod>
+    <loc>https://martsystemkh.software/products/អាវយឺត-basic-ពណ៌ខ្មៅ--6de6ba29-29f3-4648-805c-5012ade11727</loc>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Logitech MX Master 3S Mouse</image:title>
-      <image:caption>Advanced wireless productivity mouse with ergonomic design.</image:caption>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNgDLsRTQPWOYrINd1Ri7ln9gXvn8ZqI-U-WGI36DHBg&amp;s=10</image:loc>
+      <image:title>អាវយឺត Basic ពណ៌ខ្មៅ</image:title>
+      <image:caption>អាវយឺត Basic សម្រាប់ពាក់ប្រចាំថ្ងៃ ទន់ និងមានផាសុកភាព</image:caption>
     </image:image>
   </url>
   <url>
-    <loc>https://martsystemkh.software/products/nike-air-max-running-shoes--c51a777f-f628-47b1-9693-55c4fd90fe05</loc>
-    <lastmod>2026-09-14</lastmod>
+    <loc>https://martsystemkh.software/products/អាវយឺត-logo-ពណ៌ស--45e0fa66-8f35-4fb4-a98a-dbd559c77445</loc>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Nike Air Max Running Shoes</image:title>
-      <image:caption>Comfortable athletic shoes designed for running and everyday use.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/products/tessa-facial-tissue--496678c0-3ea2-456c-9f67-89dfa2e746eb</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqBByboBLXz4rXqZ7OFyWV3Ve9vMXzjgaANf44fg__Kg&amp;s=10</image:loc>
-      <image:title>Tessa Facial Tissue</image:title>
-      <image:caption>ក្រដាសជូតមុខ Tessa សម្រាប់ប្រើប្រាស់ប្រចាំថ្ងៃ</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://martsystemkh.software/products/anker-20w-usb-c-charger--92fe8251-cb8b-4657-a841-8cd84c3a4008</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Anker 20W USB-C Charger</image:title>
-      <image:caption>Compact fast USB-C wall charger compatible with modern devices.</image:caption>
+      <image:loc>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYjdYilGS5boFvvlRiIt_fqajeeJaqQVNKgzYA3yXbZw&amp;s=10</image:loc>
+      <image:title>អាវយឺត Logo ពណ៌ស</image:title>
+      <image:caption>អាវយឺត Logo ម៉ូតទាន់សម័យ សម្រាប់បុរស</image:caption>
     </image:image>
   </url>
 </urlset>
